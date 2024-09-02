@@ -1,4 +1,5 @@
 const Components = require("../Models/Components")
+const componentSerialNo = require("../Models/componentSerialNo")
 const utils = require("../controllers/utils")
 exports.createComponent = async(req,res)=>{
 
@@ -14,9 +15,16 @@ exports.createComponent = async(req,res)=>{
           utils.commonResponse(res, 201, "Item with same part number available available in the system",itemCheck );
       }
     
-    Components.create({componentName,compShortName,compPartNo,compDescription}).then((component)=>{
+    Components.create({componentName,compShortName,compPartNo,compDescription}).then(async (component)=>{
+        await componentSerialNo.create({componentID:component._id,hubSerialNo:[]})
         utils.commonResponse(res,200,"component created successfully",component)
+    }).catch((error)=>{
+        utils.commonResponse(res,500,"Unexpected server error",error.toString())
     })
+
+
+
+
       
 
 
