@@ -1,18 +1,18 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const Hub = new Schema(
+const Spoke = new Schema(
   {
-    hubName: {
+    spokeName: {
       type: String,
       required: true,
     },
-    hubShortName: {
+    spokeShortName: {
       type: String,
       required: true,
     },
     
-    isHubActive: {
+    isSpokeActive: {
       type: Boolean,
       required: true,
       default:true
@@ -23,4 +23,4 @@ const Hub = new Schema(
   }
 );
 
-module.exports = mongoose.model("Hubs", Hub);
+module.exports = mongoose.model("Spokes", Spoke);

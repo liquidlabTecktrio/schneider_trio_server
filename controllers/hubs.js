@@ -5,34 +5,28 @@ const utils = require("../controllers/utils");
 
 exports.createHubs = async (req, res) => {
     try {
-        const { hubName, hubShortName, userName, isHubActive } = req.body;
-        await Hubs.create({ hubName, hubShortName, userName, isHubActive }).then(async (result) => {
+        const { hubName, hubShortName } = req.body;
+        await Hubs.create({ hubName, hubShortName }).then(async (result) => {
             const allHubs = await Hubs.find();
-            utils.commonResponse(res, 200, "hub created successfully",);
+            utils.commonResponse(res, 200, "hub created successfully",allHubs);
 
         }).catch((err) => {
-            utils.commonResponse(res, 401, err.toString());
+            utils.commonResponse(res, 401,"unexpected server error", err.toString());
 
         });
 
     } catch (error) {
-        utils.commonResponse(res, 500, "unexpected server error");
+        utils.commonResponse(res, 500, "unexpected server error",error.toString());
     }
 }
 
-exports.getAllHubs = async (res, res) => {
+exports.getAllHubs = async (req, res) => {
     try {
-        const allHubs = Hubs.find();
-        if (!allHubs) {
-            utils.commonResponse(res, 200, "All hubs fetched successfully", allHubs);
-
-        } else {
-            utils.commonResponse(res, 200, "All hubs fetched successfully", []);
-
-        }
+        const allHubs = await Hubs.find();
+        utils.commonResponse(res, 200, "All hubs fetched successfully",allHubs);
 
     } catch (error) {
-        utils.commonResponse(res, 500, "unexpected server error");
+        utils.commonResponse(res, 500, "unexpected server error",error.toString());
 
     }
 }
