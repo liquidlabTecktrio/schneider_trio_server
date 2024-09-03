@@ -37,7 +37,7 @@ exports.createComponent = async(req,res)=>{
 exports.getAllComponents = async(req,res)=>{
     try {
         const allComponents = await Components.find();
-        utils.commonResponse(res, 200, "All hubs fetched successfully",allComponents);
+        utils.commonResponse(res, 200, "All components fetched successfully",allComponents);
 
     } catch (error) {
         utils.commonResponse(res,500,"Unexpected server error",error.toString())

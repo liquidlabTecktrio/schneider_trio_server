@@ -6,7 +6,7 @@ const adminController = require("../controllers/admin");
 const componentController = require("../controllers/components")
 const hubController = require("../controllers/hubs")
 const spokeController = require("../controllers/spoke")
-
+const panelController = require("../controllers/panels")
 
 router.post("/adminLogin", adminController.adminLogin);
 router.post("/createComponent",componentController.createComponent)
@@ -16,5 +16,10 @@ router.post("/createSpoke",spokeController.createSpoke)
 router.get("/getAllHubs",spokeController.getAllSpokes)
 router.get("/getAllSpokes",spokeController.getAllSpokes)
 router.get("/getAllComponents",componentController.getAllComponents)
+router.post("/createPanel",panelController.createPanel)
+router.get("/getAllPanels",panelController.getAllPanels)
+router.post("/createPanelType",panelController.createPanelType)
+router.post("/addBOMToPanelTypes",panelController.addBOMToPanelTypes)
+
 
 module.exports = router;

@@ -1,16 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const componentObj = new Schema({
-  componentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    // required: true,
-  },
-  quantity: {
-    type: Number,
-    // required: true,
-  },
-});
+
 
 const Panel = new Schema(
   {
@@ -22,13 +13,15 @@ const Panel = new Schema(
       type: String,
       required: true,
     },
-    componentDetails: {
-      type: [componentObj],
-    },
-    isPanelActive: {
-      type: Boolean,
+    panelPartNo: {
+      type: String,
       required: true,
     },
+    panelSize: {
+      type: String,
+      required: true,
+    },
+   
   },
   {
     timestamps: true,
