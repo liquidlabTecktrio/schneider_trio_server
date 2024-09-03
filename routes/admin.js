@@ -20,6 +20,7 @@ router.post("/createPanel",panelController.createPanel)
 router.get("/getAllPanels",panelController.getAllPanels)
 router.post("/createPanelType",panelController.createPanelType)
 router.post("/addBOMToPanelTypes",panelController.addBOMToPanelTypes)
+router.get('/getAllPanelTypes', panelController.getAllPanelTypes);
 
 
 module.exports = router;

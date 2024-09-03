@@ -77,7 +77,7 @@ exports.generatePanelSerialNo = async (req, res) => {
 
 
             panel = await Panels.findById(panelID)
-            utils.commonResponse(res, 200, "Panel serial number generated", { hubID: hubID, panelID: panelID, panelShortName: panel.panelShortName, serialNos: arr1 })
+            utils.commonResponse(res, 200, "Panel serial number generated", { hubID: hubID, panelID: panelID, serialNos: arr1 })
 
 
         })

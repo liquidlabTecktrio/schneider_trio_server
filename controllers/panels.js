@@ -74,3 +74,16 @@ exports.addBOMToPanelTypes = async(req,res)=>{
         utils.commonResponse(res, 500, "Unexpected server error", error.toString())
     }
 }
+
+exports.getAllPanelTypes = async (req, res) => {
+    try {
+        // Fetch all panel types from the database
+        const allPanelTypes = await PanelType.find();
+        
+        // Respond with success message and data
+        utils.commonResponse(res, 200, "All panel types fetched successfully", allPanelTypes);
+    } catch (error) {
+        // Handle unexpected server errors
+        utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+    }
+};
