@@ -1,27 +1,29 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const Components = new Schema(
+const Projects = new Schema(
   {
-    componentName: {
+    ProjectName: {
       type: String,
       // required: true,
     },
-    compShortName: {
+    ProjectID: {
       type: String,
       // required: true,
     },
     
-    compPartNo: {
-      type: String,
+    createdBy: {
+      type: mongoose.Types.ObjectId,
       // required: true,
     },
-    compDescription: {
-      type: String,
+    createdTo: {
+      type: mongoose.Types.ObjectId,
       // required: true
     },
-    isCritical:{
-      type:Boolean,
+    status:
+    {
+        type: String
+        
     }
   },
   {

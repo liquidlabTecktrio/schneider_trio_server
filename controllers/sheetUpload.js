@@ -5,14 +5,10 @@ const service_account = require("../linnk-366101-e44baeb100f9.json")
 const {JWT} = require("google-auth-library")
 const Bluebird = require("bluebird");
 const Component = require("../Models/Components")
+const collect = require("collect.js")
 exports.createPOFromGoogleSheet = async (req, res) => {
     try {
-      // const sheet = new GoogleSpreadsheet(process.env.ALUMINIUMCONFIGSHEETID);
-      // await sheet.useServiceAccountAuth(service_account);
-   
-  
-//       import { GoogleSpreadsheet } from 'google-spreadsheet';
-// import { JWT } from 'google-auth-library';
+    
 
 const serviceAccountAuth = new JWT({
     email: service_account.client_email,
@@ -33,8 +29,35 @@ const sheetinfo = await sheet.loadInfo();
         // console.log(_rowData)
         data.push({"componentName":_rowData.Reference,"compShortName":_rowData.Reference,"compPartNo":_rowData.Reference,"compDescription":_rowData.Description,"isCritical":_rowData['Core / Non core']=='Non-Core'?false:true})
       })  
-      console.log(data)    
-      await Component.insertMany(data[0])
+      console.log(data[0])  
+      compPartNos = await Component.aggregate([
+        {
+          '$project': {
+            '_id': 0, 
+            'compPartNo': 1
+          }
+        }
+      ])  
+
+      existingPartNos = collect(compPartNos).pluck('compPartNo')
+      newPartNos = data.map((_data)=>{
+        if(!existingPartNos.items.includes(_data.compPartNo)){
+          return _data
+        }
+      }).filter(notUndefined => notUndefined !== undefined);
+
+      
+     if(newPartNos.length >0){
+      await Component.create(newPartNos)
+     }
+     const BOMPerSB = sheet.sheetsByIndex[1];
+     const BOMPerSB_Rows = await BOMPerSB.getRows({options:{offset:1}});
+     BOM_data = []
+     await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
+      _rowData = rowData.toObject()
+      BOM_data.push(_rowData)
+     })
+
       utils.commonResponse(res,200,"success",{})
     } catch (error) {
       console.log(error)
