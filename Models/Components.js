@@ -11,14 +11,18 @@ const Components = new Schema(
       type: String,
       required: true,
     },
+    
     compPartNo: {
       type: String,
-      required: true,
+      // required: true,
     },
     compDescription: {
       type: String,
       // required: true
     },
+    isCritical:{
+      type:Boolean,
+    }
   },
   {
     timestamps: true,

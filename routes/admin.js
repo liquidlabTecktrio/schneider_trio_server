@@ -7,6 +7,7 @@ const componentController = require("../controllers/components")
 const hubController = require("../controllers/hubs")
 const spokeController = require("../controllers/spoke")
 const panelController = require("../controllers/panels")
+const sheetController = require("../controllers/sheetUpload")
 
 router.post("/adminLogin", adminController.adminLogin);
 router.post("/createComponent",componentController.createComponent)
@@ -21,6 +22,7 @@ router.get("/getAllPanels",panelController.getAllPanels)
 router.post("/createPanelType",panelController.createPanelType)
 router.post("/addBOMToPanelTypes",panelController.addBOMToPanelTypes)
 router.get('/getAllPanelTypes', panelController.getAllPanelTypes);
+router.get('/uploadSheet', sheetController.createPOFromGoogleSheet);
 
 
 module.exports = router;
