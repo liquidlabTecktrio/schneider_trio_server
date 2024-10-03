@@ -73,8 +73,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       })
     ).pluck("SwitchBoard").items;
 
-
-switchborad_data = []
+    switchborad_data = [];
     switch_board.forEach((sb) => {
       sb_data = {
         switchBoard: sb,
@@ -85,9 +84,8 @@ switchborad_data = []
           sb_data.components.push(element);
         }
       });
-switchborad_data.push(sb_data)
+      switchborad_data.push(sb_data);
     });
-
 
     project = await Projects.findOne({ ProjectID: req.body.projectId });
     if (!project) {
@@ -97,7 +95,7 @@ switchborad_data.push(sb_data)
         createdBy: req.body.spokeId,
         createdTo: req.body.hubId,
         status: "ordered",
-        switchBoardData:switchborad_data
+        switchBoardData: switchborad_data,
       });
     } else {
       return utils.commonResponse(res, 200, "Project ID already exist", {});
