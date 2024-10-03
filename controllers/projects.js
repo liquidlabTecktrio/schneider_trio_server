@@ -40,6 +40,7 @@ exports.getProjectsDetails = async (req, res) => {
           ProjectName: 1,
           ProjectID: 1,
           status: 1,
+          switchBoardData: 1,
         },
       },
     ]);
@@ -48,7 +49,7 @@ exports.getProjectsDetails = async (req, res) => {
       res,
       200,
       "All projects fetched successfully",
-      allprojects
+      allprojects[0]
     );
   } catch (error) {
     utils.commonResponse(res, 500, "unexpected server error", error.toString());
