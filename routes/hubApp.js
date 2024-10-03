@@ -13,6 +13,7 @@ router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 
 //project
 router.get("/getAllProjects", ProjectController.getAllProjects);
+router.post("/getAllProjects", ProjectController.getAllProjects);
 router.get("/getProjectsDetails", ProjectController.getProjectsDetails);
 
 module.exports = router;
