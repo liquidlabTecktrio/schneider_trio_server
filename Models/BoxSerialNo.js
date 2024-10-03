@@ -1,26 +1,12 @@
+// boxSerialNo.js (your model)
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const BoxSerialNo = new Schema({
-    boxID: {
-        type: mongoose.Types.ObjectId,
-        unique: true // Unique box ID
-    },
-    serialNumber: {
-        type: Number,
-        required: true,
-        default: 1 // Default value
-    },
-    serialNos: { // Added this field
-        type: [String], // Assuming serial numbers are strings
-        default: [] // Default to an empty array
-    },
-    boxNumbers: {
-        type: [Number], // Array to store unique box numbers
-        default: [] // Default to an empty array
-    }
-}, {
-    timestamps: true, // Adds createdAt and updatedAt timestamps
-});
+const boxSerialNoSchema = new mongoose.Schema({
+    boxID: { type: mongoose.Types.ObjectId, required: true },
+    serialNumber: { type: Number, required: true },
+    serialNos: { type: [String], required: true },
+    initialBoxNumber: { type: Number, required: true }, // Store only the initial box number
+}, { timestamps: true });
 
-module.exports = mongoose.model("BoxSerialNo", BoxSerialNo);
+const boxSerialNo = mongoose.model("BoxSerialNo", boxSerialNoSchema);
+module.exports = boxSerialNo;

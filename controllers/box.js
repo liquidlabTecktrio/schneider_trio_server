@@ -20,26 +20,23 @@ exports.generateBoxSerialNo = async (req, res) => {
 
         // Find the last created box entry to get the last box number
         const lastBoxEntry = await boxSerialNo.findOne().sort({ createdAt: -1 }).exec();
-        let startingBoxNumber = 1001; // Default starting number
+        let initialBoxNumber = 1001; // Default starting number
 
-        if (lastBoxEntry && lastBoxEntry.boxNumbers.length > 0) {
-            // Get the last box number from the last entry
-            startingBoxNumber = Math.max(...lastBoxEntry.boxNumbers) + 1; // Increment from the last number
+        // If a last box entry is found, calculate the next initial box number
+        if (lastBoxEntry) {
+            initialBoxNumber = lastBoxEntry.initialBoxNumber + lastBoxEntry.serialNumber; // Start from the last entry
         }
-
-        // Generate unique box numbers incrementally
-        const boxNumbers = Array.from({ length: qnty }, (_, i) => startingBoxNumber + i);
 
         // Create a new entry in the database
         await boxSerialNo.create({
             boxID: boxID,
             serialNumber: qnty,
             serialNos: serialNos,
-            boxNumbers: boxNumbers
+            initialBoxNumber: initialBoxNumber // Store only the initial box number
         });
 
-        // Return success response
-        utils.commonResponse(res, 200, "Box serial number generated", { hubID, boxID, serialNos, boxNumbers });
+        // Return success response with the starting box number
+        utils.commonResponse(res, 200, "Box serial number generated", { hubID, boxID, serialNos, boxNumber: initialBoxNumber });
 
     } catch (error) {
         utils.commonResponse(res, 500, "Unexpected server error", error.toString());
