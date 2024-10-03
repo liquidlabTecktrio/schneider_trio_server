@@ -1,13 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const serialNoController = require("../controllers/serial")
-const BoxSerialNoController = require("../controllers/box")
+const serialNoController = require("../controllers/serial");
+const BoxSerialNoController = require("../controllers/box");
+const ProjectController = require("../controllers/projects");
 
+router.post(
+  "/generateComponentSerialNo",
+  serialNoController.generateComponentSerialNo
+);
+router.post("/generatePanelSerialNo", serialNoController.generatePanelSerialNo);
+router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 
-
-
-router.post("/generateComponentSerialNo",serialNoController.generateComponentSerialNo) 
-router.post("/generatePanelSerialNo",serialNoController.generatePanelSerialNo) 
-router.post("/generateBoxSerialNo",BoxSerialNoController.generateBoxSerialNo) 
+//project
+router.get("/getAllProjects", ProjectController.getAllProjects);
+router.get("/getProjectsDetails", ProjectController.getProjectsDetails);
 
 module.exports = router;

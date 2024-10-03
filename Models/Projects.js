@@ -2,32 +2,28 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const componentSchema = new Schema({
-    Enclosure:
-    {
-        type: String,
-    },
-    Reference:{
-        type:String,
-    },
-    Description:{
-        type:String,
-    },
-    Quantity:{
-        type:Number
-    }
-})
+  Enclosure: {
+    type: String,
+  },
+  Reference: {
+    type: String,
+  },
+  Description: {
+    type: String,
+  },
+  Quantity: {
+    type: Number,
+  },
+});
 
-const switchBoardSchema = new Schema(
-    {
-        switchBoard:{
-            type:String
-        },
-        components:{
-            type:[componentSchema]
-        }
-    }
-)
-
+const switchBoardSchema = new Schema({
+  switchBoard: {
+    type: String,
+  },
+  components: {
+    type: [componentSchema],
+  },
+});
 
 const Projects = new Schema(
   {
@@ -39,7 +35,7 @@ const Projects = new Schema(
       type: String,
       // required: true,
     },
-    
+
     createdBy: {
       type: mongoose.Types.ObjectId,
       // required: true,
@@ -48,14 +44,15 @@ const Projects = new Schema(
       type: mongoose.Types.ObjectId,
       // required: true
     },
-    status:
-    {
-        type: String
-        
+    status: {
+      type: String,
     },
-    switchBoardData:{
-        type:[switchBoardSchema]
-    }
+    switchBoardData: {
+      type: [switchBoardSchema],
+    },
+    ProjectDate: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
