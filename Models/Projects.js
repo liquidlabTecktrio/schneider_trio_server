@@ -1,6 +1,34 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const componentSchema = new Schema({
+    Enclosure:
+    {
+        type: String,
+    },
+    Reference:{
+        type:String,
+    },
+    Description:{
+        type:String,
+    },
+    Quantity:{
+        type:Number
+    }
+})
+
+const switchBoardSchema = new Schema(
+    {
+        switchBoard:{
+            type:String
+        },
+        components:{
+            type:[componentSchema]
+        }
+    }
+)
+
+
 const Projects = new Schema(
   {
     ProjectName: {
@@ -24,6 +52,9 @@ const Projects = new Schema(
     {
         type: String
         
+    },
+    switchBoardData:{
+        type:[switchBoardSchema]
     }
   },
   {
@@ -31,4 +62,4 @@ const Projects = new Schema(
   }
 );
 
-module.exports = mongoose.model("Component", Components);
+module.exports = mongoose.model("Project", Projects);
