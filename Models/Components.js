@@ -5,11 +5,11 @@ const Components = new Schema(
   {
     componentName: {
       type: String,
-      required: true,
+      // required: true,
     },
     compShortName: {
       type: String,
-      required: true,
+      // required: true,
     },
     
     compPartNo: {
