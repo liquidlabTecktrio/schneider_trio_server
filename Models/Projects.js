@@ -35,7 +35,6 @@ const Projects = new Schema(
       type: String,
       // required: true,
     },
-
     createdBy: {
       type: mongoose.Types.ObjectId,
       // required: true,
@@ -52,6 +51,9 @@ const Projects = new Schema(
     },
     ProjectDate: {
       type: Date,
+    },
+    boxSerialNumbers: {  // New field to store box serial numbers
+      type: [String],     // Array of strings
     },
   },
   {

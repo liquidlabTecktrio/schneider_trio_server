@@ -11,6 +11,7 @@ router.post(
 router.post("/generatePanelSerialNo", serialNoController.generatePanelSerialNo);
 router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 
+router.post("/addBoxToProject",BoxSerialNoController.addBoxToProject );
 //project
 router.get("/getAllProjects", ProjectController.getAllProjects);
 router.get("/getProjectsDetails", ProjectController.getProjectsDetails);
