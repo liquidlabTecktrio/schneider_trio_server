@@ -1,20 +1,37 @@
 const mongoose = require("mongoose");
 
-const ScannedSerialSchema = new mongoose.Schema({
-    projectID: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "Project" 
-    },
-    serialNo: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+const ComponentSchema = new mongoose.Schema({
+  serialNos: {
+    type: [String],
+    required: true,
+  },
+  componentName: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
 });
 
-module.exports = mongoose.model("ScannedSerial", ScannedSerialSchema);
+const boxesSchema = new mongoose.Schema({
+  projectId: {
+    type: String,
+    // required: true,
+    unique: true,
+  },
+  serialNo: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  components: [ComponentSchema], // Placed outside of serialNo
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+module.exports = mongoose.model("boxes", boxesSchema);
