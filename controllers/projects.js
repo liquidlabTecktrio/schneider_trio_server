@@ -41,6 +41,7 @@ exports.getProjectsDetails = async (req, res) => {
           ProjectID: 1,
           status: 1,
           switchBoardData: 1,
+          boxSerialNumbers:1,
         },
       },
     ]);
