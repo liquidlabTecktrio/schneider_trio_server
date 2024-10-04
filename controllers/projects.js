@@ -31,20 +31,41 @@ exports.getProjectsDetails = async (req, res) => {
     const allprojects = await Project.aggregate([
       {
         $match: {
-          createdTo: createdToId,
-        },
+          _id: new mongoose.Types. ObjectId("66fe2ba7e4ae95af59d2f0c9")
+        }
       },
       {
         $project: {
-          _id: 0,
+          _id: 1,
           ProjectName: 1,
           ProjectID: 1,
           status: 1,
           switchBoardData: 1,
-          boxSerialNumbers:1,
-        },
+          boxSerialNumbers: 1
+        }
       },
-    ]);
+      {
+        $lookup: {
+          from: "boxes",
+          localField: "_id",               // The field from the main collection
+          foreignField: "projectID",       // The field from the 'boxes' collection
+          as: "Boxes",                    // The alias for the result array
+          pipeline: [
+            {
+              $project: {                  // Project specific fields from 'boxes'
+                _id: 1,
+                serialNo: 1,
+                quantity: 1,
+                status: 1,
+              }
+            }
+          ]
+        }
+      }
+    ])
+    
+    
+    
 
     utils.commonResponse(
       res,
