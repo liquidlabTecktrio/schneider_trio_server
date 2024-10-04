@@ -17,7 +17,7 @@ const ComponentSchema = new mongoose.Schema({
 });
 
 const boxesSchema = new mongoose.Schema({
-  projectId: {
+  projectID: {
     type: String,
     // required: true,
     unique: true,

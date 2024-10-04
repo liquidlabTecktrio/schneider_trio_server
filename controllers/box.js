@@ -4,9 +4,9 @@ const utils = require("../controllers/utils");
 const shortid = require("shortid");
 const Project = require("../Models/Projects");
 const ProjectBoxSerial = require("../Models/BoxSerialNo");
-// const boxes = require("../Models/box");
-
 const Boxes = require("../Models/box");
+
+
 
 exports.generateBoxSerialNo = async (req, res) => {
   try {
@@ -160,3 +160,4 @@ exports.addComponentsToSerialNumbers = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+ 
