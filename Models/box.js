@@ -1,13 +1,10 @@
 const mongoose = require("mongoose");
 
 const ComponentSchema = new mongoose.Schema({
-  serialNos: {
-    type: [String],
-    // requi?red: true,
-  },
+  
   componentName: {
     type: String,
-    required: true,
+    
   },
   componentSerialNo:{
     type: [String],
@@ -16,7 +13,7 @@ const ComponentSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     // required: true,
-    min: 1,
+   default:0,
   },
 });
 
@@ -26,16 +23,27 @@ const BoxesSchema = new mongoose.Schema({
     // required: true,
     unique: true,
   },
+    status:{
+      type: String,
+      default: 'open',
+    },
   serialNo: {
     type: String,
     required: true,
     unique: true,
   },
-  components: [ComponentSchema], // Placed outside of serialNo
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  quantity: {
+    type: Number,
+    // required: true,
+   default:0,
   },
-});
+  components: [ComponentSchema], 
+  
+},
+{
+  timestamps: true,
+},
+
+);
 
 module.exports = mongoose.model("Boxes", BoxesSchema);
