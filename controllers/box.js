@@ -241,27 +241,29 @@ exports.addComponentsToBox = async (req, res) => {
 };
 
 
-exports.getAllBoxes = async (req, res) => {
+exports.getBoxDetails = async (req, res) => {
   try {
+    // Assuming boxid is sent in the request body
+    const { _id } = req.body;
     
-    const AllBoxes = await Boxes.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types. ObjectId("66ffd7a836f6018dcbcc5de4")
-        }
-      },
-      
-    ])
-     
-    utils.commonResponse(
-      res,
-      200,
-      "All boxes fetched successfully",
-      AllBoxes
+    // if (!mongoose.Types.ObjectId.isValid(_id)) {
+    //   return utils.commonResponse(res, 400, "Invalid box ID");
+    // }
+
+    // Fetch the box using findOne
+    const box = await Boxes.findOne({ _id});
+    
+    if (!box) {
+      return utils.commonResponse(res, 404, "Box not found");
+    }
+
+    // Sending the fetched box details as a response
+    utils.commonResponse(res, 200, "Box fetched successfully", box
       
     );
+    
   } catch (error) {
-    utils.commonResponse(res, 500, "unexpected server error", error.toString());
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
 

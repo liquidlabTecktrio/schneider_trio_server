@@ -24,6 +24,6 @@ router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
 
 // Boxes
 
-router.get("/getAllBoxes", BoxSerialNoController.getAllBoxes);
+router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
 
 module.exports = router;
