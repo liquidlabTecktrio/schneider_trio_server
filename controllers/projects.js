@@ -27,12 +27,12 @@ exports.getAllProjects = async (req, res) => {
 };
 exports.getProjectsDetails = async (req, res) => {
   try {
-    const createdToId = new mongoose.Types.ObjectId("66d591c4915b1ce6ded55fac");
+    
     const allprojects = await Project.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId("66fe2ba7e4ae95af59d2f0c9"),
-        },
+          _id: new mongoose.Types. ObjectId("66fe2ba7e4ae95af59d2f0c9")
+        }
       },
       {
         $project: {
@@ -41,28 +41,28 @@ exports.getProjectsDetails = async (req, res) => {
           ProjectID: 1,
           status: 1,
           switchBoardData: 1,
-          boxSerialNumbers: 1,
-        },
+          boxSerialNumbers: 1
+        }
       },
       {
         $lookup: {
-          from: "Boxes",
-          localField: "_id", // The field from the main collection
-          foreignField: "projectID", // The field from the 'Boxes' collection
-          as: "Boxes", // The alias for the result array
+          from: "boxes",
+          localField: "_id",
+          foreignField: "projectID",
+          as: "boxes",
           pipeline: [
             {
               $project: {
-                // Project specific fields from 'Boxes'
-                _id: 1,
-                serialNo: 1,
-                quantity: 1,
-                status: 1,
-              },
-            },
-          ],
-        },
-      },
+                quantity: {
+                  $size: "$components"
+                },
+                boxSerialNo: "$serialNo",
+                status: "opend"
+              }
+            }
+          ]
+        }
+      }
     ]);
 
     utils.commonResponse(
