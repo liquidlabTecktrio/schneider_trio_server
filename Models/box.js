@@ -20,7 +20,7 @@ const ComponentSchema = new mongoose.Schema({
   },
 });
 
-const boxesSchema = new mongoose.Schema({
+const BoxesSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Types.ObjectId,
     // required: true,
@@ -38,4 +38,4 @@ const boxesSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("boxes", boxesSchema);
+module.exports = mongoose.model("Boxes", BoxesSchema);
