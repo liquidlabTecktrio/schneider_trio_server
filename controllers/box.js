@@ -105,7 +105,7 @@ exports.addBoxToProject = async (req, res) => {
 
 
 
-//     // Validate input
+
 //     if (
 //       !componentName ||
 //       !Array.isArray(componentName) ||
@@ -240,12 +240,11 @@ exports.addComponentsToBox = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 
 exports.getAllBoxes = async (req, res) => {
   try {
     
-    const allprojects = await Boxes.aggregate([
+    const AllBoxes = await Boxes.aggregate([
       {
         $match: {
           _id: new mongoose.Types. ObjectId("66ffd7a836f6018dcbcc5de4")
@@ -258,7 +257,7 @@ exports.getAllBoxes = async (req, res) => {
       res,
       200,
       "All boxes fetched successfully",
-      allprojects
+      AllBoxes
       
     );
   } catch (error) {
@@ -266,5 +265,4 @@ exports.getAllBoxes = async (req, res) => {
   }
 };
 
-=======
->>>>>>> 30c46a51f0da204da06d66b6c017ac69e2eaff0a
+
