@@ -102,7 +102,7 @@ exports.addBoxToProject = async (req, res) => {
 
 
 
-//     const { componentName } = req.body;
+
 
 //     // Validate input
 //     if (
@@ -175,7 +175,7 @@ exports.addBoxToProject = async (req, res) => {
 //   }
 // };
 
-const ComponentSerialNos = require("../Models/componentSerialNo.js"); // Import the ComponentSerialNos model
+const ComponentSerialNos = require("../Models/componentSerialNo.js"); 
 
 exports.addComponentsToBox = async (req, res) => {
   try {
@@ -222,7 +222,16 @@ exports.addComponentsToBox = async (req, res) => {
 
     
     await existingBox.save();
-    utils.commonResponse(res, 200, "Component added successfully");
+    utils.commonResponse(res, 200, "Component added successfully",
+      {
+        _id: existingBox._id,
+        
+        status: existingBox.status,
+        
+        quantity: existingBox.quantity,
+
+      }
+    );
 
   } catch (error) {
     console.error("Error in addComponentsToBox:", error);
