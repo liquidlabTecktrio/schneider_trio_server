@@ -57,7 +57,7 @@ exports.getProjectsDetails = async (req, res) => {
                   $size: "$components"
                 },
                 boxSerialNo: "$serialNo",
-                status: "opend"
+                status: 1
               }
             }
           ]
