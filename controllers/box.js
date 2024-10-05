@@ -6,6 +6,7 @@ const Project = require("../Models/Projects");
 const ProjectBoxSerial = require("../Models/BoxSerialNo");
 const Boxes = require("../Models/box");
 
+
 exports.generateBoxSerialNo = async (req, res) => {
   try {
     const { hubID, qnty } = req.body;
@@ -166,3 +167,29 @@ exports.addComponentsToSerialNumbers = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
+exports.getAllBoxes = async (req, res) => {
+  try {
+    
+    const allprojects = await Boxes.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types. ObjectId("66ffd7a836f6018dcbcc5de4")
+        }
+      },
+      
+    ])
+     
+    utils.commonResponse(
+      res,
+      200,
+      "All boxes fetched successfully",
+      allprojects
+      
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "unexpected server error", error.toString());
+  }
+};
+

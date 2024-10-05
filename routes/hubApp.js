@@ -21,4 +21,9 @@ router.get("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
 
+
+// Boxes
+
+router.get("/getAllBoxes", BoxSerialNoController.getAllBoxes);
+
 module.exports = router;
