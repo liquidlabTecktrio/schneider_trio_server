@@ -34,7 +34,7 @@ exports.generateComponentSerialNo = async (req, res) => {
 
 
             component = await Components.findById(componentID)
-            utils.commonResponse(res, 200, "Component serial number generated", { hubID: hubID, componentID: componentID, compShortName: component.compShortName, serialNos: arr1 })
+            utils.commonResponse(res, 200, "Component serial number generated", { hubID: hubID, componentID: componentID, serialNos: arr1 })
 
 
         })

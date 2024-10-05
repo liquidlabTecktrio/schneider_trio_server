@@ -3,22 +3,26 @@ const mongoose = require("mongoose");
 const ComponentSchema = new mongoose.Schema({
   serialNos: {
     type: [String],
-    required: true,
+    // requi?red: true,
   },
   componentName: {
     type: String,
     required: true,
   },
+  componentSerialNo:{
+    type: [String],
+    required: true,
+  },
   quantity: {
     type: Number,
-    required: true,
+    // required: true,
     min: 1,
   },
 });
 
 const boxesSchema = new mongoose.Schema({
-  projectID: {
-    type: String,
+  projectId: {
+    type: mongoose.Types.ObjectId,
     // required: true,
     unique: true,
   },
@@ -34,4 +38,4 @@ const boxesSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("boxes", boxesSchema);
+module.exports = mongoose.model("boxes", boxesSchema);
