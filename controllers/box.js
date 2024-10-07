@@ -58,11 +58,9 @@ exports.generateBoxSerialNo = async (req, res) => {
 exports.addBoxToProject = async (req, res) => {
   try {
     const { projectID, serialNo } = req.body;
-
     if (!projectID || !serialNo) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-
     const existingBoxSerial = await boxSerialNo.findOne({
       serialNos: serialNo,
     });
@@ -70,21 +68,23 @@ exports.addBoxToProject = async (req, res) => {
     if (!existingBoxSerial) {
       return utils.commonResponse(res, 404, "Serial number not found");
     }
+    const existingBox = await Boxes.findOne({
+      projectId: projectID,
+      serialNo,
+    });
 
-    
+    if (existingBox) {
+      return utils.commonResponse(res, 409, "Box with this serial number already exists in the project");
+    }
     const box = await Boxes.create({
       projectId: new mongoose.Types.ObjectId(projectID),
       serialNo,
     });
-
-
     await Project.findByIdAndUpdate(
       projectID,
       { $addToSet: { boxSerialNumbers: serialNo } },
       { new: true }
     );
-
-  
     utils.commonResponse(
       res,
       200,
@@ -101,13 +101,6 @@ exports.addBoxToProject = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
-
-
-
-
-
-
-
 
 
 
