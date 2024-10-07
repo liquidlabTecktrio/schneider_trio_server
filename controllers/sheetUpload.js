@@ -8,6 +8,7 @@ const Component = require("../Models/Components");
 const collect = require("collect.js");
 const Projects = require("../Models/Projects");
 const shortid = require("shortid");
+const ComponentSerialNo = require("../Models/componentSerialNo")
 
 exports.createPOFromGoogleSheet = async (req, res) => {
   try {
@@ -41,13 +42,14 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     compPartNos = await Component.aggregate([
       {
         $project: {
-          _id: 0,
+          
           compPartNo: 1,
         },
       },
     ]);
 
     existingPartNos = collect(compPartNos).pluck("compPartNo");
+    // existingPartIds = collect(compPartNos).pluck("_id")
     newPartNos = data
       .map((_data) => {
         if (!existingPartNos.items.includes(_data.compPartNo)) {
@@ -55,9 +57,22 @@ exports.createPOFromGoogleSheet = async (req, res) => {
         }
       })
       .filter((notUndefined) => notUndefined !== undefined);
+    // newPartSerialNo = data
+    //   .map((_data) => {
+    //     if (!existingPartIds.items.includes(_data._id)) {
+    //       return {hubSerialNo:[],componentID:_data._id};
+    //     }
+    //   })
+    //   .filter((notUndefined) => notUndefined !== undefined);
 
     if (newPartNos.length > 0) {
-      await Component.create(newPartNos);
+
+      newComponents =  JSON.parse(JSON.stringify(await Component.create(newPartNos)));
+
+      newComponentSerialNos = newComponents.map((newComponent)=>{
+        return {hubSerialNo:[],componentID:newComponent._id}
+      })
+      await ComponentSerialNo.create(newComponentSerialNos)
     }
     const BOMPerSB = sheet.sheetsByIndex[1];
     const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
