@@ -27,6 +27,8 @@ exports.generateComponentSerialNo = async (req, res) => {
         { returnNewDocument: true }
       )
       .then(async (compenetSerial) => {
+
+        console.log('generated')
         if (!compenetSerial) {
           await componentSerialNo.findOneAndUpdate(
             { componentID: componentID },

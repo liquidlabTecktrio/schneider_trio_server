@@ -5,6 +5,9 @@ const shortid = require("shortid");
 const Project = require("../Models/Projects");
 const ProjectBoxSerial = require("../Models/BoxSerialNo");
 const Boxes = require("../Models/box");
+const Component = require("../Models/Components.js"); 
+const Hub = require("../Models/Hubs.js"); 
+
 
 
 exports.generateBoxSerialNo = async (req, res) => {
@@ -106,131 +109,69 @@ exports.addBoxToProject = async (req, res) => {
 
 
 
-//     if (
-//       !componentName ||
-//       !Array.isArray(componentName) ||
-//       componentName.length === 0
-//     ) {
-//       return utils.commonResponse(res, 400, "Invalid input parameters");
-//     }
 
-//     for (const component of componentName) {
-//       const { componentName, serialNo, componentSerialNo, quantity } =
-//         component;
 
-//       // Validate each component's details
-//       if (
-//         !componentName ||
-//         !serialNo ||
-//         !componentSerialNo ||
-//         !quantity ||
-//         quantity <= 0
-//       ) {
-//         return utils.commonResponse(res, 400, "Invalid component data");
-//       }
 
-//       // Find the document by serialNo in the Boxes model
-//       const existingSerial = await Boxes.findOne({ serialNo });
-
-//       if (!existingSerial) {
-//         return utils.commonResponse(
-//           res,
-//           404,
-//           `Serialnumber ${serialNo} not found`
-//         );
-//       }
-
-//       // Check if the component already exists in the components array
-//       const existingComponent = existingSerial.components.find(
-//         (comp) => comp.componentName === componentName
-//       );
-
-//       if (existingComponent) {
-//         // If the component exists, update the quantity
-//         existingComponent.quantity += quantity;
-
-//         // Check if componentSerialNo is an array, and push the componentSerialNo only if not already present
-//         if (!existingComponent.componentSerialNo.includes(componentSerialNo)) {
-//           existingComponent.componentSerialNo.push(componentSerialNo); // Ensure it's unique
-//         }
-//       } else {
-//         // If the component doesn't exist, add it to the components array
-//         existingSerial.components.push({
-//           componentName,
-//           serialNos: [serialNo], // Keep serialNo array intact
-//           componentSerialNo: [componentSerialNo], // Wrap componentSerialNo in an array
-//           quantity,
-//         });
-//       }
-
-//       // Save the updated document
-//       await existingSerial.save();
-//     }
-
-//     // Send a success response
-//     utils.commonResponse(res, 200, "Components added/updated successfully");
-//   } catch (error) {
-//     // Handle errors
-//     console.error("Error in addComponentsToSerialNumbers:", error);
-//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
-//   }
-// };
-
-const ComponentSerialNos = require("../Models/componentSerialNo.js"); 
+const ComponentSerialNo = require("../Models/componentSerialNo.js"); 
 
 exports.addComponentsToBox = async (req, res) => {
   try {
-    const { componentSerialNo, _id } = req.body;
-    
- 
-    if (!_id || !componentSerialNo) {
+    const { hubID, componentID, boxSerialNo, projectID, componentSerialNumber } = req.body;
+
+    if (!hubID || !componentID || !boxSerialNo || !projectID || !componentSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-    
-    const isValidSerial = await ComponentSerialNos.findOne({
-      "hubSerialNo.serialNos": componentSerialNo,
+
+    const box = await Boxes.findOne({ serialNo: boxSerialNo });
+    if (!box) {
+      return utils.commonResponse(res, 404, "Box serial number not found");
+    }
+
+    const component = await ComponentSerialNo.findOne({ componentID: componentID });
+    if (!component) {
+      return utils.commonResponse(res, 404, "Component ID not found");
+    }
+
+    const hub = await Hub.findById(hubID);
+    if (!hub) {
+      return utils.commonResponse(res, 404, "Hub ID not found");
+    }
+
+    const componentSerialEntry = await ComponentSerialNo.findOne({
+      componentID: componentID,
+      "hubSerialNo.hubID": hubID,
+      "hubSerialNo.serialNos": componentSerialNumber
     });
 
-    if (!isValidSerial) {
-      return utils.commonResponse(
-        res,
-        400,
-        `Component Serial Number ${componentSerialNo} is not valid`
-      );
+    if (!componentSerialEntry) {
+      return utils.commonResponse(res, 404, "Component Serial Number not found for the provided Component ID and Hub ID");
     }
-
-    const existingBox = await Boxes.findById(_id);
-    if (!existingBox) {
-      return utils.commonResponse(res, 404, `Box with ID ${_id} not found`);
-    }
-
-    const existingComponent = existingBox.components.find(
-      (comp) => comp.componentSerialNo === componentSerialNo
-    );
+    const existingComponent = box.components.find(comp => comp.componentID && comp.componentID.equals(componentID));
 
     if (existingComponent) {
-      return utils.commonResponse(
-        res,
-        400,
-        `Component with Serial Number ${componentSerialNo} already exists in the box`
-      );
+      if (existingComponent.componentSerialNo.includes(componentSerialNumber)) {
+        return utils.commonResponse(res, 400, "Serial number already exists for this component in the box");
+      }
+      existingComponent.componentSerialNo.push(componentSerialNumber);
+      existingComponent.quantity = existingComponent.componentSerialNo.length; 
     } else {
-      existingBox.components.push({
-        componentSerialNo,
-        quantity: 1,        
+      box.components.push({
+        componentID,
+        componentName: component.componentName,
+        componentSerialNo: [componentSerialNumber],
+        quantity: 1 
       });
     }
+    box.quantity += 1; 
+    await box.save();
 
-    
-    await existingBox.save();
-    utils.commonResponse(res, 200, "Component added successfully",
+    utils.commonResponse(
+      res,
+      200,
+      "Component added to box successfully",
       {
-        _id: existingBox._id,
-        
-        status: existingBox.status,
-        
-        quantity: existingBox.quantity,
-
+        boxid: box._id,
+        totalComponents: box.quantity
       }
     );
 
@@ -241,7 +182,40 @@ exports.addComponentsToBox = async (req, res) => {
 };
 
 
+
+
+
+
+
+
+
+
 exports.getBoxDetails = async (req, res) => {
+  try {
+    
+    const { _id } = req.body;
+    
+    const box = await Boxes.findOne({ _id});
+    
+    if (!box) {
+      return utils.commonResponse(res, 404, "Box not found");
+    }
+
+     utils.commonResponse(res, 200, "Box fetched successfully", box
+      
+    );
+
+     }
+     
+   catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+
+
+exports.getBoxDetails = async (req, res) => {
+
   try {
     
     const { _id } = req.body;
@@ -264,3 +238,26 @@ exports.getBoxDetails = async (req, res) => {
 };
 
 
+
+
+// Customers.findOneAndUpdate(
+//   {
+//     _id: mongoose.Types.ObjectId(customerID),
+//     cart: {
+//       $elemMatch: {
+//         itemID: mongoose.Types.ObjectId(itemID),
+//         flavour: flavour,
+//         packageWeight: packageWeight,
+//       },
+//     },
+//   },
+//   {
+//     $inc: {
+//       "cart.$.qnty": qnty,
+//       "cart.$.freebiePoints":
+//         (existingProductIncartPoints.freebiePoints /
+//           existingProductIncartPoints.qnty) *
+//         qnty,
+//     },
+//        }
+//       )
