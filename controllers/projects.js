@@ -47,17 +47,7 @@ exports.getProjectsDetails = async (req, res) => {
     const allprojects = await Project.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(_id) 
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          ProjectName: 1,
-          ProjectID: 1,
-          status: 1,
-          switchBoardData: 1,
-          boxSerialNumbers: 1
+          _id: new mongoose.Types.ObjectId(_id),
         }
       },
       {
@@ -68,18 +58,30 @@ exports.getProjectsDetails = async (req, res) => {
           as: "boxes",
           pipeline: [
             {
-              $project: {
+              $addFields: {
                 quantity: {
-                  $size: "$components"
-                },
+                  $sum: {
+                    $map: {
+                      input: "$components",
+                      as: "component",
+                      in: "$$component.quantity"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              $project: {
                 boxSerialNo: "$serialNo",
-                status: 1
+                status: "opend",
+                quantity: 1
               }
             }
           ]
         }
       }
     ]);
+      
 
     
     if (!allprojects.length) {
@@ -99,3 +101,34 @@ exports.getProjectsDetails = async (req, res) => {
   }
 };
 
+
+
+//spoke
+
+
+exports.getAllSpokeProjects = async (req, res) => {
+  try {
+    const { spokeId } = req.body;
+
+   
+    const query = spokeId ? { createdBy: spokeId } : {};
+
+    const projectIds = await Project.find(query, {
+      ProjectID: 1,
+      _id: 1,
+      ProjectName: 1,
+      status: 1,
+      ProjectDate: 1,
+      createdBy: 1,
+    });
+
+    utils.commonResponse(
+      res,
+      200,
+      "Projects fetched successfully",
+      projectIds
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
