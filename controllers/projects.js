@@ -4,34 +4,50 @@ const utils = require("../controllers/utils");
 
 exports.getAllProjects = async (req, res) => {
   try {
-    const projectIds = await Project.find(
-      {},
-      {
-        ProjectID: 1,
-        _id: 1,
-        ProjectName: 1,
-        status: 1,
-        ProjectDate: 1,
-        createdBy: 1,
-      }
-    );
+    
+    const { _id } = req.body;
+
+    
+    const query = _id ? { _id } : {};
+
+    
+    const projectIds = await Project.find(query, {
+      ProjectID: 1,
+      _id: 1,
+      ProjectName: 1,
+      status: 1,
+      ProjectDate: 1,
+      createdBy: 1,
+    });
+
+    
     utils.commonResponse(
       res,
       200,
-      "List of project IDs fetched successfully",
+      "Project(s) fetched successfully",
       projectIds
     );
   } catch (error) {
+    
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
 exports.getProjectsDetails = async (req, res) => {
   try {
+    
+    const { _id } = req.body;
+
+    
+    if (!_id) {
+      return utils.commonResponse(res, 400, "Project ID (_id) is required");
+    }
+
     
     const allprojects = await Project.aggregate([
       {
         $match: {
-          _id: new mongoose.Types. ObjectId("66fe2ba7e4ae95af59d2f0c9")
+          _id: new mongoose.Types.ObjectId(_id) 
         }
       },
       {
@@ -65,13 +81,21 @@ exports.getProjectsDetails = async (req, res) => {
       }
     ]);
 
+    
+    if (!allprojects.length) {
+      return utils.commonResponse(res, 404, "No project found with the given ID");
+    }
+
+    
     utils.commonResponse(
       res,
       200,
-      "All projects fetched successfully",
-      allprojects[0]
+      "Project details fetched successfully",
+      allprojects[0] 
     );
   } catch (error) {
-    utils.commonResponse(res, 500, "unexpected server error", error.toString());
+    
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
