@@ -117,77 +117,61 @@ const ComponentSerialNo = require("../Models/componentSerialNo.js");
 exports.addComponentsToBox = async (req, res) => {
   try {
     const { hubID, componentID, boxSerialNo, projectID, componentSerialNumber } = req.body;
+
     if (!hubID || !componentID || !boxSerialNo || !projectID || !componentSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
+
     const box = await Boxes.findOne({ serialNo: boxSerialNo });
     if (!box) {
       return utils.commonResponse(res, 404, "Box serial number not found");
     }
-    const component = await ComponentSerialNo.findOne({componentID:componentID });
+
+    const component = await ComponentSerialNo.findOne({ componentID: componentID });
     if (!component) {
       return utils.commonResponse(res, 404, "Component ID not found");
     }
+
     const hub = await Hub.findById(hubID);
     if (!hub) {
       return utils.commonResponse(res, 404, "Hub ID not found");
     }
-    const componentSerialEntry = await ComponentSerialNo.findOne({ 
-      componentID: componentID, 
+
+    const componentSerialEntry = await ComponentSerialNo.findOne({
+      componentID: componentID,
       "hubSerialNo.hubID": hubID,
-      "hubSerialNo.serialNos": componentSerialNumber 
+      "hubSerialNo.serialNos": componentSerialNumber
     });
 
     if (!componentSerialEntry) {
       return utils.commonResponse(res, 404, "Component Serial Number not found for the provided Component ID and Hub ID");
     }
-    const updatedBox = await Boxes.findOneAndUpdate(
-      { serialNo: boxSerialNo, "components.componentID": componentID },
-      {
-        $addToSet: {
-          "components.$.componentSerialNo": componentSerialNumber,
-        },
-      },
-      { new: true }
-    );
+    const existingComponent = box.components.find(comp => comp.componentID && comp.componentID.equals(componentID));
 
-    if (updatedBox) {
-      const componentIndex = updatedBox.components.findIndex(comp => comp.componentID.equals(componentID));
-      updatedBox.components[componentIndex].quantity = updatedBox.components[componentIndex].componentSerialNo.length; 
-      await updatedBox.save();
+    if (existingComponent) {
+      if (existingComponent.componentSerialNo.includes(componentSerialNumber)) {
+        return utils.commonResponse(res, 400, "Serial number already exists for this component in the box");
+      }
+      existingComponent.componentSerialNo.push(componentSerialNumber);
+      existingComponent.quantity = existingComponent.componentSerialNo.length; 
     } else {
-      await Boxes.updateOne(
-        { serialNo: boxSerialNo },
-        {
-          $push: {
-            components: {
-              componentID,
-              componentName: component.componentName, 
-              componentSerialNo: [componentSerialNumber], 
-              quantity: 1 
-            }
-          }
-        }
-      );
+      box.components.push({
+        componentID,
+        componentName: component.componentName,
+        componentSerialNo: [componentSerialNumber],
+        quantity: 1 
+      });
     }
+    box.quantity += 1; 
+    await box.save();
 
-   
-    const finalBox = await Boxes.findOne({ serialNo: boxSerialNo });
-    finalBox.quantity = finalBox.components.length;
-    await finalBox.save();
     utils.commonResponse(
       res,
       200,
       "Component added to box successfully",
       {
-        boxid: finalBox._id,
-        // boxSerialNo,
-        // components: finalBox.components.map(comp => ({
-        //   componentID: comp.componentID,
-        //   componentSerialNo: comp.componentSerialNo,
-        //   quantity: comp.quantity,
-        // })),
-        totalComponents: finalBox.quantity 
+        boxid: box._id,
+        totalComponents: box.quantity
       }
     );
 
@@ -196,6 +180,12 @@ exports.addComponentsToBox = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
+
+
+
+
 
 
 
@@ -248,3 +238,26 @@ exports.getBoxDetails = async (req, res) => {
 };
 
 
+
+
+// Customers.findOneAndUpdate(
+//   {
+//     _id: mongoose.Types.ObjectId(customerID),
+//     cart: {
+//       $elemMatch: {
+//         itemID: mongoose.Types.ObjectId(itemID),
+//         flavour: flavour,
+//         packageWeight: packageWeight,
+//       },
+//     },
+//   },
+//   {
+//     $inc: {
+//       "cart.$.qnty": qnty,
+//       "cart.$.freebiePoints":
+//         (existingProductIncartPoints.freebiePoints /
+//           existingProductIncartPoints.qnty) *
+//         qnty,
+//     },
+//        }
+//       )
