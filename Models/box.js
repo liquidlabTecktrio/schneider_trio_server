@@ -10,6 +10,10 @@ const ComponentSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  componentID: {
+    type: mongoose.Types.ObjectId,
+    
+  },
   quantity: {
     type: Number,
     // required: true,
