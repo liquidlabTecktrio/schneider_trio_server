@@ -146,31 +146,23 @@ exports.addComponentsToBox = async (req, res) => {
     if (!componentSerialEntry) {
       return utils.commonResponse(res, 404, "Component Serial Number not found for the provided Component ID and Hub ID");
     }
-
-    // Check if the component already exists in the box
     const existingComponent = box.components.find(comp => comp.componentID && comp.componentID.equals(componentID));
 
     if (existingComponent) {
-      // Check if the serial number already exists in the component's array
       if (existingComponent.componentSerialNo.includes(componentSerialNumber)) {
         return utils.commonResponse(res, 400, "Serial number already exists for this component in the box");
       }
-      
-      // If the component already exists, add the new serial number and update quantity
       existingComponent.componentSerialNo.push(componentSerialNumber);
-      existingComponent.quantity = existingComponent.componentSerialNo.length; // Update quantity
+      existingComponent.quantity = existingComponent.componentSerialNo.length; 
     } else {
-      // If the component does not exist, create a new entry
       box.components.push({
         componentID,
         componentName: component.componentName,
         componentSerialNo: [componentSerialNumber],
-        quantity: 1 // Initialize quantity to 1
+        quantity: 1 
       });
     }
-
-    // Always increase the total quantity of components in the box when adding a new serial number
-    box.quantity += 1; // Increment the total quantity
+    box.quantity += 1; 
     await box.save();
 
     utils.commonResponse(
