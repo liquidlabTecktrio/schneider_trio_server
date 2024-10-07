@@ -243,26 +243,22 @@ exports.addComponentsToBox = async (req, res) => {
 
 exports.getBoxDetails = async (req, res) => {
   try {
-    // Assuming boxid is sent in the request body
+    
     const { _id } = req.body;
     
-    // if (!mongoose.Types.ObjectId.isValid(_id)) {
-    //   return utils.commonResponse(res, 400, "Invalid box ID");
-    // }
-
-    // Fetch the box using findOne
     const box = await Boxes.findOne({ _id});
     
     if (!box) {
       return utils.commonResponse(res, 404, "Box not found");
     }
 
-    // Sending the fetched box details as a response
-    utils.commonResponse(res, 200, "Box fetched successfully", box
+     utils.commonResponse(res, 200, "Box fetched successfully", box
       
     );
-    
-  } catch (error) {
+
+     }
+     
+   catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
