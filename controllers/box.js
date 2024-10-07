@@ -198,14 +198,34 @@ exports.addComponentsToBox = async (req, res) => {
 };
 
 
-<<<<<<< HEAD
 
 
-
-exports.getAllBoxes = async (req, res) => {
-=======
 exports.getBoxDetails = async (req, res) => {
->>>>>>> eac7439ce3abc8fe86745de4da2fab1780e61046
+  try {
+    
+    const { _id } = req.body;
+    
+    const box = await Boxes.findOne({ _id});
+    
+    if (!box) {
+      return utils.commonResponse(res, 404, "Box not found");
+    }
+
+     utils.commonResponse(res, 200, "Box fetched successfully", box
+      
+    );
+
+     }
+     
+   catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+
+
+exports.getBoxDetails = async (req, res) => {
+
   try {
     
     const { _id } = req.body;
