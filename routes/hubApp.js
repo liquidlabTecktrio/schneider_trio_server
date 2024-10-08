@@ -29,5 +29,5 @@ router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
 // Boxes
 
 router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
-
+router.post("/shipProject", ProjectController.shipProject)
 module.exports = router;
