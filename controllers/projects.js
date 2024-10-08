@@ -291,10 +291,16 @@ exports.shipProject = async (req, res) => {
 if(missingComponents.length>0){
   utils.commonResponse(res, 201, "The project cannot be shipped as the following items are not shipped", missingComponents);
 }else{
+
+  await Project.updateOne(
+    { _id: new mongoose.Types.ObjectId(projectId) },
+    { $set: { status: "shipped" } }
+  );
+
   utils.commonResponse(res, 200, "The project has been shipped successfully");
 }
 
-    // utils.commonResponse(res, 200, "success", missingComponents);
+    
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
