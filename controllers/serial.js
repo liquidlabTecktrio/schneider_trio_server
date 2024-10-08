@@ -27,8 +27,7 @@ exports.generateComponentSerialNo = async (req, res) => {
         { returnNewDocument: true }
       )
       .then(async (compenetSerial) => {
-
-        console.log('generated')
+        console.log("generated");
         if (!compenetSerial) {
           await componentSerialNo.findOneAndUpdate(
             { componentID: componentID },
@@ -40,11 +39,12 @@ exports.generateComponentSerialNo = async (req, res) => {
           );
         }
 
-        component = await Components.findById(componentID);
+        const component = await Components.findById({ _id: componentID });
         utils.commonResponse(res, 200, "Component serial number generated", {
           hubID: hubID,
           componentID: componentID,
           serialNos: arr1,
+          compShortName: component != null ? component.compShortName : "",
         });
       });
   } catch (error) {
