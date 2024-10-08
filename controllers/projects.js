@@ -47,7 +47,7 @@ exports.getProjectsDetails = async (req, res) => {
         $lookup: {
           from: "boxes",
           localField: "_id",
-          foreignField: "projectID",
+          foreignField: "projectId",
           as: "boxes",
           pipeline: [
             {
