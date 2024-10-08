@@ -24,6 +24,7 @@ router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
 //spoke
 
 router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
+router.post("/getSpokeProjectsDetails", ProjectController.getSpokeProjectsDetails);
 
 
 // Boxes

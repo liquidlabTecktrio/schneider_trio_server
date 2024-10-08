@@ -135,14 +135,14 @@ exports.getAllSpokeProjects = async (req, res) => {
 
 //spoke details
 
-exports.getProjectsDetails = async (req, res) => {
+exports.getSpokeProjectsDetails = async (req, res) => {
   try {
     
     const { _id } = req.body;
 
     
     if (!_id) {
-      return utils.commonResponse(res, 400, "Project ID (_id) is required");
+      return utils.commonResponse(res, 400, "(_id) is required");
     }
 
     
