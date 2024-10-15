@@ -35,7 +35,9 @@ exports.generateComponentSerialNo = async (req, res) => {
               $push: {
                 hubSerialNo: { hubID: hubID, serialNo: qnty, serialNos: arr1 },
               },
-            }
+            },
+            // { upsert: true } //this line will add new document if the component is not already present in the ComponentSerialNo collection
+
           );
         }
 

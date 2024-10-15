@@ -6,17 +6,34 @@ const Boxes = require("../Models/box");
 exports.getAllProjects = async (req, res) => {
   try {
     const { _id } = req.body;
-
-    const query = _id ? { _id } : {};
-
-    const projectIds = await Project.find(query, {
-      ProjectID: 1,
-      _id: 1,
-      ProjectName: 1,
-      status: 1,
-      ProjectDate: 1,
-      createdBy: 1,
-    });
+    const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
+    const projectIds = await Project.aggregate([
+      {
+        $match: query, 
+      },
+      {
+        $unwind: {
+          path: "$switchBoardData", 
+          preserveNullAndEmptyArrays: true, 
+        },
+      },
+      {
+        $unwind: {
+          path: "$switchBoardData.components", 
+          preserveNullAndEmptyArrays: true, 
+        },
+      },
+      {
+        $group: {
+          _id: "$_id", 
+          ProjectName: { $first: "$ProjectName" },
+          createdBy: { $first: "$createdBy" },
+          status: { $first: "$status" },
+          totalComponents: { $sum: "$switchBoardData.components.Quantity" }, 
+           
+        },
+      },
+    ]);
 
     utils.commonResponse(
       res,
@@ -28,6 +45,8 @@ exports.getAllProjects = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
 
 exports.getProjectsDetails = async (req, res) => {
   try {
