@@ -9,30 +9,58 @@ exports.getAllProjects = async (req, res) => {
     const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
     const projectIds = await Project.aggregate([
       {
-        $match: query, 
+        $unwind: {
+          path: "$switchBoardData",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $unwind: {
-          path: "$switchBoardData", 
-          preserveNullAndEmptyArrays: true, 
-        },
-      },
-      {
-        $unwind: {
-          path: "$switchBoardData.components", 
-          preserveNullAndEmptyArrays: true, 
-        },
+          path: "$switchBoardData.components",
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $group: {
-          _id: "$_id", 
-          ProjectName: { $first: "$ProjectName" },
-          createdBy: { $first: "$createdBy" },
-          status: { $first: "$status" },
-          totalComponents: { $sum: "$switchBoardData.components.Quantity" }, 
-           
-        },
+          _id: "$_id",
+          ProjectName: {
+            $first: "$ProjectName"
+          },
+          createdBy: {
+            $first: "$createdBy"
+          },
+          status: {
+            $first: "$status"
+          },
+          totalComponents: {
+            $sum: "$switchBoardData.components.Quantity"
+          }
+        }
       },
+      {
+        $lookup: {
+          from: "spokes",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "spokeName",
+          pipeline: [
+            {
+              $project: {
+                spokeName: 1,
+                // Only include 'spokeName' field from 'spokes'
+                _id: 0 // Exclude '_id' from the result
+              }
+            }
+          ]
+        }
+      },
+      {
+        $addFields: {
+          spokeName: {
+            $arrayElemAt: ["$spokeName.spokeName", 0] // Extract the first element from the array
+          }
+        }
+      }
     ]);
 
     utils.commonResponse(
