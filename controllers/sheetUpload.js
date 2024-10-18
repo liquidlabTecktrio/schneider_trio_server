@@ -8,7 +8,7 @@ const Component = require("../Models/Components");
 const collect = require("collect.js");
 const Projects = require("../Models/Projects");
 const shortid = require("shortid");
-const ComponentSerialNo = require("../Models/componentSerialNo")
+const ComponentSerialNo = require("../Models/componentSerialNo");
 
 exports.createPOFromGoogleSheet = async (req, res) => {
   try {
@@ -42,7 +42,6 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     compPartNos = await Component.aggregate([
       {
         $project: {
-          
           compPartNo: 1,
         },
       },
@@ -66,19 +65,22 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     //   .filter((notUndefined) => notUndefined !== undefined);
 
     if (newPartNos.length > 0) {
+      newComponents = JSON.parse(
+        JSON.stringify(await Component.create(newPartNos))
+      );
 
-      newComponents =  JSON.parse(JSON.stringify(await Component.create(newPartNos)));
-
-      newComponentSerialNos = newComponents.map((newComponent)=>{
-        return {hubSerialNo:[],componentID:newComponent._id}
-      })
-      await ComponentSerialNo.create(newComponentSerialNos)
+      newComponentSerialNos = newComponents.map((newComponent) => {
+        return { hubSerialNo: [], componentID: newComponent._id };
+      });
+      await ComponentSerialNo.create(newComponentSerialNos);
     }
     const BOMPerSB = sheet.sheetsByIndex[1];
     const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
     BOM_data = [];
     await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
       _rowData = rowData.toObject();
+
+      console.log("_rowData: ", _rowData);
       BOM_data.push(_rowData);
     });
 
