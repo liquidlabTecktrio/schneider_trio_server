@@ -22,21 +22,22 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       serviceAccountAuth
     );
     const sheetinfo = await sheet.loadInfo();
-    const worksheet = sheet.sheetsByIndex[0];
+    const worksheet = sheet.sheetsByIndex[2];
     const rows = await worksheet.getRows();
     // console.log(rows.toObject())
     // const _rowIndex = 1;
     data = [];
     await Bluebird.each(rows, async (rowData, _rowIndex) => {
       _rowData = rowData.toObject();
-      // console.log(_rowData)
-      data.push({
-        componentName: _rowData.Reference,
-        compShortName: _rowData.Reference,
-        compPartNo: _rowData.Reference,
-        compDescription: _rowData.Description,
-        isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
-      });
+      if (_rowData.Reference != "") {
+        data.push({
+          componentName: _rowData.Reference,
+          compShortName: _rowData.Reference,
+          compPartNo: _rowData.Reference,
+          compDescription: _rowData.Description,
+          isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
+        });
+      }
     });
     // console.log(data[0])
     compPartNos = await Component.aggregate([
@@ -80,7 +81,6 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
       _rowData = rowData.toObject();
 
-      console.log("_rowData: ", _rowData);
       BOM_data.push(_rowData);
     });
 
@@ -98,7 +98,9 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       };
       BOM_data.forEach((element) => {
         if (element.SwitchBoard == sb) {
-          sb_data.components.push(element);
+          if (element.Reference != "") {
+            sb_data.components.push(element);
+          }
         }
       });
       switchborad_data.push(sb_data);
