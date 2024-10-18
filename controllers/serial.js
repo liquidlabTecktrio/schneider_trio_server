@@ -36,7 +36,7 @@ exports.generateComponentSerialNo = async (req, res) => {
                 hubSerialNo: { hubID: hubID, serialNo: qnty, serialNos: arr1 },
               },
             },
-            // { upsert: true } //this line will add new document if the component is not already present in the ComponentSerialNo collection
+            { upsert: true } //this line will add new document if the component is not already present in the ComponentSerialNo collection
 
           );
         }
