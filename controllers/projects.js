@@ -287,7 +287,7 @@ exports.shipProject = async (req, res) => {
     BoxComponenets = await Boxes.aggregate([
       {
         $match: {
-          projectID: new mongoose.Types.ObjectId("66fe2ba7e4ae95af59d2f0c9"),
+          projectId: new mongoose.Types.ObjectId(projectId),
         },
       },
       {

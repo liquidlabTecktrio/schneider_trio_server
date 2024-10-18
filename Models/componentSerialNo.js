@@ -29,6 +29,9 @@ const ComponentSerialNo = new Schema(
       type: mongoose.Types.ObjectId,
       required: true,
     },
+    componentName:{
+      type:String
+    }
   },
   {
     timestamps: true,

@@ -70,7 +70,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       );
 
       newComponentSerialNos = newComponents.map((newComponent) => {
-        return { hubSerialNo: [], componentID: newComponent._id };
+        return { hubSerialNo: [], componentID: newComponent._id , componentName:newComponent.componentName};
       });
       await ComponentSerialNo.create(newComponentSerialNos);
     }
