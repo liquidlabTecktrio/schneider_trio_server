@@ -475,3 +475,37 @@ exports.getBoxDetails = async (req, res) => {
 //     },
 //        }
 //       )
+
+
+exports.closeBoxes = async (req, res) => {
+  try {
+    const { _id, status } = req.body;
+  
+    
+    if (!_id || !status) {
+      utils.commonResponse( res, 400,  "Both _id and status are required." );
+    }
+  
+    
+    const validStatuses = ['open', 'closed'];
+    if (!validStatuses.includes(status)) {
+      utils.commonResponse(res, 400, "Invalid status. Must be 'open' or 'closed'." );
+    }
+  
+    
+    const updatedBoxes = await Boxes.findOneAndUpdate(
+      { _id },
+      { status },
+      { new: true } 
+    );
+  
+    if (!updatedBoxes) {
+      utils.commonResponse (res, 404, "Boxes not found." );
+    }
+  
+    utils.commonResponse(res, 200, "Boxes closed successfully");
+  } catch (error) {
+    console.error("Error closing the boxes:", error);
+    utils.commonResponse ( res, 500, "Internal server error." );
+  }
+  };

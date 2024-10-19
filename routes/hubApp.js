@@ -31,4 +31,5 @@ router.post("/getSpokeProjectsDetails", ProjectController.getSpokeProjectsDetail
 
 router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
 router.post("/shipProject", ProjectController.shipProject)
+router.post("/closeBoxes", BoxSerialNoController.closeBoxes)
 module.exports = router;
