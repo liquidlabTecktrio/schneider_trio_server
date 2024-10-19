@@ -11,31 +11,31 @@ exports.getAllProjects = async (req, res) => {
       {
         $unwind: {
           path: "$switchBoardData",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $unwind: {
           path: "$switchBoardData.components",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $group: {
           _id: "$_id",
           ProjectName: {
-            $first: "$ProjectName"
+            $first: "$ProjectName",
           },
           createdBy: {
-            $first: "$createdBy"
+            $first: "$createdBy",
           },
           status: {
-            $first: "$status"
+            $first: "$status",
           },
           totalComponents: {
-            $sum: "$switchBoardData.components.Quantity"
-          }
-        }
+            $sum: "$switchBoardData.components.Quantity",
+          },
+        },
       },
       {
         $lookup: {
@@ -48,19 +48,19 @@ exports.getAllProjects = async (req, res) => {
               $project: {
                 spokeName: 1,
                 // Only include 'spokeName' field from 'spokes'
-                _id: 0 // Exclude '_id' from the result
-              }
-            }
-          ]
-        }
+                _id: 0, // Exclude '_id' from the result
+              },
+            },
+          ],
+        },
       },
       {
         $addFields: {
           spokeName: {
-            $arrayElemAt: ["$spokeName.spokeName", 0] // Extract the first element from the array
-          }
-        }
-      }
+            $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
+          },
+        },
+      },
     ]);
 
     utils.commonResponse(
@@ -73,8 +73,6 @@ exports.getAllProjects = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
-
-
 
 exports.getProjectsDetails = async (req, res) => {
   try {
@@ -113,7 +111,7 @@ exports.getProjectsDetails = async (req, res) => {
             {
               $project: {
                 boxSerialNo: "$serialNo",
-                status: "opend",
+                status: 1,
                 quantity: 1,
               },
             },
@@ -318,36 +316,47 @@ exports.shipProject = async (req, res) => {
       },
     ]);
 
-    
-     missingComponents = []
-      projectComponents.map((projectComponent) => {
-      BoxComponenets.map((boxComponent) => {
-        if (projectComponent.reference === boxComponent.reference) {
-          if (projectComponent.qnty != boxComponent.qnty) {
-            missingComponents.push({
-              reference: projectComponent.reference,
-              qnty: projectComponent.qnty - boxComponent.qnty,
-            });
+    missingComponents = [];
+    projectComponents
+      .map((projectComponent) => {
+        BoxComponenets.map((boxComponent) => {
+          if (projectComponent.reference === boxComponent.reference) {
+            if (projectComponent.qnty != boxComponent.qnty) {
+              missingComponents.push({
+                reference: projectComponent.reference,
+                qnty: projectComponent.qnty - boxComponent.qnty,
+              });
+            }
           }
-        }
-      }).filter((notUndefined) => notUndefined !== undefined);
-      if(!BoxComponenets.some((boxitem)=>boxitem.reference==projectComponent.reference))
-        missingComponents.push(projectComponent);
-    }).filter((notUndefined) => notUndefined !== undefined);
+        }).filter((notUndefined) => notUndefined !== undefined);
+        if (
+          !BoxComponenets.some(
+            (boxitem) => boxitem.reference == projectComponent.reference
+          )
+        )
+          missingComponents.push(projectComponent);
+      })
+      .filter((notUndefined) => notUndefined !== undefined);
 
-if(missingComponents.length>0){
-  utils.commonResponse(res, 201, "The project cannot be shipped as the following items are not shipped", missingComponents);
-}else{
+    if (missingComponents.length > 0) {
+      utils.commonResponse(
+        res,
+        201,
+        "The project cannot be shipped as the following items are not shipped",
+        missingComponents
+      );
+    } else {
+      await Project.updateOne(
+        { _id: new mongoose.Types.ObjectId(projectId) },
+        { $set: { status: "shipped" } }
+      );
 
-  await Project.updateOne(
-    { _id: new mongoose.Types.ObjectId(projectId) },
-    { $set: { status: "shipped" } }
-  );
-
-  utils.commonResponse(res, 200, "The project has been shipped successfully");
-}
-
-    
+      utils.commonResponse(
+        res,
+        200,
+        "The project has been shipped successfully"
+      );
+    }
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
