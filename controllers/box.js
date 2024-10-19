@@ -106,7 +106,7 @@ exports.addBoxToProject = async (req, res) => {
 
 const ComponentSerialNo = require("../Models/componentSerialNo.js");
 
-exports.addComponentsToBox = async (req, res) => {
+exports.addComponentsToBox1 = async (req, res) => {
   try {
     const {
       hubID,
@@ -190,148 +190,202 @@ exports.addComponentsToBox = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+async function checkComponentQuntityExceeded(
+  totalQuantity,
 
-// exports.addComponentsToBox = async (req, res) => {
-//   try {
-//     const { hubID, componentID, boxSerialNo, projectID, componentSerialNumber } = req.body;
+  reference,
+  projectId
+) {
+  console.log("totalQuantity: ", totalQuantity);
+  console.log("reference: ", reference);
+  console.log("projectId: ", projectId);
 
-//     // Validate input parameters
-//     if (!hubID || !componentID || !boxSerialNo || !projectID || !componentSerialNumber) {
-//       return utils.commonResponse(res, 400, "Invalid input parameters");
-//     }
+  var isExceedded = false;
+  const checkQuntity = await Project.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(projectId),
+      },
+    },
+    {
+      $unwind: "$switchBoardData",
+    },
+    {
+      $unwind: "$switchBoardData.components",
+    },
+    {
+      $match: {
+        "switchBoardData.components.Reference": reference,
+      },
+    },
+    {
+      $group: {
+        _id: new mongoose.Types.ObjectId(projectId),
+        totalQuantity: {
+          $sum: "$switchBoardData.components.Quantity",
+        },
+      },
+    },
+    {
+      $project: {
+        isQuantityExceeded: {
+          $lte: ["$totalQuantity", totalQuantity],
+        },
+      },
+    },
+  ]);
 
-//     // Find the box by its serial number
-//     const box = await Boxes.findOne({ serialNo: boxSerialNo });
-//     if (!box) {
-//       return utils.commonResponse(res, 404, "Box serial number not found");
-//     }
+  if (checkQuntity.length > 0) {
+    return (isExceedded = checkQuntity[0].isQuantityExceeded ?? false);
+  } else {
+    return isExceedded;
+  }
+}
+exports.addComponentsToBox = async (req, res) => {
+  try {
+    const {
+      hubID,
+      componentID,
+      boxSerialNo,
+      projectID,
+      componentSerialNumber,
+    } = req.body;
 
-//     // Find the component by its ID
-//     const component = await ComponentSerialNo.findOne({ componentID });
-//     if (!component) {
-//       return utils.commonResponse(res, 404, "Component ID not found");
-//     }
+    if (
+      !hubID ||
+      !componentID ||
+      !boxSerialNo ||
+      !projectID ||
+      !componentSerialNumber
+    ) {
+      return utils.commonResponse(res, 400, "Invalid input parameters");
+    }
 
-//     // Validate the hub existence
-//     const hub = await Hub.findById(hubID);
-//     if (!hub) {
-//       return utils.commonResponse(res, 404, "Hub ID not found");
-//     }
+    const box = await Boxes.findOne({ serialNo: boxSerialNo });
+    if (!box) {
+      return utils.commonResponse(res, 404, "Box serial number not found");
+    }
 
-//     // Ensure the component's serial number exists within the hub's data
-//     const componentSerialEntry = await ComponentSerialNo.findOne({
-//       componentID,
-//       "hubSerialNo.hubID": hubID,
-//       "hubSerialNo.serialNos": componentSerialNumber,
-//     });
+    const component = await ComponentSerialNo.findOne({
+      componentID: componentID,
+    });
+    // console.log("componentID: ", componentID);
+    // console.log("component: ", component);
+    const componentName = await Component.findOne({
+      _id: new mongoose.Types.ObjectId(componentID),
+    });
 
-//     if (!componentSerialEntry) {
-//       return utils.commonResponse(
-//         res,
-//         404,
-//         "Component Serial Number not found for the provided Component ID and Hub ID"
-//       );
-//     }
+    if (!component) {
+      return utils.commonResponse(res, 404, "Component ID not found");
+    }
 
-//     // Find the existing component in the box
-//     const existingComponent = box.components.find(
-//       (comp) => comp.componentID.equals(componentID)
-//     );
+    const hub = await Hub.findById(hubID);
+    if (!hub) {
+      return utils.commonResponse(res, 404, "Hub ID not found");
+    }
 
-//     if (existingComponent) {
-//       // Check if the serial number already exists for this project
-//       const projectComponentExists = existingComponent.projectDetails?.some(
-//         (proj) =>
-//           proj.projectID === projectID &&
-//           proj.componentSerialNo.includes(componentSerialNumber)
-//       );
+    const componentSerialEntry = await ComponentSerialNo.findOne({
+      componentID: componentID,
+      "hubSerialNo.hubID": hubID,
+      "hubSerialNo.serialNos": componentSerialNumber,
+    });
 
-//       if (projectComponentExists) {
-//         return utils.commonResponse(
-//           res,
-//           400,
-//           "This component's serial number already exists for this project in the box"
-//         );
-//       }
+    if (!componentSerialEntry) {
+      return utils.commonResponse(
+        res,
+        404,
+        "Component Serial Number not found for the provided Component ID and Hub ID"
+      );
+    }
+    const allProjectBasedBoxes = await Boxes.find({
+      projectId: new mongoose.Types.ObjectId(projectID),
+    });
 
-//       // If the serial number is new for this project, add it to the project details
-//       const project = existingComponent.projectDetails.find(
-//         (proj) => proj.projectID === projectID
-//       );
+    for (const serialBox of allProjectBasedBoxes) {
+      const existingComponent = serialBox.components.find(
+        (comp) => comp.componentID && comp.componentID.equals(componentID)
+      );
 
-//       if (project) {
-//         // Add the new serial number to the existing project entry
-//         project.componentSerialNo.push(componentSerialNumber);
-//       } else {
-//         // Create a new project entry if it doesn't exist
-//         existingComponent.projectDetails.push({
-//           projectID,
-//           componentSerialNo: [componentSerialNumber],
-//         });
-//       }
+      if (existingComponent) {
+        if (
+          existingComponent.componentSerialNo.includes(componentSerialNumber)
+        ) {
+          return utils.commonResponse(
+            res,
+            400,
+            "Serial number already exists for this component in the box"
+          );
+        }
 
-//       // Update the component's quantity
-//       existingComponent.quantity = existingComponent.projectDetails.reduce(
-//         (total, proj) => total + proj.componentSerialNo.length,
-//         0
-//       );
-//     } else {
-//       // Add a new component entry if it doesn't exist in the box
-//       box.components.push({
-//         componentID,
-//         componentName: component.componentName,
-//         projectDetails: [
-//           {
-//             projectID,
-//             componentSerialNo: [componentSerialNumber],
-//           },
-//         ],
-//         quantity: 1,
-//       });
-//     }
+        // Add the serial number and update the quantity
+        existingComponent.componentSerialNo.push(componentSerialNumber);
+        existingComponent.quantity = existingComponent.componentSerialNo.length;
 
-//     // Update the total quantity of components in the box
-//     box.quantity = box.components.reduce((total, comp) => total + comp.quantity, 0);
-//     await box.save();
+        // // Save the updated box
+        // await serialBox.save();
+      }
+    }
 
-//     // Send success response
-//     utils.commonResponse(
-//       res,
-//       200,
-//       "Component added to box successfully",
-//       {
-//         boxid: box._id,
-//         totalComponents: box.quantity,
-//       }
-//     );
+    // else {
+    box.components.push({
+      componentID,
+      componentName: componentName.componentName,
+      componentSerialNo: [componentSerialNumber],
+      quantity: 1,
+    });
+    // }
+    console.log(projectID, componentID);
+    const totalComponentsQuantity = await Boxes.aggregate([
+      {
+        $match: {
+          projectId: new mongoose.Types.ObjectId(projectID),
+        },
+      },
+      {
+        $unwind: "$components",
+      },
+      {
+        $match: {
+          "components.componentID": new mongoose.Types.ObjectId(componentID),
+        },
+      },
+      {
+        $group: {
+          _id: "$components.componentID",
+          totalQuantity: {
+            $sum: "$components.quantity",
+          },
+        },
+      },
+    ]);
 
-//   } catch (error) {
-//     console.error("Error in addComponentsToBox:", error);
-//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
-//   }
-// };
+    const isExeed = await checkComponentQuntityExceeded(
+      totalComponentsQuantity.length > 0
+        ? totalComponentsQuantity[0].totalQuantity ?? 0
+        : 0,
+      componentName.componentName,
+      projectID
+    );
+    if (isExeed) {
+      return utils.commonResponse(
+        res,
+        201,
+        "The ordered quantity of this item has been added to the box."
+      );
+    }
 
-// exports.getBoxDetails = async (req, res) => {
-//   try {
+    box.quantity += 1;
+    await box.save();
 
-//     const { _id } = req.body;
-
-//     const box = await Boxes.findOne({ _id});
-
-//     if (!box) {
-//       return utils.commonResponse(res, 404, "Box not found");
-//     }
-
-//      utils.commonResponse(res, 200, "Box fetched successfully", box
-
-//     );
-
-//      }
-
-//    catch (error) {
-//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
-//   }
-// };
+    utils.commonResponse(res, 200, "Component added to box successfully", {
+      boxid: box._id,
+      totalComponents: box.quantity,
+    });
+  } catch (error) {
+    console.error("Error in addComponentsToBox:", error);
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
 
 exports.getBoxDetails = async (req, res) => {
   try {
