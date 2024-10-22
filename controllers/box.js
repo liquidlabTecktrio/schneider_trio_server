@@ -422,22 +422,43 @@ exports.getBoxDetails = async (req, res) => {
           "components.componentName": "$componentDetails.componentName",
           "components.quantity": "$components.quantity",
           "components._id": "$components._id",
+          "components.compDescription": "$componentDetails.compDescription",
         },
       },
       {
         $group: {
-          _id: "$_id",
-          status: {
-            $first: "$status",
+          _id: {
+            projectId: "$_id",
+            componentName: "$components.componentName",
           },
-          serialNo: {
-            $first: "$serialNo",
+          status: { $first: "$status" },
+          serialNo: { $first: "$serialNo" },
+          quantity: { $first: "$quantity" },
+          totalQuantity: { $sum: "$components.quantity" },
+          component: {
+            $first: {
+              componentID: "$components.componentID",
+              serial: "$components.serial",
+              componentName: "$components.componentName",
+              compDescription: "$components.compDescription",
+            },
           },
-          quantity: {
-            $first: "$quantity",
-          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.projectId",
+          status: { $first: "$status" },
+          serialNo: { $first: "$serialNo" },
+          quantity: { $first: "$quantity" },
           components: {
-            $push: "$components",
+            $push: {
+              componentID: "$component.componentID",
+              serial: "$component.serial",
+              componentName: "$component.componentName",
+              compDescription: "$component.compDescription",
+              quantity: "$totalQuantity",
+            },
           },
         },
       },
@@ -476,36 +497,36 @@ exports.getBoxDetails = async (req, res) => {
 //        }
 //       )
 
-
 exports.closeBoxes = async (req, res) => {
   try {
     const { _id, status } = req.body;
-  
-    
+
     if (!_id || !status) {
-      utils.commonResponse( res, 400,  "Both _id and status are required." );
+      utils.commonResponse(res, 400, "Both _id and status are required.");
     }
-  
-    
-    const validStatuses = ['open', 'closed'];
+
+    const validStatuses = ["open", "closed"];
     if (!validStatuses.includes(status)) {
-      utils.commonResponse(res, 400, "Invalid status. Must be 'open' or 'closed'." );
+      utils.commonResponse(
+        res,
+        400,
+        "Invalid status. Must be 'open' or 'closed'."
+      );
     }
-  
-    
+
     const updatedBoxes = await Boxes.findOneAndUpdate(
       { _id },
       { status },
-      { new: true } 
+      { new: true }
     );
-  
+
     if (!updatedBoxes) {
-      utils.commonResponse (res, 404, "Boxes not found." );
+      utils.commonResponse(res, 404, "Boxes not found.");
     }
-  
+
     utils.commonResponse(res, 200, "Boxes closed successfully");
   } catch (error) {
     console.error("Error closing the boxes:", error);
-    utils.commonResponse ( res, 500, "Internal server error." );
+    utils.commonResponse(res, 500, "Internal server error.");
   }
-  };
+};
