@@ -261,6 +261,21 @@ exports.addComponentsToBox = async (req, res) => {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
 
+    // const findComponentAvailableInBox =
+    const findComponentExist = await checkComponentExitInTheProject(
+      res,
+      componentID,
+      projectID
+    );
+    if (findComponentExist.length > 0) {
+      if (!findComponentExist[0].isComponentExist) {
+        return utils.commonResponse(
+          res,
+          201,
+          "This Component/item not listed in this project, please check..."
+        );
+      }
+    }
     const box = await Boxes.findOne({ serialNo: boxSerialNo });
     if (!box) {
       return utils.commonResponse(res, 404, "Box serial number not found");
@@ -386,6 +401,66 @@ exports.addComponentsToBox = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+async function checkComponentExitInTheProject(res, componentID, projectID) {
+  try {
+    const findComponentExist = await Component.aggregate([
+      {
+        $match: {
+          // '_id': new ObjectId('6716323a8693a807bcb8106e')
+          _id: new mongoose.Types.ObjectId(componentID),
+        },
+      },
+      {
+        $lookup: {
+          from: "projects",
+          localField: "componentName",
+          foreignField: "switchBoardData.components.Reference",
+          as: "projects",
+          pipeline: [
+            {
+              $match: {
+                // '_id': new ObjectId('6716323f8693a807bcb81d9f')
+                _id: new mongoose.Types.ObjectId(projectID),
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          isComponentExist: {
+            $cond: {
+              if: {
+                $gt: [
+                  {
+                    $size: "$projects",
+                  },
+                  0,
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          isComponentExist: 1,
+        },
+      },
+    ]);
+    return findComponentExist;
+  } catch (error) {
+    utils.commonResponse(res, 500, error.toString());
+  }
+}
 
 exports.getBoxDetails = async (req, res) => {
   try {
