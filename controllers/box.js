@@ -389,12 +389,22 @@ exports.addComponentsToBox = async (req, res) => {
 
 exports.getBoxDetails = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id, serialNo } = req.body;
 
     const box = await Boxes.aggregate([
       {
+        // $match: {
+        //   _id: new mongoose.Types.ObjectId(_id),
+
+        // },
         $match: {
-          _id: new mongoose.Types.ObjectId(_id),
+          $expr: {
+            $cond: {
+              if: { $eq: ["$_id", new mongoose.Types.ObjectId(_id)] },
+              then: { $eq: ["$_id", new mongoose.Types.ObjectId(_id)] },
+              else: { $eq: ["$serialNo", serialNo] },
+            },
+          },
         },
       },
       {
