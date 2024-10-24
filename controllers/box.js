@@ -502,6 +502,7 @@ exports.getBoxDetails = async (req, res) => {
           status: 1,
           quantity: 1,
           serialNo: 1,
+          projectId: 1,
           "components.componentID": "$components.componentID",
           "components.serial": "$components.serial",
           "components.componentName": "$componentDetails.componentName",
@@ -516,10 +517,21 @@ exports.getBoxDetails = async (req, res) => {
             projectId: "$_id",
             componentName: "$components.componentName",
           },
-          status: { $first: "$status" },
-          serialNo: { $first: "$serialNo" },
-          quantity: { $first: "$quantity" },
-          totalQuantity: { $sum: "$components.quantity" },
+          status: {
+            $first: "$status",
+          },
+          serialNo: {
+            $first: "$serialNo",
+          },
+          quantity: {
+            $first: "$quantity",
+          },
+          totalQuantity: {
+            $sum: "$components.quantity",
+          },
+          projectId: {
+            $first: "$projectId",
+          },
           component: {
             $first: {
               componentID: "$components.componentID",
@@ -533,9 +545,18 @@ exports.getBoxDetails = async (req, res) => {
       {
         $group: {
           _id: "$_id.projectId",
-          status: { $first: "$status" },
-          serialNo: { $first: "$serialNo" },
-          quantity: { $first: "$quantity" },
+          status: {
+            $first: "$status",
+          },
+          serialNo: {
+            $first: "$serialNo",
+          },
+          quantity: {
+            $first: "$quantity",
+          },
+          projectId: {
+            $first: "$projectId",
+          },
           components: {
             $push: {
               componentID: "$component.componentID",
@@ -544,6 +565,28 @@ exports.getBoxDetails = async (req, res) => {
               compDescription: "$component.compDescription",
               quantity: "$totalQuantity",
             },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "projects",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "projectName",
+          pipeline: [
+            {
+              $project: {
+                ProjectName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          projectName: {
+            $arrayElemAt: ["$projectName.ProjectName", 0],
           },
         },
       },

@@ -3,6 +3,7 @@ const router = express.Router();
 const serialNoController = require("../controllers/serial");
 const BoxSerialNoController = require("../controllers/box");
 const ProjectController = require("../controllers/projects");
+const ComponentController = require("../controllers/components");
 
 router.post(
   "/generateComponentSerialNo",
@@ -12,10 +13,7 @@ router.post("/generatePanelSerialNo", serialNoController.generatePanelSerialNo);
 router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 
 router.post("/addBoxToProject", BoxSerialNoController.addBoxToProject);
-router.post(
-  "/addComponentsToBoxes",
-  BoxSerialNoController.addComponentsToBox
-);
+router.post("/addComponentsToBoxes", BoxSerialNoController.addComponentsToBox);
 //project
 router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getAllProjects", ProjectController.getAllProjects);
@@ -24,12 +22,20 @@ router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
 //spoke
 
 router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
-router.post("/getSpokeProjectsDetails", ProjectController.getSpokeProjectsDetails);
-
+router.post(
+  "/getSpokeProjectsDetails",
+  ProjectController.getSpokeProjectsDetails
+);
 
 // Boxes
 
 router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
-router.post("/shipProject", ProjectController.shipProject)
-router.post("/closeBoxes", BoxSerialNoController.closeBoxes)
+router.post("/shipProject", ProjectController.shipProject);
+router.post("/closeBoxes", BoxSerialNoController.closeBoxes);
+
+//
+router.post(
+  "/getBoxDetailsBasedOnComponentScan",
+  ComponentController.getBoxDetailsBasedOnComponentScan
+);
 module.exports = router;
