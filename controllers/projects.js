@@ -197,10 +197,15 @@ exports.getComponentScanResult = async (req, res) => {
     const box = await Boxes.findOne({
       projectId: project._id,
       components: { $elemMatch: { componentID: component._id } },
+      componentSerialNo:serialNo,
     });
 
     // Retrieve serial number if the box is found
     const boxSerialNo = box ? box.serialNo : null;
+
+    if(!boxSerialNo){
+      res.status(401).json({message:"Invalid QRCode or Invalid Serial Number"})
+    }
 
     // Success: return project, switch board details, and box serial number
     return res.status(200).json({
