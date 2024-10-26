@@ -175,30 +175,46 @@ exports.getComponentScanResult = async (req, res) => {
 
     // Step 4: Filter switchBoardData array to find all instances with the matching component reference
     const matchingSwitchBoards = project.switchBoardData
-      .filter(board =>
-        board.components.some(component => component.Reference === componentName)
+      .filter((board) =>
+        board.components.some(
+          (component) => component.Reference === componentName
+        )
       )
-      .map(board => {
-        const matchedComponent = board.components.find(comp => comp.Reference === componentName);
+      .map((board) => {
+        const matchedComponent = board.components.find(
+          (comp) => comp.Reference === componentName
+        );
         return {
           switchBoardName: board.switchBoard,
           quantity: matchedComponent.Quantity,
+          fixedQuantity: matchedComponent.FixedQuantity,
         };
       });
 
-    // Success: return project and all matching switch board details
+    // Step 5: Find relevant box containing the component and project details
+    const box = await Box.findOne({
+      projectId: project._id,
+      components: { $elemMatch: { componentID: component._id } },
+    });
+
+    // Retrieve serial number if the box is found
+    const boxSerialNo = box ? box.serialNo : null;
+
+    // Success: return project, switch board details, and box serial number
     return res.status(200).json({
       projectName: project.ProjectName,
       projectID: project.ProjectID,
       componentName,
       componentDescription: component.compDescription,
       switchBoardData: matchingSwitchBoards,
+      boxSerialNo, // Include box serial number here
     });
   } catch (error) {
     console.error("Error finding component:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 //spoke
 
 exports.getAllSpokeProjects = async (req, res) => {

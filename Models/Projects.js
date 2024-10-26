@@ -16,6 +16,7 @@ const componentSchema = new Schema({
   },
   FixedQuantity:{
     type:Number,
+    default:0
   }
 });
 
