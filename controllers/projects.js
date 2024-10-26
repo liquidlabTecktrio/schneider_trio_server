@@ -210,7 +210,7 @@ exports.getComponentScanResult = async (req, res) => {
     // Success: return project, switch board details, and box serial number
     return res.status(200).json({
       projectName: project.ProjectName,
-      projectID: project.ProjectID,
+      projectID: project._id,
       componentName,
       boxSerialNo,
       componentDescription: component.compDescription,
@@ -223,9 +223,14 @@ exports.getComponentScanResult = async (req, res) => {
   }
 };
 
-
 exports.getincrementFixedQuantity = async (req, res) => {
   const { projectID, switchBoard, reference } = req.body;
+  console.log(
+    "projectID, switchBoard, reference: ",
+    projectID,
+    switchBoard,
+    reference
+  );
 
   // Validate input
   if (!projectID || !switchBoard || !reference) {
@@ -237,7 +242,7 @@ exports.getincrementFixedQuantity = async (req, res) => {
   try {
     const result = await Project.updateOne(
       {
-        _id:new mongoose.Types.ObjectId(projectID),
+        _id: new mongoose.Types.ObjectId(projectID),
         "switchBoardData.switchBoard": switchBoard,
         "switchBoardData.components.Reference": reference,
       },
