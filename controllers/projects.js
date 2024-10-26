@@ -192,7 +192,7 @@ exports.getComponentScanResult = async (req, res) => {
       });
 
     // Step 5: Find relevant box containing the component and project details
-    const box = await Box.findOne({
+    const box = await Boxes.findOne({
       projectId: project._id,
       components: { $elemMatch: { componentID: component._id } },
     });
@@ -205,6 +205,7 @@ exports.getComponentScanResult = async (req, res) => {
       projectName: project.ProjectName,
       projectID: project.ProjectID,
       componentName,
+      boxSerialNo,
       componentDescription: component.compDescription,
       switchBoardData: matchingSwitchBoards,
       boxSerialNo, // Include box serial number here
