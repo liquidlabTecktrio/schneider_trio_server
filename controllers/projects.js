@@ -232,12 +232,6 @@ exports.getComponentScanResult = async (req, res) => {
 
 exports.getincrementFixedQuantity = async (req, res) => {
   const { projectID, switchBoard, reference } = req.body;
-  console.log(
-    "projectID, switchBoard, reference: ",
-    projectID,
-    switchBoard,
-    reference
-  );
 
   // Validate input
   if (!projectID || !switchBoard || !reference) {
