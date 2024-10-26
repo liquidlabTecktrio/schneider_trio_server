@@ -195,16 +195,23 @@ exports.getComponentScanResult = async (req, res) => {
 
     // Step 5: Find relevant box containing the component and project details
     const box = await Boxes.findOne({
-      projectId: project._id,
-      components: { $elemMatch: { componentID: component._id } },
-      componentSerialNo:serialNo,
+      projectId: new mongoose.Types.ObjectId(project._id),
+      components: {
+        $elemMatch: { componentID: new mongoose.Types.ObjectId(component._id) },
+      },
+      components: {
+        $elemMatch: { componentSerialNo: serialNo },
+      },
+      // componentSerialNo: serialNo,
     });
 
     // Retrieve serial number if the box is found
     const boxSerialNo = box ? box.serialNo : null;
 
-    if(!boxSerialNo){
-      res.status(401).json({message:"Invalid QRCode or Invalid Serial Number"})
+    if (!boxSerialNo) {
+      return res
+        .status(401)
+        .json({ message: "Invalid QRCode or Invalid Serial Number" });
     }
 
     // Success: return project, switch board details, and box serial number
