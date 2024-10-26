@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const Project = require("../Models/Projects");
 const utils = require("../controllers/utils");
 const Boxes = require("../Models/box");
+const ComponentSerial = require("../Models/componentSerialNo");
+const Component = require("../Models/Components");
 
 exports.getAllProjects = async (req, res) => {
   try {
@@ -139,6 +141,64 @@ exports.getProjectsDetails = async (req, res) => {
   }
 };
 
+exports.getComponentScanResult = async (req, res) => {
+  try {
+    const { componentID, serialNo } = req.body;
+
+    // Step 1: Retrieve component details
+    const component = await Component.findById(componentID);
+    if (!component) {
+      return res.status(404).json({ message: "Component not found" });
+    }
+
+    const componentName = component.componentName;
+
+    // Step 2: Check component serial number validity
+    const componentSerial = await ComponentSerial.findOne({
+      componentID,
+      "hubSerialNo.serialNos": serialNo,
+    });
+    if (!componentSerial) {
+      return res.status(404).json({
+        message: "Serial number not found for the given component",
+      });
+    }
+
+    // Step 3: Find project containing the component by reference in any switchBoardData object
+    const project = await Project.findOne({
+      "switchBoardData.components.Reference": componentName,
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Component not found in any project" });
+    }
+
+    // Step 4: Filter switchBoardData array to find all instances with the matching component reference
+    const matchingSwitchBoards = project.switchBoardData
+      .filter(board =>
+        board.components.some(component => component.Reference === componentName)
+      )
+      .map(board => {
+        const matchedComponent = board.components.find(comp => comp.Reference === componentName);
+        return {
+          switchBoardName: board.switchBoard,
+          quantity: matchedComponent.Quantity,
+        };
+      });
+
+    // Success: return project and all matching switch board details
+    return res.status(200).json({
+      projectName: project.ProjectName,
+      projectID: project.ProjectID,
+      componentName,
+      componentDescription: component.compDescription,
+      switchBoardData: matchingSwitchBoards,
+    });
+  } catch (error) {
+    console.error("Error finding component:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 //spoke
 
 exports.getAllSpokeProjects = async (req, res) => {

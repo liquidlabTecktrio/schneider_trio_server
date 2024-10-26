@@ -14,6 +14,9 @@ const componentSchema = new Schema({
   Quantity: {
     type: Number,
   },
+  FixedQuantity:{
+    type:Number,
+  }
 });
 
 const switchBoardSchema = new Schema({

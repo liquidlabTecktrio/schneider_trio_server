@@ -14,13 +14,14 @@ router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 
 router.post("/addBoxToProject", BoxSerialNoController.addBoxToProject);
 router.post("/addComponentsToBoxes", BoxSerialNoController.addComponentsToBox);
+
 //project
 router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
+router.post("/componentScanResult", ProjectController.getComponentScanResult);
 
 //spoke
-
 router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
 router.post(
   "/getSpokeProjectsDetails",

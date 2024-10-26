@@ -35,6 +35,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
           compShortName: _rowData.Reference,
           compPartNo: _rowData.Reference,
           compDescription: _rowData.Description,
+          fixedQuantity:rowData.FixedQuantity,
           isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
         });
       }

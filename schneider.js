@@ -5,20 +5,15 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require('cors');
 
-
 const webRoutes = require("./routes/web");
 const adminRoutes = require("./routes/admin");
 const hubRoutes = require("./routes/hubApp");
 const spokeRoutes = require("./routes/spokesApp");
 
-
-
 app.use(bodyParser.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());  // Use cors middleware directly
-
-
 
 
 function setupCORS(req, res, next) {
