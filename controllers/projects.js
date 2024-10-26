@@ -170,7 +170,9 @@ exports.getComponentScanResult = async (req, res) => {
     });
 
     if (!project) {
-      return res.status(404).json({ message: "Component not found in any project" });
+      return res
+        .status(404)
+        .json({ message: "Component not found in any project" });
     }
 
     // Step 4: Filter switchBoardData array to find all instances with the matching component reference
@@ -213,6 +215,50 @@ exports.getComponentScanResult = async (req, res) => {
   } catch (error) {
     console.error("Error finding component:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+exports.getincrementFixedQuantity = async (req, res) => {
+  const { projectID, switchBoard, reference } = req.body;
+
+  // Validate input
+  if (!projectID || !switchBoard || !reference) {
+    return res
+      .status(400)
+      .json({ error: "project_id, switchBoard, and reference are required" });
+  }
+
+  try {
+    const result = await Project.updateOne(
+      {
+        _id:new mongoose.Types.ObjectId(projectID),
+        "switchBoardData.switchBoard": switchBoard,
+        "switchBoardData.components.Reference": reference,
+      },
+      {
+        $inc: {
+          "switchBoardData.$[board].components.$[comp].FixedQuantity": 1,
+        },
+      },
+      {
+        arrayFilters: [
+          { "board.switchBoard": switchBoard },
+          { "comp.Reference": reference },
+        ],
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "No matching document found or already incremented" });
+    }
+
+    res.status(200).json({ message: "FixedQuantity incremented successfully" });
+  } catch (error) {
+    console.error("Error updating FixedQuantity:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
