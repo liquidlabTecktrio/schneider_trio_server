@@ -22,7 +22,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       serviceAccountAuth
     );
     const sheetinfo = await sheet.loadInfo();
-    const worksheet = sheet.sheetsByIndex[2];
+    const worksheet = sheet.sheetsByIndex[1];
     const rows = await worksheet.getRows();
     // console.log(rows.toObject())
     // const _rowIndex = 1;
@@ -35,7 +35,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
           compShortName: _rowData.Reference,
           compPartNo: _rowData.Reference,
           compDescription: _rowData.Description,
-          fixedQuantity:rowData.FixedQuantity,
+          fixedQuantity: rowData.FixedQuantity,
           isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
         });
       }
@@ -72,7 +72,11 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       );
 
       newComponentSerialNos = newComponents.map((newComponent) => {
-        return { hubSerialNo: [], componentID: newComponent._id , componentName:newComponent.componentName};
+        return {
+          hubSerialNo: [],
+          componentID: newComponent._id,
+          componentName: newComponent.componentName,
+        };
       });
       await ComponentSerialNo.create(newComponentSerialNos);
     }
@@ -107,7 +111,10 @@ exports.createPOFromGoogleSheet = async (req, res) => {
       switchborad_data.push(sb_data);
     });
 
-    project = await Projects.findOne({ ProjectID: req.body.projectId });
+    const project = await Projects.findOne({ ProjectID: req.body.projectId });
+    console.log("project: ", project);
+
+    // console.log("project: ", project);
     if (!project) {
       await Projects.create({
         ProjectName: shortid.generate(10),

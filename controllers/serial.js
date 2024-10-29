@@ -37,7 +37,6 @@ exports.generateComponentSerialNo = async (req, res) => {
               },
             },
             { upsert: true } //this line will add new document if the component is not already present in the ComponentSerialNo collection
-
           );
         }
 
@@ -46,7 +45,10 @@ exports.generateComponentSerialNo = async (req, res) => {
           hubID: hubID,
           componentID: componentID,
           serialNos: arr1,
-          compShortName: component != null ? component.compShortName : "",
+          compShortName:
+            component != null
+              ? `${component.compShortName} \n ${component.compDescription}`
+              : "",
         });
       });
   } catch (error) {
