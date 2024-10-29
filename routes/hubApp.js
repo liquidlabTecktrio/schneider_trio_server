@@ -33,7 +33,7 @@ router.post(
 
 router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
 router.post("/shipProject", ProjectController.shipProject);
-router.post("/closeBoxes", BoxSerialNoController.closeBoxes);
+router.post("/updateBoxStatus", BoxSerialNoController.updateBoxStatus);
 
 //
 router.post(

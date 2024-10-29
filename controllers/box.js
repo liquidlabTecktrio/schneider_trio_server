@@ -625,7 +625,7 @@ exports.getBoxDetails = async (req, res) => {
 //        }
 //       )
 
-exports.closeBoxes = async (req, res) => {
+exports.updateBoxStatus = async (req, res) => {
   try {
     const { _id, status } = req.body;
 
