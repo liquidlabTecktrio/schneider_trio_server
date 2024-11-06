@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const partsSchema = new Schema({
+const partSchema = new Schema({
   partName: {
     type: String,
   },
@@ -19,18 +19,21 @@ const partsSchema = new Schema({
   },
 });
 
-const Components = new Schema(
+const CommercialReference = new Schema(
   {
     referenceName: {
       type: String,
       // required: true,
+    },
+    description: {
+      type: String,
     },
     productId: {
       type: mongoose.Types.ObjectId,
       // required: true,
     },
     parts: {
-      type: [partsSchema],
+      type: [partSchema],
     },
 
     isCritical: {
