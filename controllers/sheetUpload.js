@@ -134,3 +134,128 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };
+
+exports.uploadBomGoogleSheet = async (req, res) => {
+  try {
+    const serviceAccountAuth = new JWT({
+      email: service_account.client_email,
+      key: service_account.private_key,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    const sheet = new GoogleSpreadsheet(
+      process.env.ALUMINIUMCONFIGSHEETID,
+      serviceAccountAuth
+    );
+    const sheetinfo = await sheet.loadInfo();
+    const worksheet = sheet.sheetsByIndex[1];
+    const rows = await worksheet.getRows();
+    // console.log(rows.toObject())
+    // const _rowIndex = 1;
+    data = [];
+    await Bluebird.each(rows, async (rowData, _rowIndex) => {
+      _rowData = rowData.toObject();
+      if (_rowData.Reference != "") {
+        data.push({
+          componentName: _rowData.Reference,
+          compShortName: _rowData.Reference,
+          compPartNo: _rowData.Reference,
+          compDescription: _rowData.Description,
+          fixedQuantity: rowData.FixedQuantity,
+          isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
+        });
+      }
+    });
+    // console.log(data[0])
+    compPartNos = await Component.aggregate([
+      {
+        $project: {
+          compPartNo: 1,
+        },
+      },
+    ]);
+
+    existingPartNos = collect(compPartNos).pluck("compPartNo");
+    // existingPartIds = collect(compPartNos).pluck("_id")
+    newPartNos = data
+      .map((_data) => {
+        if (!existingPartNos.items.includes(_data.compPartNo)) {
+          return _data;
+        }
+      })
+      .filter((notUndefined) => notUndefined !== undefined);
+    // newPartSerialNo = data
+    //   .map((_data) => {
+    //     if (!existingPartIds.items.includes(_data._id)) {
+    //       return {hubSerialNo:[],componentID:_data._id};
+    //     }
+    //   })
+    //   .filter((notUndefined) => notUndefined !== undefined);
+
+    if (newPartNos.length > 0) {
+      newComponents = JSON.parse(
+        JSON.stringify(await Component.create(newPartNos))
+      );
+
+      newComponentSerialNos = newComponents.map((newComponent) => {
+        return {
+          hubSerialNo: [],
+          componentID: newComponent._id,
+          componentName: newComponent.componentName,
+        };
+      });
+      await ComponentSerialNo.create(newComponentSerialNos);
+    }
+    const BOMPerSB = sheet.sheetsByIndex[1];
+    const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
+    BOM_data = [];
+    await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
+      _rowData = rowData.toObject();
+
+      BOM_data.push(_rowData);
+    });
+
+    switch_board = collect(
+      BOM_data.filter((BOM_row) => {
+        return BOM_row.Enclosure == "Common Total";
+      })
+    ).pluck("SwitchBoard").items;
+
+    switchborad_data = [];
+    switch_board.forEach((sb) => {
+      sb_data = {
+        switchBoard: sb,
+        components: [],
+      };
+      BOM_data.forEach((element) => {
+        if (element.SwitchBoard == sb) {
+          if (element.Reference != "") {
+            sb_data.components.push(element);
+          }
+        }
+      });
+      switchborad_data.push(sb_data);
+    });
+
+    const project = await Projects.findOne({ ProjectID: req.body.projectId });
+    console.log("project: ", project);
+
+    // console.log("project: ", project);
+    if (!project) {
+      await Projects.create({
+        ProjectName: shortid.generate(10),
+        ProjectID: req.body.projectId,
+        createdBy: req.body.spokeId,
+        createdTo: req.body.hubId,
+        status: "ordered",
+        switchBoardData: switchborad_data,
+      });
+    } else {
+      return utils.commonResponse(res, 200, "Project ID already exist", {});
+    }
+
+    utils.commonResponse(res, 200, "success", {});
+  } catch (error) {
+    console.log(error);
+    utils.commonResponse(res, 500, "server error", error.toString());
+  }
+};
