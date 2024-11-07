@@ -3,21 +3,27 @@ const Schema = mongoose.Schema;
 
 const parentIdsObj = new Schema({
   productId: {
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Types.ObjectId, //currently not using
   },
   crId: {
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Types.ObjectId, //currently not using
+  },
+  productNumber: {
+    type: String,
+  },
+  crNumber: {
+    type: String,
   },
 });
 
 const Parts = new Schema({
-  partName: {
+  partNumber: {
     type: String,
   },
   partDescription: {
     type: String,
   },
-  quantitty: {
+  quantity: {
     type: Number,
   },
   videoUrl: {

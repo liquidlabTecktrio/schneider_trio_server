@@ -2,10 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const partSchema = new Schema({
-  partName: {
-    type: String,
-  },
-  parentNumber: {
+  partNumber: {
     type: String,
   },
   partDescription: {
@@ -17,11 +14,17 @@ const partSchema = new Schema({
   videoUrl: {
     type: String,
   },
+  isCritical: {
+    type: Boolean,
+  },
+  parentNumber: {
+    type: String,
+  },
 });
 
 const CommercialReference = new Schema(
   {
-    referenceName: {
+    referenceNumber: {
       type: String,
       // required: true,
     },
@@ -36,6 +39,9 @@ const CommercialReference = new Schema(
       type: [partSchema],
     },
 
+    productNumber: {
+      type: String,
+    },
     isCritical: {
       type: Boolean,
     },

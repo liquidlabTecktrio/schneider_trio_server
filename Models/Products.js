@@ -2,18 +2,20 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const Products = new Schema({
-  productName: {
+  productNumber: {
     type: String,
   },
   productDescription: {
     type: String,
   },
-  parentId: {
+  crId: {
     type: mongoose.Types.ObjectId,
+  },
+  crNumber: {
+    type: String,
   },
   quantity: {
     type: Number,
   },
 });
-
 module.exports = mongoose.model("Products", Products);
