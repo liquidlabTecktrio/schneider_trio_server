@@ -424,7 +424,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     const uniqueParts = await getUniqueParts(partsList);
 
     const partsListnew = Array.from(uniqueParts.values());
-    console.log("partsListnew: ", partsListnew);
 
     partsNumbersRes = await Parts.aggregate([
       {
@@ -454,7 +453,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     if (alreadyCreatedParts.length > 0) {
       uniqueAlreadyParts = await getUniqueParts(alreadyCreatedParts);
       uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
-      console.log("uniqueAlreadyParts: ", uniqueAlreadyParts);
+
       // uniqueAlreadyParts.forEach(async (parts) => {
       //   console.log("parts: ", parts);
       //   // const updateDoc = {
