@@ -24,5 +24,6 @@ router.get("/getAllPanelTypes", panelController.getAllPanelTypes);
 router.post("/uploadSheet", sheetController.createPOFromGoogleSheet);
 
 router.post("/uploadCR", sheetController.uploadBomGoogleSheet);
+// router.post("/updatePartsIDs", sheetController.updatePartsIDs);
 
 module.exports = router;

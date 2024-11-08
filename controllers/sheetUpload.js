@@ -174,7 +174,51 @@ async function getUniqueParts(partsList) {
       }
     }
   });
+
+  // console.log("partMap: ", partMap);
   return partMap;
+}
+
+async function updatePartsIDs(newItems, partNumber) {
+  console.log("partNumber: ", partNumber);
+  console.log("newItems: ", newItems);
+  try {
+    // Define the unique items to add
+    // const newItems = [
+    //   { productNumber: "NNZ97512", crNumber: "PFCP6H2WXD426" },
+    //   { productNumber: "TEST6", crNumber: "PFCP6H2WXD426" },
+    // ];
+
+    // Find the document
+    const part = await Parts.findOne({ partNumber: partNumber });
+    if (part) {
+      const existingItems = new Set(
+        part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
+      );
+      const itemsToAdd = newItems.filter(
+        (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
+      );
+      console.log("itemsToAdd: ", itemsToAdd);
+
+      // Only update if there are items to add
+      if (itemsToAdd.length > 0) {
+        const updateDoc = {
+          $addToSet: {
+            parentIds: { $each: itemsToAdd },
+          },
+        };
+
+        const updatedData = await Parts.findOneAndUpdate(
+          { partNumber: partNumber },
+          updateDoc,
+          { new: true }
+        );
+        console.log("updatedData: ", updatedData);
+      }
+    }
+  } catch (error) {
+    console.log("error: ", error);
+  }
 }
 exports.uploadBomGoogleSheet = async (req, res) => {
   try {
@@ -341,7 +385,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     const uniqueParts = await getUniqueParts(partsList);
 
     const partsListnew = Array.from(uniqueParts.values());
-    console.log("partsListnew: ", partsListnew);
+    // console.log("partsListnew: ", partsListnew);
 
     partsNumbersRes = await Parts.aggregate([
       {
@@ -364,24 +408,36 @@ exports.uploadBomGoogleSheet = async (req, res) => {
       .filter((notUndefined) => notUndefined !== undefined);
 
     if (newPartsNos.length > 0) {
-      await Parts.create(partsListnew);
+      // await Parts.create(partsListnew);
+      await Parts.create(newPartsNos);
     }
 
     if (alreadyCreatedParts.length > 0) {
       uniqueAlreadyParts = await getUniqueParts(alreadyCreatedParts);
-      uniqueAlreadyParts.forEach(async (parts) => {
-        const updateDoc = {
-          $addToSet: {
-            parentIds: {
-              $each: parts.parentIds ?? [],
-            },
-          },
-        };
-        await Parts.findOneAndUpdate(
-          { partNumber: parts.parentNumber },
-          updateDoc
-        );
-      });
+      uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
+      console.log("uniqueAlreadyParts: ", uniqueAlreadyParts);
+      // uniqueAlreadyParts.forEach(async (parts) => {
+      //   console.log("parts: ", parts);
+      //   // const updateDoc = {
+      //   //   $addToSet: {
+      //   //     parentIds: {
+      //   //       $each: parts.parentIds ?? [],
+      //   //     },
+      //   //   },
+      //   // };
+      //   // await Parts.findOneAndUpdate(
+      //   //   { partNumber: parts.parentNumber },
+      //   //   updateDoc,
+      //   //   { new: true }
+      //   // );
+      //   await updatePartsIDs(parts.parentIds ?? [], parts.parentNumber);
+      // });
+
+      await Promise.all(
+        uniqueAlreadyParts.map((parts) =>
+          updatePartsIDs(parts.parentIds ?? [], parts.partNumber)
+        )
+      );
     }
 
     utils.commonResponse(res, 200, "success", {});
@@ -392,3 +448,31 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };
+
+// exports.updatePartsIDs = async (req, res) => {
+//   try {
+//     const updateDoc = {
+//       $addToSet: {
+//         parentIds: {
+//           $each: [
+//             {
+//               productNumber: "NNZ97512",
+//               crNumber: "PFCP6H2WXD42A",
+//             },
+//             {
+//               productNumber: "TEST",
+//               crNumber: "PFCP6H2WXD42A",
+//             },
+//           ],
+//         },
+//       },
+//     };
+//     data = await Parts.findOneAndUpdate({ partNumber: "AAV30180" }, updateDoc, {
+//       new: true,
+//     });
+//     console.log("data: ", data);
+//     return utils.commonResponse(res, 200, "success");
+//   } catch (error) {
+//     console.log("error: ", error);
+//   }
+// };
