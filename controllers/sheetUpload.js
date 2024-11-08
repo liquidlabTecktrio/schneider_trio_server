@@ -141,41 +141,78 @@ exports.createPOFromGoogleSheet = async (req, res) => {
   }
 };
 
+// async function getUniqueParts(partsList) {
+//   const partMap = new Map();
+//   console.log(partsList.length);
+
+//   partsList.forEach((val) => {
+//     if (!partMap.has(val.partNumber)) {
+//       // Add new entry in map with initialized parentIds
+//       partMap.set(val.partNumber, {
+//         ...val,
+//         parentIds: [
+//           {
+//             productNumber: val.productNumber,
+//             crNumber: val.crNumber,
+//           },
+//         ],
+//       });
+//     } else {
+//       // Update existing part's parentIds if unique
+//       const existingPart = partMap.get(val.partNumber);
+//       const parentExists = existingPart.parentIds.some(
+//         (parent) =>
+//           parent.productNumber === val.productNumber &&
+//           parent.crNumber === val.crNumber
+//       );
+
+//       if (!parentExists) {
+//         existingPart.parentIds.push({
+//           productNumber: val.productNumber,
+//           crNumber: val.crNumber,
+//         });
+//       }
+//     }
+//   });
+
+//   console.log("partMap: ", partMap);
+//   return partMap;
+// }
+
 async function getUniqueParts(partsList) {
   const partMap = new Map();
   console.log(partsList.length);
 
   partsList.forEach((val) => {
     if (!partMap.has(val.partNumber)) {
-      // Add new entry in map with initialized parentIds
       partMap.set(val.partNumber, {
         ...val,
-        parentIds: [
+        parentIds: val.parentIds || [
           {
-            productNumber: val.parentNumber,
+            productNumber: val.productNumber,
             crNumber: val.crNumber,
           },
         ],
       });
     } else {
-      // Update existing part's parentIds if unique
+      // Update the existing part's parentIds if unique
       const existingPart = partMap.get(val.partNumber);
       const parentExists = existingPart.parentIds.some(
         (parent) =>
-          parent.productNumber === val.parentNumber &&
+          parent.productNumber === val.productNumber &&
           parent.crNumber === val.crNumber
       );
 
       if (!parentExists) {
         existingPart.parentIds.push({
-          productNumber: val.parentNumber,
+          productNumber: val.productNumber,
           crNumber: val.crNumber,
         });
       }
     }
   });
 
-  // console.log("partMap: ", partMap);
+  console.log("partMap: ", partMap);
   return partMap;
 }
 
@@ -195,6 +232,8 @@ async function updatePartsIDs(newItems, partNumber) {
       const existingItems = new Set(
         part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
       );
+      console.log(" part.parentIds: ", part.parentIds);
+      console.log("existingItems: ", existingItems);
       const itemsToAdd = newItems.filter(
         (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
       );
@@ -273,7 +312,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
         part.quantity = _rowData.Quantity;
         part.videoUrl = _rowData.videoUrl;
         part.isCritical = _rowData.Criticality == "MINOR" ? false : true;
-        part.parentNumber = _rowData.ParentNumber;
+        part.productNumber = _rowData.ParentNumber;
         part.crNumber = cr.referenceNumber;
 
         cr.parts.push(part);
@@ -385,7 +424,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     const uniqueParts = await getUniqueParts(partsList);
 
     const partsListnew = Array.from(uniqueParts.values());
-    // console.log("partsListnew: ", partsListnew);
+    console.log("partsListnew: ", partsListnew);
 
     partsNumbersRes = await Parts.aggregate([
       {
