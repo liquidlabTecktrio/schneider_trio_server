@@ -495,3 +495,159 @@ exports.shipProject = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+exports.getProjectsDetailsForHub = async (req, res) => {
+  try {
+    const projectId = req.body.projectId;
+
+    projectDetails = await Project.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(projectId),
+        },
+      },
+      {
+        $lookup: {
+          from: "boxes",
+          localField: "_id",
+          foreignField: "projectId",
+          as: "boxes",
+          pipeline: [
+            {
+              $addFields: {
+                quantity: {
+                  $sum: {
+                    $map: {
+                      input: "$components",
+                      as: "component",
+                      in: "$$component.quantity",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                boxSerialNo: "$serialNo",
+                status: 1,
+                quantity: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$switchBoardData",
+      },
+      {
+        $unwind: "$switchBoardData.components",
+      },
+      {
+        $lookup: {
+          from: "commercialreferences",
+          localField: "switchBoardData.components.Reference",
+          foreignField: "referenceNumber",
+          as: "commercialReferenceData",
+        },
+      },
+      {
+        $project: {
+          "switchBoardData.components.Reference": 0,
+          "switchBoardData.components.Description": 0,
+          "switchBoardData.components.Quantity": 0,
+        },
+      },
+      {
+        $unwind: {
+          path: "$commercialReferenceData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          "switchBoardData.components": {
+            $mergeObjects: [
+              "$switchBoardData.components",
+              {
+                referenceNumber: "$commercialReferenceData.referenceNumber",
+                description: "$commercialReferenceData.description",
+                parts: "$commercialReferenceData.parts",
+                productNumber: "$commercialReferenceData.productNumber",
+              },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            projectId: "$_id",
+            switchBoard: "$switchBoardData.switchBoard",
+          },
+          ProjectName: {
+            $first: "$ProjectName",
+          },
+          createdBy: {
+            $first: "$createdBy",
+          },
+          boxes: {
+            $first: "$boxes",
+          },
+          createdTo: {
+            $first: "$createdTo",
+          },
+          boxSerialNumbers: {
+            $first: "$boxSerialNumbers",
+          },
+          status: {
+            $first: "$status",
+          },
+          components: {
+            $push: "$switchBoardData.components",
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.projectId",
+          ProjectName: {
+            $first: "$ProjectName",
+          },
+          createdBy: {
+            $first: "$createdBy",
+          },
+          createdTo: {
+            $first: "$createdTo",
+          },
+          status: {
+            $first: "$status",
+          },
+          switchBoardData: {
+            $push: {
+              switchBoard: "$_id.switchBoard",
+              components: "$components",
+            },
+          },
+          boxSerialNumbers: {
+            $first: "$boxSerialNumbers",
+          },
+          boxes: {
+            $first: "$boxes",
+          },
+        },
+      },
+    ]);
+    if (!((projectDetails ?? []).length > 0)) {
+      return utils.commonResponse(res, 404, "project not found");
+    }
+
+    return utils.commonResponse(
+      res,
+      200,
+      "project details fetched successfully",
+      projectDetails[0]
+    );
+  } catch (error) {
+    return utils.commonResponse(res, 500, error.toString());
+  }
+};

@@ -17,10 +17,17 @@ router.post("/addComponentsToBoxes", BoxSerialNoController.addComponentsToBox);
 
 //project
 router.post("/getAllProjects", ProjectController.getAllProjects);
-router.post("/getAllProjects", ProjectController.getAllProjects);
+router.post(
+  "/getProjectsDetailsForHub",
+  ProjectController.getProjectsDetailsForHub
+);
+// router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
 router.post("/componentScanResult", ProjectController.getComponentScanResult);
-router.post("/incrementFixedQuantity", ProjectController.getincrementFixedQuantity);
+router.post(
+  "/incrementFixedQuantity",
+  ProjectController.getincrementFixedQuantity
+);
 
 //spoke
 router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
@@ -40,4 +47,5 @@ router.post(
   "/getBoxDetailsBasedOnComponentScan",
   ComponentController.getBoxDetailsBasedOnComponentScan
 );
+
 module.exports = router;
