@@ -22,6 +22,7 @@ router.post("/createPanelType", panelController.createPanelType);
 router.post("/addBOMToPanelTypes", panelController.addBOMToPanelTypes);
 router.get("/getAllPanelTypes", panelController.getAllPanelTypes);
 router.post("/uploadSheet", sheetController.createPOFromGoogleSheet);
+router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
 
 router.post("/uploadCR", sheetController.uploadBomGoogleSheet);
 // router.post("/updatePartsIDs", sheetController.updatePartsIDs);

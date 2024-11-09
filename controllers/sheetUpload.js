@@ -497,30 +497,144 @@ exports.uploadBomGoogleSheet = async (req, res) => {
   }
 };
 
-// exports.updatePartsIDs = async (req, res) => {
-//   try {
-//     const updateDoc = {
-//       $addToSet: {
-//         parentIds: {
-//           $each: [
-//             {
-//               productNumber: "NNZ97512",
-//               crNumber: "PFCP6H2WXD42A",
-//             },
-//             {
-//               productNumber: "TEST",
-//               crNumber: "PFCP6H2WXD42A",
-//             },
-//           ],
-//         },
-//       },
-//     };
-//     data = await Parts.findOneAndUpdate({ partNumber: "AAV30180" }, updateDoc, {
-//       new: true,
-//     });
-//     console.log("data: ", data);
-//     return utils.commonResponse(res, 200, "success");
-//   } catch (error) {
-//     console.log("error: ", error);
-//   }
-// };
+async function getAvailableCommonReffData(crNumberList) {
+  const crData = await CommercialReference.aggregate([
+    {
+      $match: {
+        referenceNumber: { $in: crNumberList },
+      },
+    },
+  ]);
+  return crData;
+}
+
+exports.createPOFromGoogleSheetNew = async (req, res) => {
+  try {
+    const serviceAccountAuth = new JWT({
+      email: service_account.client_email,
+      key: service_account.private_key,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    const sheet = new GoogleSpreadsheet(
+      process.env.ALUMINIUMCONFIGSHEETID,
+      serviceAccountAuth
+    );
+    const sheetinfo = await sheet.loadInfo();
+    const worksheet = sheet.sheetsByIndex[0];
+    const rows = await worksheet.getRows();
+    // console.log(rows.toObject())
+    // const _rowIndex = 1;
+    data = [];
+    await Bluebird.each(rows, async (rowData, _rowIndex) => {
+      _rowData = rowData.toObject();
+      if (
+        _rowData.Reference != "" &&
+        _rowData.Reference != null &&
+        _rowData.Reference != undefined
+      ) {
+        data.push({
+          componentName: _rowData.Reference,
+          compShortName: _rowData.Reference,
+          compPartNo: _rowData.Reference,
+          compDescription: _rowData.Description,
+          fixedQuantity: rowData.FixedQuantity,
+          isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
+        });
+      }
+    });
+    // console.log(data[0])
+    comReffNos = await CommercialReference.aggregate([
+      {
+        $project: {
+          referenceNumber: 1,
+        },
+      },
+    ]);
+
+    existingPartNos = collect(comReffNos).pluck("referenceNumber");
+
+    newPartNos = data
+      .map((_data) => {
+        if (!existingPartNos.items.includes(_data.componentName)) {
+          return _data;
+        }
+      })
+      .filter((notUndefined) => notUndefined !== undefined);
+
+    if (newPartNos.length > 0) {
+      return utils.commonResponse(
+        res,
+        404,
+        "There are some commorcial refference are yet to create",
+        newPartNos.map((e) => e.componentName)
+      );
+    }
+
+    // if (newPartNos.length > 0) {
+    //   newComponents = JSON.parse(
+    //     JSON.stringify(await Component.create(newPartNos))
+    //   );
+
+    //   newComponentSerialNos = newComponents.map((newComponent) => {
+    //     return {
+    //       hubSerialNo: [],
+    //       componentID: newComponent._id,
+    //       componentName: newComponent.componentName,
+    //     };
+    //   });
+    //   await ComponentSerialNo.create(newComponentSerialNos);
+    // }
+    const BOMPerSB = sheet.sheetsByIndex[0];
+    const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
+    BOM_data = [];
+    await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
+      _rowData = rowData.toObject();
+
+      BOM_data.push(_rowData);
+    });
+
+    switch_board = collect(
+      BOM_data.filter((BOM_row) => {
+        return BOM_row.Enclosure == "Common Total";
+      })
+    ).pluck("SwitchBoard").items;
+
+    switchborad_data = [];
+    switch_board.forEach((sb) => {
+      sb_data = {
+        switchBoard: sb,
+        components: [],
+      };
+      BOM_data.forEach((element) => {
+        if (element.SwitchBoard == sb) {
+          if (element.Reference != "") {
+            sb_data.components.push(element);
+          }
+        }
+      });
+      switchborad_data.push(sb_data);
+    });
+
+    const project = await Projects.findOne({ ProjectID: req.body.projectId });
+    console.log("project: ", project);
+
+    // console.log("project: ", project);
+    if (!project) {
+      await Projects.create({
+        ProjectName: shortid.generate(10),
+        ProjectID: req.body.projectId,
+        createdBy: req.body.spokeId,
+        createdTo: req.body.hubId,
+        status: "ordered",
+        switchBoardData: switchborad_data,
+      });
+    } else {
+      return utils.commonResponse(res, 200, "Project ID already exist", {});
+    }
+
+    utils.commonResponse(res, 200, "success", {});
+  } catch (error) {
+    console.log(error);
+    utils.commonResponse(res, 500, "server error", error.toString());
+  }
+};
