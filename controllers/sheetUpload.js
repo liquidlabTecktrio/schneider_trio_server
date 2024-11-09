@@ -9,6 +9,7 @@ const collect = require("collect.js");
 const Projects = require("../Models/Projects");
 const shortid = require("shortid");
 const ComponentSerialNo = require("../Models/componentSerialNo");
+const PartsSerialNo = require("../Models/PartsSerialNo");
 
 const CommercialReference = require("../Models/CommercialReference");
 const Products = require("../Models/Products");
@@ -447,7 +448,16 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 
     if (newPartsNos.length > 0) {
       // await Parts.create(partsListnew);
-      await Parts.create(newPartsNos);
+      _newParts = JSON.parse(JSON.stringify(await Parts.create(newPartsNos)));
+
+      newPartsSerialNOs = _newParts.map((newComponent) => {
+        return {
+          hubSerialNo: [],
+          partId: newComponent._id,
+          partNumber: newComponent.partNumber,
+        };
+      });
+      await PartsSerialNo.create(newPartsSerialNOs);
     }
 
     if (alreadyCreatedParts.length > 0) {
