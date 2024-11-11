@@ -18,8 +18,8 @@ router.post("/addComponentsToBoxes", BoxSerialNoController.addComponentsToBox);
 //project
 router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post(
-  "/getProjectsDetailsForHub",
-  ProjectController.getProjectsDetailsForHub
+  "/getProjectDetailsWithParts",
+  ProjectController.getProjectDetailsWithParts
 );
 // router.post("/getAllProjects", ProjectController.getAllProjects);
 router.post("/getProjectsDetails", ProjectController.getProjectsDetails);

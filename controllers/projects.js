@@ -496,7 +496,7 @@ exports.shipProject = async (req, res) => {
   }
 };
 
-exports.getProjectsDetailsForHub = async (req, res) => {
+exports.getProjectDetailsWithParts = async (req, res) => {
   try {
     const projectId = req.body.projectId;
 
