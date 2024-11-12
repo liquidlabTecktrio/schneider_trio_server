@@ -38,7 +38,9 @@ const CommercialReference = new Schema(
     parts: {
       type: [partSchema],
     },
-
+    quantity: {
+      type: Number,
+    },
     productNumber: {
       type: String,
     },
