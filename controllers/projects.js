@@ -365,136 +365,246 @@ exports.getSpokeProjectsDetails = async (req, res) => {
 
 exports.shipProject = async (req, res) => {
   try {
-    projectId = req.body.projectId;
+    const { projectId } = req.body;
 
-    projectComponents = await Project.aggregate([
+    // Step 1: Retrieve Project Components and Calculate Required Quantities
+    const projectComponents = await Project.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(projectId) } },
+      { $project: { "switchBoardData.components": 1 } },
+      { $unwind: "$switchBoardData" },
+      { $unwind: "$switchBoardData.components" },
       {
-        $match: {
-          _id: new mongoose.Types.ObjectId(projectId),
+        $lookup: {
+          from: "parts",
+          localField: "switchBoardData.components.Reference",
+          foreignField: "parentIds.crNumber",
+          as: "partDetails",
         },
       },
+      { $unwind: "$partDetails" },
       {
         $project: {
-          "switchBoardData.components": 1,
-        },
-      },
-      {
-        $unwind: {
-          path: "$switchBoardData",
-        },
-      },
-      {
-        $unwind: {
-          path: "$switchBoardData.components",
-        },
-      },
-      {
-        $project: {
-          components: "$switchBoardData.components",
-        },
-      },
-      {
-        $project: {
-          reference: "$components.Reference",
-          components: 1,
+          reference: "$switchBoardData.components.Reference",
+          requiredQuantity: {
+            $multiply: ["$switchBoardData.components.Quantity", "$partDetails.quantity"],
+          },
+          partNumber: "$partDetails.partNumber",
+          partDescription: "$partDetails.partDescription",
         },
       },
       {
         $group: {
-          _id: "$reference",
-          qnty: {
-            $sum: "$components.Quantity",
-          },
+          _id: { reference: "$reference", partNumber: "$partNumber", partDescription: "$partDescription" },
+          totalRequiredQuantity: { $sum: "$requiredQuantity" },
         },
       },
       {
         $project: {
           _id: 0,
-          reference: "$_id",
-          qnty: 1,
+          reference: "$_id.reference",
+          partNumber: "$_id.partNumber",
+          partDescription: "$_id.partDescription",
+          totalRequiredQuantity: 1,
         },
       },
     ]);
 
-    BoxComponenets = await Boxes.aggregate([
-      {
-        $match: {
-          projectId: new mongoose.Types.ObjectId(projectId),
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          components: 1,
-        },
-      },
-      {
-        $unwind: {
-          path: "$components",
-        },
-      },
+
+
+    console.log('projectComponents: ', projectComponents);
+
+    // Step 2: Fetch Shipped Components from Boxes
+    const boxComponents = await Boxes.aggregate([
+      { $match: { projectId: new mongoose.Types.ObjectId(projectId) } },
+      { $unwind: "$components" },
       {
         $group: {
           _id: "$components.componentName",
-          qnty: {
-            $sum: "$components.quantity",
-          },
+          totalShippedQuantity: { $sum: "$components.quantity" },
         },
       },
       {
         $project: {
           _id: 0,
-          reference: "$_id",
-          qnty: 1,
+          partNumber: "$_id", // componentName in boxes is partNumber from parts
+          totalShippedQuantity: 1,
         },
       },
     ]);
+    
+    console.log('boxComponents: ', boxComponents);
+    // Step 3: Compare Required and Shipped Quantities
+    const missingComponents = [];
+    const boxComponentsMap = new Map(boxComponents.map(comp => [comp.partNumber, comp.totalShippedQuantity]));
 
-    missingComponents = [];
-    projectComponents
-      .map((projectComponent) => {
-        BoxComponenets.map((boxComponent) => {
-          if (projectComponent.reference === boxComponent.reference) {
-            if (projectComponent.qnty != boxComponent.qnty) {
-              missingComponents.push({
-                reference: projectComponent.reference,
-                qnty: projectComponent.qnty - boxComponent.qnty,
-              });
-            }
-          }
-        }).filter((notUndefined) => notUndefined !== undefined);
-        if (
-          !BoxComponenets.some(
-            (boxitem) => boxitem.reference == projectComponent.reference
-          )
-        )
-          missingComponents.push(projectComponent);
-      })
-      .filter((notUndefined) => notUndefined !== undefined);
+    projectComponents.forEach((projectComponent) => {
+      const shippedQuantity = boxComponentsMap.get(projectComponent.partNumber) || 0;
+      if (shippedQuantity < projectComponent.totalRequiredQuantity) {
+        missingComponents.push({
+          reference: projectComponent.reference,
+          partNumber: projectComponent.partNumber,
+          partDescription: projectComponent.partDescription,
+          qnty: projectComponent.totalRequiredQuantity - shippedQuantity,
+        });
+      }
+    });
 
+    // Step 4: Respond Based on Missing Components
     if (missingComponents.length > 0) {
-      utils.commonResponse(
+      return utils.commonResponse(
         res,
         201,
         "The project cannot be shipped as the following items are not shipped",
         missingComponents
       );
     } else {
+      // Update Project Status to Shipped
       await Project.updateOne(
         { _id: new mongoose.Types.ObjectId(projectId) },
         { $set: { status: "shipped" } }
       );
 
-      utils.commonResponse(
-        res,
-        200,
-        "The project has been shipped successfully"
-      );
+      return utils.commonResponse(res, 200, "The project has been shipped successfully");
     }
   } catch (error) {
-    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+    console.error("Error in shipProject:", error);
+    return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
+// exports.shipProject = async (req, res) => {
+//   try {
+//     projectId = req.body.projectId;
+
+//     projectComponents = await Project.aggregate([
+//       {
+//         $match: {
+//           _id: new mongoose.Types.ObjectId(projectId),
+//         },
+//       },
+//       {
+//         $project: {
+//           "switchBoardData.components": 1,
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$switchBoardData",
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$switchBoardData.components",
+//         },
+//       },
+//       {
+//         $project: {
+//           components: "$switchBoardData.components",
+//         },
+//       },
+//       {
+//         $project: {
+//           reference: "$components.Reference",
+//           components: 1,
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$reference",
+//           qnty: {
+//             $sum: "$components.Quantity",
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           reference: "$_id",
+//           qnty: 1,
+//         },
+//       },
+//     ]);
+
+//     BoxComponenets = await Boxes.aggregate([
+//       {
+//         $match: {
+//           projectId: new mongoose.Types.ObjectId(projectId),
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           components: 1,
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$components",
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$components.componentName",
+//           qnty: {
+//             $sum: "$components.quantity",
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           reference: "$_id",
+//           qnty: 1,
+//         },
+//       },
+//     ]);
+
+//     missingComponents = [];
+//     projectComponents
+//       .map((projectComponent) => {
+//         BoxComponenets.map((boxComponent) => {
+//           if (projectComponent.reference === boxComponent.reference) {
+//             if (projectComponent.qnty != boxComponent.qnty) {
+//               missingComponents.push({
+//                 reference: projectComponent.reference,
+//                 qnty: projectComponent.qnty - boxComponent.qnty,
+//               });
+//             }
+//           }
+//         }).filter((notUndefined) => notUndefined !== undefined);
+//         if (
+//           !BoxComponenets.some(
+//             (boxitem) => boxitem.reference == projectComponent.reference
+//           )
+//         )
+//           missingComponents.push(projectComponent);
+//       })
+//       .filter((notUndefined) => notUndefined !== undefined);
+
+//     if (missingComponents.length > 0) {
+//       utils.commonResponse(
+//         res,
+//         201,
+//         "The project cannot be shipped as the following items are not shipped",
+//         missingComponents
+//       );
+//     } else {
+//       await Project.updateOne(
+//         { _id: new mongoose.Types.ObjectId(projectId) },
+//         { $set: { status: "shipped" } }
+//       );
+
+//       utils.commonResponse(
+//         res,
+//         200,
+//         "The project has been shipped successfully"
+//       );
+//     }
+//   } catch (error) {
+//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+//   }
+// };
 
 exports.getProjectDetailsWithParts = async (req, res) => {
   try {

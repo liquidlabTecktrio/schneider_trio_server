@@ -752,7 +752,7 @@ if (findComponentExist.length > 0) {
   }
 }
 
-const box = await Boxes.findOne({ serialNo: boxSerialNo });
+const box = await Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID });
 
 if (!box) {
   return utils.commonResponse(res, 404, "Box serial number not found");
@@ -793,44 +793,35 @@ if (!partSerialEntry) {
   );
 }
 
-const allProjectBasedBoxes = await Boxes.find({
-  projectId: projectID,
-});
-
+ 
 
 
 const partIDObject = new mongoose.Types.ObjectId(partID);
-for (const serialBox of allProjectBasedBoxes) {
-  const existingPart = serialBox.components.find(
-    (part) => part.componentID && part.componentID.equals(partIDObject));
-    
+const existingPart = box.components.find(
+  (comp) => comp.componentID && comp.componentID.equals(partIDObject)
+);
 
-  if (existingPart) {
-    if (
-      existingPart.componentSerialNo.includes(partSerialNumber)
-    ) {
-      return utils.commonResponse(
-        res,
-        400,
-        "Serial number already exists for this Part in the box"
-      );
-    }
-
-    // Add the serial number and update the quantity
-    existingPart.componentSerialNo.push(partSerialNumber);
-    existingPart.quantity = existingPart.componentSerialNo.length;
-
-    // /Save the updated box
-    await serialBox.save();
-  }else{
-    box.components.push({
-      componentID:partID,
-      componentName: partNumber.partNumber,
-      componentSerialNo: [partSerialNumber],
-      quantity: 1,
-    });
-    
+if (existingPart) {
+  // If the part already exists, check for duplicate serial number
+  if (existingPart.componentSerialNo.includes(partSerialNumber)) {
+    return utils.commonResponse(
+      res,
+      400,
+      "Serial number already exists for this Part in the box"
+    );
   }
+
+  // Add the serial number and update the quantity
+  existingPart.componentSerialNo.push(partSerialNumber);
+  existingPart.quantity = existingPart.componentSerialNo.length;
+} else {
+  // If the part does not exist, add it as a new component
+  box.components.push({
+    componentID: partID,
+    componentName: partNumber.partNumber,
+    componentSerialNo: [partSerialNumber],
+    quantity: 1,
+  });
 }
 
 
