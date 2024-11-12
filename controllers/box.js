@@ -663,18 +663,21 @@ exports.updateBoxStatus = async (req, res) => {
 };
 
 
-
+ 
 
 async function checkPartExistInTheProject(res, partID, projectID) {
-  try {
+try {
     const findComponentExist = await Parts.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(partID) }
       },
       {
+        $unwind: "$parentIds" // Unwind parentIds to access each crNumber individually
+      },
+      {
         $lookup: {
           from: "projects",
-          let: { partNumber: "$partNumber" },
+          let: { crNumber: "$parentIds.crNumber" }, // Reference crNumber from parentIds
           pipeline: [
             { 
               $match: { 
@@ -685,7 +688,7 @@ async function checkPartExistInTheProject(res, partID, projectID) {
             { $unwind: "$switchBoardData.components" },
             { 
               $match: { 
-                "switchBoardData.components.Reference": "$$partNumber"
+                "switchBoardData.components.Reference": "$$crNumber"
               } 
             },
             {
@@ -704,9 +707,9 @@ async function checkPartExistInTheProject(res, partID, projectID) {
         $project: { isComponentExist: 1 }
       }
     ]);
-    console.log('findComponentExist: ', findComponentExist);
-
-    return findComponentExist;
+    
+    const componentExists = findComponentExist.length > 0 && findComponentExist[0].isComponentExist;
+    return componentExists;
   } catch (error) {
     utils.commonResponse(res, 500, error.toString());
   }
@@ -724,9 +727,7 @@ exports.addPartsToBox = async (req,res) => {
     boxSerialNo,
     projectID,
     partSerialNumber,
-  } = req.body;
-
-
+  } = req.body; 
 
   if (
     !hubID ||
@@ -776,9 +777,7 @@ if (!part) {
 const hub = await Hub.findById(hubID);
 if (!hub) {
   return utils.commonResponse(res, 404, "Hub ID not found");
-}
-
-
+} 
 
 const partSerialEntry = await PartsSerialNo.findOne({
   partId: new mongoose.Types.ObjectId(partID),
@@ -790,8 +789,6 @@ const partSerialEntry = await PartsSerialNo.findOne({
   }
 });
 
- 
-
 if (!partSerialEntry) {
   return utils.commonResponse(
     res,
@@ -801,16 +798,15 @@ if (!partSerialEntry) {
 }
 
 const allProjectBasedBoxes = await Boxes.find({
-  projectId: new mongoose.Types.ObjectId(projectID),
-});
- 
-
+  projectId: projectID,
+});  
 
 
 for (const serialBox of allProjectBasedBoxes) {
   const existingPart = serialBox.components.find(
     (part) => part.componentID && part.componentID.equals(partID)
   );
+
 
   if (existingPart) {
     if (

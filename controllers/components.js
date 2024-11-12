@@ -2,6 +2,8 @@ const Components = require("../Models/Components");
 const componentSerialNo = require("../Models/componentSerialNo");
 const utils = require("../controllers/utils");
 const Box = require("../Models/box");
+const Parts = require("../Models/Parts");
+
 const mongoose = require("mongoose");
 exports.createComponent = async (req, res) => {
   try {
@@ -64,6 +66,21 @@ exports.getAllComponents = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+exports.getAllParts = async (req, res) => {
+  try {
+    const allComponents = await Parts.find().select('-parentIds -quantity');
+    utils.commonResponse(
+      res,
+      200,
+      "All components fetched successfully",
+      allComponents
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
 
 exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
   try {

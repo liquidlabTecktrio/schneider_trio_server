@@ -1,9 +1,12 @@
 const componentSerialNo = require("../Models/componentSerialNo.js");
+const partSerialNo = require("../Models/PartsSerialNo.js");
+const parts = require("../Models/Parts.js");
 const panelSerialNo = require("../Models/panelSerialNo");
 const Components = require("../Models/Components");
 const Panels = require("../Models/Panels");
 const utils = require("../controllers/utils");
 const shortid = require("shortid");
+
 exports.generateComponentSerialNo = async (req, res) => {
   try {
     const { hubID, componentID, qnty } = req.body;
@@ -55,6 +58,73 @@ exports.generateComponentSerialNo = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+exports.generatePartSerialNo = async (req, res) => {
+  try {
+    const { hubID, partID, qnty } = req.body;
+    console.log(' hubID, partID, qnty: ',  hubID, partID, qnty);
+
+    if (!qnty || typeof qnty !== "number") {
+      return utils.commonResponse(
+        res,
+        400,
+        "Quantity (qnty) is required and must be a number"
+      );
+    }
+
+    // Generate serial numbers based on quantity
+    const serialNumbers = Array.from({ length: qnty }, () =>
+      shortid.generate(6)
+    );
+
+    // Check if the hubSerialNo entry with the specified hubID exists
+    const partSerialRecord = await partSerialNo.findOne({ partId: partID, "hubSerialNo.hubId": hubID });
+
+    if (partSerialRecord) {
+      // If the entry exists, update the serial number and serial numbers array
+      await partSerialNo.updateOne(
+        {
+          partId: partID,
+          "hubSerialNo.hubId": hubID,
+        },
+        {
+          $inc: { "hubSerialNo.$.serialNo": qnty },
+          $push: { "hubSerialNo.$.serialNos": { $each: serialNumbers } },
+        }
+      );
+    } else {
+      // If the entry does not exist, create a new hubSerialNo entry with hubId
+      await partSerialNo.updateOne(
+        { partId: partID },
+        {
+          $push: {
+            hubSerialNo: {
+              hubId: hubID,
+              serialNo: qnty,
+              serialNos: serialNumbers,
+            },
+          },
+        },
+        { upsert: true }
+      );
+    }
+
+    // Fetch part details for response
+    const part = await parts.findById(partID);
+    return utils.commonResponse(res, 200, "Part serial number generated", {
+      hubID: hubID,
+      partID: partID,
+      partDescription: part
+        ? `${part.partNumber} - ${part.partDescription}`
+        : "",
+      qnty: qnty,
+      serialNos: serialNumbers,
+    });
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
 
 exports.generatePanelSerialNo = async (req, res) => {
   try {
