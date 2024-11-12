@@ -9,10 +9,7 @@ router.post(
   "/generateComponentSerialNo",
   serialNoController.generateComponentSerialNo
 );
-router.post(
-  "/generateComponentSerialNo",
-  serialNoController.generatePartSerialNo
-);
+router.post("/generatePartSerialNo", serialNoController.generatePartSerialNo);
 router.post("/generatePanelSerialNo", serialNoController.generatePanelSerialNo);
 router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
 router.post("/addBoxToProject", BoxSerialNoController.addBoxToProject);
