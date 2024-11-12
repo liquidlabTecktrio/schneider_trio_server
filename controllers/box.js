@@ -595,6 +595,7 @@ exports.getBoxDetails = async (req, res) => {
       return utils.commonResponse(res, 404, "Box not found");
     } else {
     }
+    console.log(box);
     utils.commonResponse(res, 200, "Box fetched successfully", box[0]);
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
@@ -794,7 +795,7 @@ if (!partSerialEntry) {
 
 const allProjectBasedBoxes = await Boxes.find({
   projectId: projectID,
-});  
+});
 
 
 
@@ -803,7 +804,6 @@ for (const serialBox of allProjectBasedBoxes) {
   const existingPart = serialBox.components.find(
     (part) => part.componentID && part.componentID.equals(partIDObject));
     
-
 
   if (existingPart) {
     if (
@@ -820,7 +820,7 @@ for (const serialBox of allProjectBasedBoxes) {
     existingPart.componentSerialNo.push(partSerialNumber);
     existingPart.quantity = existingPart.componentSerialNo.length;
 
-    // // Save the updated box
+    // /Save the updated box
     await serialBox.save();
   }else{
     box.components.push({
