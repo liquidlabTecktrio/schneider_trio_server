@@ -69,7 +69,7 @@ exports.getAllComponents = async (req, res) => {
 
 exports.getAllParts = async (req, res) => {
   try {
-    const allComponents = await Parts.find();
+    const allComponents = await Parts.find().select('-parentIds -quantity');
     utils.commonResponse(
       res,
       200,
@@ -80,6 +80,7 @@ exports.getAllParts = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
 
 exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
   try {
