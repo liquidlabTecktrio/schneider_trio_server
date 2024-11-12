@@ -664,7 +664,7 @@ exports.getProjectDetailsWithParts = async (req, res) => {
         $project: {
           "switchBoardData.components.Reference": 0,
           "switchBoardData.components.Description": 0,
-          "switchBoardData.components.Quantity": 0,
+          // "switchBoardData.components.Quantity": 0,
         },
       },
       {
