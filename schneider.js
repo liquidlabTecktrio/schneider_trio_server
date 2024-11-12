@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 const bodyParser = require("body-parser");
-const cors = require('cors');
+const cors = require("cors");
 
 const webRoutes = require("./routes/web");
 const adminRoutes = require("./routes/admin");
@@ -13,8 +13,7 @@ const spokeRoutes = require("./routes/spokesApp");
 app.use(bodyParser.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());  // Use cors middleware directly
-
+app.use(cors(["google.com", "domain"])); // Use cors middleware directly
 
 function setupCORS(req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
@@ -59,4 +58,3 @@ mongoose
   .catch((err) => {
     console.log("Caught database connection error:", err);
   });
-
