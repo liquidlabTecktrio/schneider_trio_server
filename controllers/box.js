@@ -199,9 +199,7 @@ async function checkComponentQuntityExceeded(
   reference,
   projectId
 ) {
-  console.log("totalQuantity: ", totalQuantity);
-  console.log("reference: ", reference);
-  console.log("projectId: ", projectId);
+   
 
   var isExceedded = false;
   const checkQuntity = await Project.aggregate([
@@ -287,8 +285,7 @@ exports.addComponentsToBox = async (req, res) => {
     const component = await ComponentSerialNo.findOne({
       componentID: componentID,
     });
-    // console.log("componentID: ", componentID);
-    // console.log("component: ", component);
+
     const componentName = await Component.findOne({
       _id: new mongoose.Types.ObjectId(componentID),
     });
@@ -352,7 +349,6 @@ exports.addComponentsToBox = async (req, res) => {
       quantity: 1,
     });
     // }
-    console.log(projectID, componentID);
     const totalComponentsQuantity = await Boxes.aggregate([
       {
         $match: {
@@ -599,7 +595,6 @@ exports.getBoxDetails = async (req, res) => {
       return utils.commonResponse(res, 404, "Box not found");
     } else {
     }
-    console.log(box);
     utils.commonResponse(res, 200, "Box fetched successfully", box[0]);
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
@@ -802,10 +797,12 @@ const allProjectBasedBoxes = await Boxes.find({
 });  
 
 
+
+const partIDObject = new mongoose.Types.ObjectId(partID);
 for (const serialBox of allProjectBasedBoxes) {
   const existingPart = serialBox.components.find(
-    (part) => part.componentID && part.componentID.equals(partID)
-  );
+    (part) => part.componentID && part.componentID.equals(partIDObject));
+    
 
 
   if (existingPart) {
@@ -824,16 +821,18 @@ for (const serialBox of allProjectBasedBoxes) {
     existingPart.quantity = existingPart.componentSerialNo.length;
 
     // // Save the updated box
-    // await serialBox.save();
+    await serialBox.save();
+  }else{
+    box.components.push({
+      componentID:partID,
+      componentName: partNumber.partNumber,
+      componentSerialNo: [partSerialNumber],
+      quantity: 1,
+    });
+    
   }
 }
 
-box.components.push({
-  componentID:partID,
-  componentName: partNumber.partNumber,
-  componentSerialNo: [partSerialNumber],
-  quantity: 1,
-});
 
 const totalComponentsQuantity = await Boxes.aggregate([
   {
