@@ -515,12 +515,10 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
       key: service_account.private_key,
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
-    const sheet = new GoogleSpreadsheet(
-      process.env.ALUMINIUMCONFIGSHEETID,
-      serviceAccountAuth
-    );
+    const sheet = new GoogleSpreadsheet(req.body.sheetId, serviceAccountAuth);
+    const sheetIndex = req.body.sheetIndex;
     const sheetinfo = await sheet.loadInfo();
-    const worksheet = sheet.sheetsByIndex[0];
+    const worksheet = sheet.sheetsByIndex[sheetIndex];
     const rows = await worksheet.getRows();
     // console.log(rows.toObject())
     // const _rowIndex = 1;
@@ -585,7 +583,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
     //   });
     //   await ComponentSerialNo.create(newComponentSerialNos);
     // }
-    const BOMPerSB = sheet.sheetsByIndex[0];
+    const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
     const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
     BOM_data = [];
     await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
