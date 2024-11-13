@@ -61,8 +61,7 @@ exports.generateComponentSerialNo = async (req, res) => {
 
 exports.generatePartSerialNo = async (req, res) => {
   try {
-    const { hubID, partID, qnty } = req.body;
-    console.log(' hubID, partID, qnty: ',  hubID, partID, qnty);
+    const { hubID, partID, partNumber, qnty } = req.body;
 
     if (!qnty || typeof qnty !== "number") {
       return utils.commonResponse(
@@ -77,14 +76,20 @@ exports.generatePartSerialNo = async (req, res) => {
       shortid.generate(6)
     );
 
+    // Determine search criteria based on availability of partID or partNumber
+    const searchCriteria = partID ? { partId: partID } : { partNumber: partNumber };
+
     // Check if the hubSerialNo entry with the specified hubID exists
-    const partSerialRecord = await partSerialNo.findOne({ partId: partID, "hubSerialNo.hubId": hubID });
+    const partSerialRecord = await partSerialNo.findOne({
+      ...searchCriteria,
+      "hubSerialNo.hubId": hubID,
+    });
 
     if (partSerialRecord) {
       // If the entry exists, update the serial number and serial numbers array
       await partSerialNo.updateOne(
         {
-          partId: partID,
+          ...searchCriteria,
           "hubSerialNo.hubId": hubID,
         },
         {
@@ -95,7 +100,7 @@ exports.generatePartSerialNo = async (req, res) => {
     } else {
       // If the entry does not exist, create a new hubSerialNo entry with hubId
       await partSerialNo.updateOne(
-        { partId: partID },
+        searchCriteria,
         {
           $push: {
             hubSerialNo: {
@@ -110,10 +115,14 @@ exports.generatePartSerialNo = async (req, res) => {
     }
 
     // Fetch part details for response
-    const part = await parts.findById(partID);
+    const part = partID
+      ? await parts.findById(partID)
+      : await parts.findOne({ partNumber: partNumber });
+
     return utils.commonResponse(res, 200, "Part serial number generated", {
       hubID: hubID,
-      partID: partID,
+      partID: part._id,
+      partNumber: part.partNumber,
       partDescription: part
         ? `${part.partNumber} - ${part.partDescription}`
         : "",
@@ -124,6 +133,7 @@ exports.generatePartSerialNo = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
 
 
 exports.generatePanelSerialNo = async (req, res) => {
