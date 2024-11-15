@@ -961,7 +961,10 @@ exports.addPartsToBox = async (req, res) => {
       }
     }
 
-const box = await Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID });
+    const box = await Boxes.findOne({
+      serialNo: boxSerialNo,
+      projectId: projectID,
+    });
 
     if (!box) {
       return utils.commonResponse(res, 404, "Box serial number not found");
@@ -1002,37 +1005,33 @@ const box = await Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID })
       );
     }
 
- 
-
-
-const partIDObject = new mongoose.Types.ObjectId(partID);
-const existingPart = box.components.find(
-  (comp) => comp.componentID && comp.componentID.equals(partIDObject)
-);
-
-if (existingPart) {
-  // If the part already exists, check for duplicate serial number
-  if (existingPart.componentSerialNo.includes(partSerialNumber)) {
-    return utils.commonResponse(
-      res,
-      400,
-      "Serial number already exists for this Part in the box"
+    const partIDObject = new mongoose.Types.ObjectId(partID);
+    const existingPart = box.components.find(
+      (comp) => comp.componentID && comp.componentID.equals(partIDObject)
     );
-  }
 
-  // Add the serial number and update the quantity
-  existingPart.componentSerialNo.push(partSerialNumber);
-  existingPart.quantity = existingPart.componentSerialNo.length;
-} else {
-  // If the part does not exist, add it as a new component
-  box.components.push({
-    componentID: partID,
-    componentName: partNumber.partNumber,
-    componentSerialNo: [partSerialNumber],
-    quantity: 1,
-  });
-}
+    if (existingPart) {
+      // If the part already exists, check for duplicate serial number
+      if (existingPart.componentSerialNo.includes(partSerialNumber)) {
+        return utils.commonResponse(
+          res,
+          400,
+          "Serial number already exists for this Part in the box"
+        );
+      }
 
+      // Add the serial number and update the quantity
+      existingPart.componentSerialNo.push(partSerialNumber);
+      existingPart.quantity = existingPart.componentSerialNo.length;
+    } else {
+      // If the part does not exist, add it as a new component
+      box.components.push({
+        componentID: partID,
+        componentName: partNumber.partNumber,
+        componentSerialNo: [partSerialNumber],
+        quantity: 1,
+      });
+    }
 
     const totalComponentsQuantity = await Boxes.aggregate([
       {
@@ -1083,5 +1082,51 @@ if (existingPart) {
   } catch (error) {
     console.error("Error in addComponentsToBox:", error);
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+exports.getAllPartsInAllBoxes = async (req, res) => {
+  try {
+    const projectId = req.body.projectId;
+    const boxSerialNos = req.body.boxSerialNos;
+    const allParts = await Boxes.aggregate([
+      {
+        $match: {
+          projectId: new mongoose.Types.ObjectId(projectId),
+          serialNo: {
+            $in: boxSerialNos,
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$components",
+        },
+      },
+      {
+        $project: {
+          partNumber: "$components.componentName",
+          componentID: "$components.componentID",
+          quantity: "$components.quantity",
+        },
+      },
+      {
+        $group: {
+          _id: "$componentID",
+          quantity: {
+            $sum: "$quantity",
+          },
+          partNumber: {
+            $first: "$partNumber",
+          },
+        },
+      },
+    ]);
+    if (allParts.length == 0) {
+      utils.commonResponse(res, 201, "no parts found");
+    }
+    utils.commonResponse(res, 200, "all parts fetched successfully", allParts);
+  } catch (error) {
+    utils.commonResponse(res, 500, "unexpected server error", error.toString());
   }
 };

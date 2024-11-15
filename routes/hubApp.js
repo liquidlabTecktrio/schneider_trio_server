@@ -41,6 +41,10 @@ router.post(
 router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
 router.post("/shipProject", ProjectController.shipProject);
 router.post("/updateBoxStatus", BoxSerialNoController.updateBoxStatus);
+router.post(
+  "/getAllPartsInAllBoxes",
+  BoxSerialNoController.getAllPartsInAllBoxes
+);
 
 //
 router.post(
