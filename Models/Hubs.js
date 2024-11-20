@@ -11,6 +11,14 @@ const Hub = new Schema(
       type: String,
       required: true,
     },
+    hubUsername: {
+      type: String,
+      required: true,
+    },
+    hubPassword: {
+      type: String,
+      required: true,
+    },
     
     isHubActive: {
       type: Boolean,

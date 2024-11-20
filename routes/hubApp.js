@@ -4,6 +4,11 @@ const serialNoController = require("../controllers/serial");
 const BoxSerialNoController = require("../controllers/box");
 const ProjectController = require("../controllers/projects");
 const ComponentController = require("../controllers/components");
+const hubs = require("../controllers/hubs");
+
+// Login and Register
+router.post("/hubregister", hubs.createHubs);
+router.post("/hublogin", hubs.LoginToHubs);
 
 router.post(
   "/generateComponentSerialNo",

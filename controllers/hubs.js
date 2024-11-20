@@ -5,8 +5,9 @@ const utils = require("../controllers/utils");
 
 exports.createHubs = async (req, res) => {
     try {
-        const { hubName, hubShortName } = req.body;
-        await Hubs.create({ hubName, hubShortName }).then(async (result) => {
+        const { hubName, hubShortName , hubUsername, hubPassword} = req.body;
+       
+        await Hubs.create({ hubName, hubShortName, hubUsername, hubPassword }).then(async (result) => {
             const allHubs = await Hubs.find();
             utils.commonResponse(res, 200, "hub created successfully",allHubs);
 
@@ -30,4 +31,26 @@ exports.getAllHubs = async (req, res) => {
 
     }
 }
+
+exports.LoginToHubs = async (req, res) => {
+    try {
+        const { hubUsername, hubPassword } = req.body;
+        console.log(hubUsername);
+
+        // Find the hub by username and password
+        const hub = await Hubs.findOne({ hubUsername: hubUsername, hubPassword: hubPassword });
+
+        if (hub) {
+            // If the hub is found, send a success response
+            utils.commonResponse(res, 200, "Login successfully", hub);
+        } else {
+            // If the hub is not found (invalid username/password), send an error response
+            utils.commonResponse(res, 400, "Invalid username or password");
+        }
+    } catch (error) {
+        // Handle unexpected errors
+        utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+    }
+};
+
 

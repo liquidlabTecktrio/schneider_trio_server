@@ -12,6 +12,17 @@ const Spoke = new Schema(
       required: true,
     },
     
+    spokeUserName: {
+      type: String,
+      required: true,
+    },
+    
+    spokePassword: {
+      type: String,
+      required: true,
+    },
+    
+    
     isSpokeActive: {
       type: Boolean,
       required: true,
