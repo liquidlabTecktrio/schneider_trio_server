@@ -106,6 +106,29 @@ exports.addBoxToProject = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+exports.removeBoxFromProject = async (req, res) => {
+  try {
+    const { projectID, serialNo } = req.body;
+    if (!projectID || !serialNo) {
+      return utils.commonResponse(res, 400, "Invalid input parameters plz provide projectID and serialNo (box serial no)");
+    }
+    const existingBoxSerial = await boxSerialNo.findOne({
+      serialNos: serialNo,
+    });
+    if (existingBoxSerial) {
+      const existingBox = await Boxes.findOne({
+        projectId: projectID,
+        serialNo,
+      });
+      // If box exists, proceed to remove it
+    await Boxes.deleteOne({ _id: existingBox._id });
+      return utils.commonResponse(res, 404, "Box Deleted from project");
+    }
+  } catch (error) {
+    console.error("Error in addBoxToProject:", error);
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
 
 exports.addComponentsToBox1 = async (req, res) => {
   try {

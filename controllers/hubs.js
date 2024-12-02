@@ -45,7 +45,7 @@ exports.LoginToHubs = async (req, res) => {
             utils.commonResponse(res, 200, "Login successfully", hub);
         } else {
             // If the hub is not found (invalid username/password), send an error response
-            utils.commonResponse(res, 400, "Invalid username or password");
+            utils.commonResponse(res, 401, "Invalid username or password");
         }
     } catch (error) {
         // Handle unexpected errors

@@ -10,12 +10,14 @@ const Projects = require("../Models/Projects");
 const shortid = require("shortid");
 const ComponentSerialNo = require("../Models/componentSerialNo");
 const PartsSerialNo = require("../Models/PartsSerialNo");
-
+const XLSX = require('xlsx');
 const CommercialReference = require("../Models/CommercialReference");
 const Products = require("../Models/Products");
 const Parts = require("../Models/Parts");
 const mongoose = require("mongoose");
 const promise = require("bluebird/js/release/promise");
+
+
 
 exports.createPOFromGoogleSheet = async (req, res) => {
   try {
@@ -119,7 +121,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     });
 
     const project = await Projects.findOne({ ProjectID: req.body.projectId });
-    console.log("project: ", project);
+    // console.log("project: ", project);
 
     // console.log("project: ", project);
     if (!project) {
@@ -182,7 +184,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
 
 async function getUniqueParts(partsList) {
   const partMap = new Map();
-  console.log(partsList.length);
+  // console.log(partsList.length);
 
   partsList.forEach((val) => {
     if (!partMap.has(val.partNumber)) {
@@ -213,13 +215,13 @@ async function getUniqueParts(partsList) {
     }
   });
 
-  console.log("partMap: ", partMap);
+  // console.log("partMap: ", partMap);
   return partMap;
 }
 
 async function updatePartsIDs(newItems, partNumber) {
-  console.log("partNumber: ", partNumber);
-  console.log("newItems: ", newItems);
+  // console.log("partNumber: ", partNumber);
+  // console.log("newItems: ", newItems);
   try {
     // Define the unique items to add
     // const newItems = [
@@ -233,12 +235,12 @@ async function updatePartsIDs(newItems, partNumber) {
       const existingItems = new Set(
         part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
       );
-      console.log(" part.parentIds: ", part.parentIds);
-      console.log("existingItems: ", existingItems);
+      // console.log(" part.parentIds: ", part.parentIds);
+      // console.log("existingItems: ", existingItems);
       const itemsToAdd = newItems.filter(
         (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
       );
-      console.log("itemsToAdd: ", itemsToAdd);
+      // console.log("itemsToAdd: ", itemsToAdd);
 
       // Only update if there are items to add
       if (itemsToAdd.length > 0) {
@@ -253,7 +255,7 @@ async function updatePartsIDs(newItems, partNumber) {
           updateDoc,
           { new: true }
         );
-        console.log("updatedData: ", updatedData);
+        // console.log("updatedData: ", updatedData);
       }
     }
   } catch (error) {
@@ -497,6 +499,262 @@ exports.uploadBomGoogleSheet = async (req, res) => {
   }
 };
 
+exports.uploadCRExcelFromHub = async (req, res) => {
+  try {
+
+    // GETTING THE ORDER CR FILE AND ORGANIZING FOR PREVIEW
+    if (!req.file) {
+      return res.status(400).send("No file uploaded.");
+    }
+    const filePath = req.file.path;
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(worksheet);
+    commercialRefInOrder = [];
+    partsList = [];
+    parts=[]
+    cr = {};
+    parentIdsList = [];
+    data = [];
+
+    // CONVERT XL DATA TO JS OBJECT
+    await Bluebird.each(rows, async (_rowData, _rowIndex) => {
+      // _rowData = rowData.toObject();
+      if (
+        _rowData.Reference != "" &&
+        _rowData.Reference != null &&
+        _rowData.Reference != undefined
+      ) {
+        data.push({
+
+          SwitchBoard:_rowData.SwitchBoard,
+          Reference:_rowData.Reference,
+          Enclosure:_rowData.Enclosure,
+          componentName: _rowData.Reference,
+          compShortName: _rowData.Reference,
+          compPartNo: _rowData.Reference,
+          compDescription: _rowData.Description,
+          fixedQuantity: _rowData.FixedQuantity,
+          quantity: _rowData.Quantity,
+          isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
+        });
+      }
+    });
+
+    // GETTING ALL THE CR NUMBERS FROM GLOBAL CRPARTLIST IN DB
+    // comReffNos = await CommercialReference.aggregate([
+    //   {
+    //     $project: {
+    //       referenceNumber: 1,
+    //     },
+    //   },
+    // ]);
+
+
+    // existingPartNos = collect(comReffNos).pluck("referenceNumber");
+
+    // newPartNos = data
+    //   .map((_data) => {
+    //     if (!existingPartNos.items.includes(_data.componentName)) {
+    //       return _data;
+    //     }
+    //   })
+    //   .filter((notUndefined) => notUndefined !== undefined);
+
+    // if (newPartNos.length > 0) {
+    //   return utils.commonResponse(
+    //     res,
+    //     404,
+    //     "There are some commorcial refference are yet to create",
+    //     newPartNos.map((e) => e.componentName)
+    //   );
+    // }
+
+    // if (newPartNos.length > 0) {
+    //   newComponents = JSON.parse(
+    //     JSON.stringify(await Component.create(newPartNos))
+    //   );
+
+    //   newComponentSerialNos = newComponents.map((newComponent) => {
+    //     return {
+    //       hubSerialNo: [],
+    //       componentID: newComponent._id,
+    //       componentName: newComponent.componentName,
+    //     };
+    //   });
+    //   await ComponentSerialNo.create(newComponentSerialNos);
+    // }
+    // const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
+    // const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
+    // BOM_data = [];
+    // await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
+    //   _rowData = rowData.toObject();
+
+    //   BOM_data.push(_rowData);
+    // });
+
+    // console.log(BOM_data)
+
+    // switch is an array that contain the switchboard names or unit name
+    switch_board = collect(
+      data.filter((cr) => {
+        return cr.Enclosure == "Common Total";
+      })
+    ).pluck("SwitchBoard").items;
+
+
+
+
+    // Getting the cr' s in each switch board and adding it to the swithcboard_data list
+    // ex:[
+    //     {
+    //   "switchboard":"HVA-DKEG04",
+    //   "components":[
+
+    //   ]
+    // }
+    // ]
+    // console.log(switch_board)
+    switchborad_data = [];
+    switch_board.forEach((sb) => {
+      // creating a unit/switchboard
+      sb_data = {
+        switchBoard: sb,
+        components: [],
+      };
+      // Add the 
+      data.forEach((element) => {
+        if (element.SwitchBoard == sb) {
+          console.log(element.Reference)
+          if (element.Reference != "") {
+            sb_data.components.push(element);
+          }
+        }
+      });
+      switchborad_data.push(sb_data);
+    });
+
+    console.log(switchborad_data)
+
+    // const project = await Projects.findOne({ ProjectID: req.body.projectId });
+    // console.log("project: ", project);
+
+    // console.log("project: ", project);
+  //   if (!project) {
+  //     await Projects.create({
+  //       ProjectName: shortid.generate(10),
+  //       ProjectID: req.body.projectId,
+  //       createdBy: req.body.spokeId,
+  //       createdTo: req.body.hubId,
+  //       status: "open",
+  //       switchBoardData: switchborad_data,
+  //     });
+  //   } else {
+  //     return utils.commonResponse(res, 200, "Project ID already exist", {});
+  //   }
+
+  //   utils.commonResponse(res, 200, "success", {});
+  // } catch (error) {
+  //   console.log(error);
+  //   utils.commonResponse(res, 500, "server error", error.toString());
+  // }
+
+  // hereeee
+
+    // await Bluebird.each(rows, async (_rowData, _rowIndex) => {
+    //   // console.log(rowData)
+    //   // _rowData = rowData.toObject();
+
+    //   if (_rowData.Level == "0") {
+    //     cr = {};
+    //     cr.referenceNumber = _rowData.Number;
+    //     cr.description = _rowData.EnglishDescription;
+
+    //     cr.parts = [];
+    //   }
+    //   if (
+    //     !commercialRefInOrder.some((e) => e.referenceNumber == cr.referenceNumber)
+    //   ) {
+    //     commercialRefInOrder.push(cr);
+    //   }
+    // });
+
+    
+
+    // Getting the array of entire cr reference from global cr list
+    EntireCommerialRef = await CommercialReference.aggregate([
+      {
+        $project: {
+          referenceNumber: 1,
+          parts:1,
+        },
+      },
+    ]);
+
+    // Gettgin the array of cr reference in the current order
+    order_data = []
+    switchborad_data.map((switchboard,key)=>{
+      switchboard.components.map((cr, key)=>{
+        order_data.push(cr)
+      })
+    })
+
+    // list of order reference number
+    CommertialRefinOrder = collect(order_data).pluck("Reference");
+
+    // console.log("order cr:",CommertialRefinOrder,"entire cr", EntireCommerialRef)
+
+
+    // First Output CRpartlist of order for preview
+    CRPartList = EntireCommerialRef
+      .map((cr) => {
+        if (CommertialRefinOrder.items.includes(cr.referenceNumber)) {
+          return cr;
+        }
+      })
+      .filter((notUndefined) => notUndefined !== undefined);
+
+      console.log("crpartlist", CommertialRefinOrder)
+      // Secont Ouput Partlist of the order for preview
+      let EntirePartList = []
+      CRPartList.map((cr,key) => {
+        cr.parts.map((part,key)=>{
+          EntirePartList.push(part)
+        })
+      });
+      let FinalPartList = [];
+      let partCountMap = {};  // Map to track part numbers and their quantities
+      
+      EntirePartList.forEach((part) => {
+        // If the part number is already in the map, just increase the quantity
+        if (partCountMap[part.partNumber]) {
+          partCountMap[part.partNumber].quantity += 1;
+        } else {
+          // If it's the first occurrence, add it to the result and map
+          partCountMap[part.partNumber] = { ...part, quantity: 1 };
+        }
+      });
+      
+      // After processing, extract the parts with updated quantities
+      FinalPartList = Object.values(partCountMap);
+
+
+      let ProjectDetails = {
+        "project_name":"Project 1",
+        "project_description":"This is a test data"
+      }
+      
+
+    utils.commonResponse(res, 200, "success", {"CRPartList":CRPartList,"PartList" :FinalPartList, "ProjectDetails":ProjectDetails});
+
+    await Parts.insertMany(parts);
+  } catch (error) {
+    console.log(error);
+    utils.commonResponse(res, 500, "server error", error.toString());
+  }
+};
+
 async function getAvailableCommonReffData(crNumberList) {
   const crData = await CommercialReference.aggregate([
     {
@@ -592,20 +850,29 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
       BOM_data.push(_rowData);
     });
 
+    // console.log(BOM_data)
+
+    // Get Switch board label
     switch_board = collect(
       BOM_data.filter((BOM_row) => {
         return BOM_row.Enclosure == "Common Total";
       })
     ).pluck("SwitchBoard").items;
 
+
+
+    console.log(switch_board)
     switchborad_data = [];
     switch_board.forEach((sb) => {
+      // creating a unit/switchboard
       sb_data = {
         switchBoard: sb,
         components: [],
       };
+      // Add Components to 
       BOM_data.forEach((element) => {
         if (element.SwitchBoard == sb) {
+          console.log(element.Reference)
           if (element.Reference != "") {
             sb_data.components.push(element);
           }
@@ -615,7 +882,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
     });
 
     const project = await Projects.findOne({ ProjectID: req.body.projectId });
-    console.log("project: ", project);
+    // console.log("project: ", project);
 
     // console.log("project: ", project);
     if (!project) {
@@ -624,7 +891,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
         ProjectID: req.body.projectId,
         createdBy: req.body.spokeId,
         createdTo: req.body.hubId,
-        status: "ordered",
+        status: "open",
         switchBoardData: switchborad_data,
       });
     } else {

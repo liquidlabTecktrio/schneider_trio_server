@@ -4,6 +4,7 @@ const utils = require("../controllers/utils");
 const Boxes = require("../Models/box");
 const ComponentSerial = require("../Models/componentSerialNo");
 const Component = require("../Models/Components");
+const Projects = require("../Models/Projects");
 
 exports.getAllProjects = async (req, res) => {
   try {
@@ -64,6 +65,142 @@ exports.getAllProjects = async (req, res) => {
         },
       },
     ]);
+
+    utils.commonResponse(
+      res,
+      200,
+      "Project(s) fetched successfully",
+      projectIds
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+exports.createNewOrderFromHub = async (req, res) => {
+  try {
+
+    let data= req.body
+
+    let order_data = data.cr_list
+    let hub_id = data.hub_id
+    let spoke_id = data.spoke_id
+    let project_name = data.project_name
+
+    // order data contain list of cr s and the parts in it
+    // console.log(order_data)
+    // console.log(hub_id)
+    // console.log(spoke_id)
+    // console.log(project_name)
+
+    // console.log(data)
+  //   const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
+  //   const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
+  //   BOM_data = [];
+  //   await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
+  //     _rowData = rowData.toObject();
+
+  //     BOM_data.push(_rowData);
+  //   });
+
+  //   switch_board = collect(
+  //     BOM_data.filter((BOM_row) => {
+  //       return BOM_row.Enclosure == "Common Total";
+  //     })
+  //   ).pluck("SwitchBoard").items;
+
+    switchborad_data = [];
+    order_data.forEach((sb) => {
+      sb_data = {
+        switchBoard: sb.referenceNumber,
+        components: [],
+      };
+      sb.parts.forEach((element) => {
+        // if (element.SwitchBoard == sb) {
+        //   if (element.Reference != "") {
+            sb_data.components.push(element);
+        //   }
+        // }
+      });
+      switchborad_data.push(sb_data);
+    });
+
+    // console.log(switchborad_data)
+
+    await Projects.create({
+      ProjectName: project_name,
+      // // ProjectID: req.body.projectId,
+      createdBy: spoke_id,
+      createdTo: hub_id,
+      status: "open",
+      switchBoardData: switchborad_data,
+    });
+ 
+
+  utils.commonResponse(res, 200, "success", {});
+
+   
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+exports.getOpenProjects = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
+    const projectIds = await Project.aggregate([
+      {
+        $unwind: {
+          path: "$switchBoardData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: "$switchBoardData.components",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          ProjectName: { $first: "$ProjectName" },
+          createdBy: { $first: "$createdBy" },
+          status: { $first: "$status" },
+          totalComponents: { $sum: "$switchBoardData.components.Quantity" },
+        },
+      },
+      {
+        $match: {
+          status: "open", // Filter for projects where the status is "open"
+        },
+      },
+      {
+        $lookup: {
+          from: "spokes",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "spokeName",
+          pipeline: [
+            {
+              $project: {
+                spokeName: 1,
+                _id: 0, // Exclude '_id' from the result
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          spokeName: {
+            $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
+          },
+        },
+      },
+    ]);
+    
 
     utils.commonResponse(
       res,
@@ -272,7 +409,6 @@ exports.getincrementFixedQuantity = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 //spoke
 
 exports.getAllSpokeProjects = async (req, res) => {
@@ -295,7 +431,6 @@ exports.getAllSpokeProjects = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
-
 //spoke details
 
 exports.getSpokeProjectsDetails = async (req, res) => {

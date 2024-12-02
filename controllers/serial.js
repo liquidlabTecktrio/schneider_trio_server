@@ -119,16 +119,41 @@ exports.generatePartSerialNo = async (req, res) => {
       ? await parts.findById(partID)
       : await parts.findOne({ partNumber: partNumber });
 
-    return utils.commonResponse(res, 200, "Part serial number generated", {
-      hubID: hubID,
-      partID: part._id,
-      partNumber: part.partNumber,
-      partDescription: part
-        ? `${part.partNumber} - ${part.partDescription}`
-        : "",
-      qnty: qnty,
-      serialNos: serialNumbers,
-    });
+      return utils.commonResponse(res, 200, "Part serial number generated", {
+        hubID: hubID,
+        partID: part._id,
+        partNumber: part.partNumber,
+        partDescription: part
+          ? `${part.partNumber} - ${part.partDescription}`
+          : "",
+        qnty: qnty,
+        serialNos: serialNumbers,
+      });
+      
+      // sending the ZPL file 
+      // let ZPL_Serial_array = ``
+      // const ZPL_serial = serialNumbers.map((number,key)=>{
+      //   return ZPL_Serial_array + `
+      //   ^XA
+      //   ^FO50,5
+      //   ^BQN,2,4
+      //   ^FDMA,${number}^FS
+      //   ^XZ
+      //   `
+      // })
+
+  //  console.log()
+      
+      // return utils.commonResponse(res, 200, "Part serial number generated", {
+      //   hubID: hubID,
+      //   partID: part._id,
+      //   partNumber: part.partNumber,
+      //   partDescription: part
+      //     ? `${part.partNumber} - ${part.partDescription}`
+      //     : "",
+      //   qnty: qnty,
+      //   ZPL: ZPL_Serial_array,
+      // });
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
