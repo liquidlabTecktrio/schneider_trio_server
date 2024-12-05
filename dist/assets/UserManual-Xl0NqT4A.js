@@ -1,0 +1,1 @@
+import{j as e}from"./index-Og80u0oM.js";function t(){return e.jsx("div",{className:"flex justify-center h-screen items-center",children:e.jsx("div",{className:"text-6xl",children:"Comming Soon ..."})})}export{t as default};
