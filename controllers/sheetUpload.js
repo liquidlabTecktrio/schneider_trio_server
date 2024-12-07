@@ -690,165 +690,98 @@ exports.uploadCRFromAdmin = async (req, res) => {
 
 exports.uploadCRExcelFromHub = async (req, res) => {
   try {
-
-    // GETTING THE ORDER XL FILE AND ORGANIZING FOR PREVIEW
+    // Ensure a file is uploaded
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
+  
+    // Reading and processing the Excel file
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(worksheet);
-
-    commercialRefInOrder = [];
-    partsList = [];
-    parts = []
-    cr = {};
-    parentIdsList = [];
-    CrsListFromExcel = [];
-
-    // CONVERT XL DATA TO JS OBJECT
-    await Bluebird.each(rows, async (_rowData, _rowIndex) => {
-      if (
-        _rowData.Reference != "" &&
-        _rowData.Reference != null &&
-        _rowData.Reference != undefined
-      ) {
-        CrsListFromExcel.push({
-
-          SwitchBoard: _rowData.SwitchBoard,
-          Reference: _rowData.Reference,
-          Enclosure: _rowData.Enclosure,
-          componentName: _rowData.Reference,
-          compShortName: _rowData.Reference,
-          compPartNo: _rowData.Reference,
-          compDescription: _rowData.Description,
-          fixedQuantity: _rowData.FixedQuantity,
-          quantity: _rowData.Quantity,
-          isCritical: _rowData["Core / Non core"] == "Non-Core" ? false : true,
-        });
+  
+    // Initializing variables
+    const CrsListFromExcel = rows
+      .filter(row => row.Reference) // Filter rows with a valid reference
+      .map(row => ({
+        SwitchBoard: row.SwitchBoard,
+        Reference: row.Reference,
+        Enclosure: row.Enclosure,
+        componentName: row.Reference,
+        compShortName: row.Reference,
+        compPartNo: row.Reference,
+        compDescription: row.Description,
+        fixedQuantity: row.FixedQuantity,
+        quantity: row.Quantity,
+        isCritical: row["Core / Non core"] !== "Non-Core"
+      }));
+  
+    // Extract unique switchboards with "Common Total" enclosures
+    const switchBoards = [...new Set(CrsListFromExcel
+      .filter(cr => cr.Enclosure === "Common Total")
+      .map(cr => cr.SwitchBoard))];
+  
+    // Group CRs by switchboard
+    const SwitchboardListWithCrs = switchBoards.map(switchBoard => ({
+      switchBoard,
+      components: CrsListFromExcel.filter(cr => cr.SwitchBoard === switchBoard && cr.Reference)
+    }));
+  
+    // Fetch all commercial references from the database
+    const EntireCommerialRef = await CommercialReference.find();
+    const CRsinCurrentOrder = CrsListFromExcel.map(cr => cr.Reference);
+  
+    // Map order CRs to their parts
+    const CRsWithParts = CRsinCurrentOrder.flatMap(currentRef =>
+      EntireCommerialRef.filter(entireCR => entireCR.referenceNumber === currentRef)
+    );
+  
+    // Map switchboards to CRs with parts
+    const SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map(switchboard => ({
+      ...switchboard,
+      components: switchboard.components.map(cr => ({
+        ...cr,
+        parts: CRsWithParts.find(innerCR => innerCR.referenceNumber === cr.Reference)?.parts || []
+      }))
+    }));
+  
+    // Generate a final list of parts with aggregated quantities
+    const EntirePartList = CRsWithParts.flatMap(cr => cr.parts || []);
+    const FinalPartList = EntirePartList.reduce((acc, part) => {
+      const existingPart = acc.find(item => item.partNumber === part.partNumber);
+      if (existingPart) {
+        existingPart.quantity += part.quantity;
+      } else {
+        acc.push({ partNumber: part.partNumber, quantity: part.quantity });
       }
+      return acc;
+    }, []);
+  
+    // Project details (static for now, can be dynamic)
+    const ProjectDetails = {
+      project_name: "Project 1",
+      project_description: "This is a test data"
+    };
+  
+    // Sending the response
+    // console.log("crpartlist",SwitchBoardWithCRWithParts, "partlist",FinalPartList)
+    utils.commonResponse(res, 200, "success", {
+      Switchboards: SwitchBoardWithCRWithParts,
+      PartList: FinalPartList,
+      ProjectDetails
     });
-
-    // switch is an array that contain the switchboard names or unit name
-    switch_board = collect(
-      crsInObject.filter((cr) => {
-        return cr.Enclosure == "Common Total";
-      })
-    ).pluck("SwitchBoard").items;
-
-    SwitchboardListWithCrs = [];
-    switch_board.forEach((currentSwitchBoard) => {
-      // creating a unit/switchboard
-      CrsForCurrentSwitchBoard = {
-        switchBoard: sb,
-        components: [],
-      };
-      // Add the 
-
-      CrsListFromExcel.forEach((CurrentRow) => {
-        if (CurrentRow.SwitchBoard == currentSwitchBoard) {
-          if (CurrentRow.Reference != "") {
-            CrsForCurrentSwitchBoard.components.push(CurrentRow);
-          }
-        }
-      });
-      SwitchboardListWithCrs.push(CrsForCurrentSwitchBoard);
-      // console.log("swtch",switchborad_data)
-    });
-
-    // Getting the array of entire cr reference from global cr list
-    EntireCommerialRef = await CommercialReference.find();
-    // list of order reference number
-    CRsinCurrentOrder = collect(CrsListFromExcel).pluck("Reference");
-    // First Output CRpartlist of order for preview
-    let CRsWithParts = []
-    CRsinCurrentOrder
-      .map((CurrentCRofOrder) => {
-        EntireCommerialRef.map((CurrentCRofEntireList) => {
-          // console.log("result",order_cr, entire_cr)
-          if (CurrentCRofOrder.Reference === CurrentCRofEntireList.referenceNumber) {
-            CRsWithParts.push(CurrentCRofEntireList)
-          }
-        })
-      })
-      .filter((notUndefined) => notUndefined !== undefined);
-
-
-    let SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map((Switchboard, key) => {
-      Switchboard.map((CR, key) => {
-        CRsWithParts.map((innerCR)=>{
-          const updatedCR = innerCR.filter((cr) => cr.Reference == CR.Reference);
-          return updatedCR;
-        })
-
-        return {
-          ...CR,
-          updatedCR
-        }
-       
-      })
-    })
-
-    // console.log("crpartlist", CRPartList)
-    // Secont Ouput Partlist of the order for preview
-    let EntirePartList = []
-    CRPartList.map((cr, key) => {
-      cr.parts.map((part, key) => {
-        EntirePartList.push(part)
-      })
-    });
-    let FinalPartList = [];
-
-    // {
-    //   "partNumber":"",
-    //   "quantity":5
-    // }// Map to track part numbers and their quantities
-    // console.log('entire part list', EntirePartList)
-    EntirePartList.forEach((part) => {
-      // If the part number is already in the map, just increase the quantity
-      let partExist = false
-
-      partExist = FinalPartList.some(item => item.partNumber === part.partNumber)
-
-      if (partExist) {
-        // If the part exists, update its quantity
-        const partIndex = FinalPartList.findIndex(item => item.partNumber === part.partNumber);
-        FinalPartList[partIndex].quantity += 1;
-      }
-      else {
-        FinalPartList.push({
-          "partNumber": part.partNumber,
-          "quantity": part.quantity
-        })
-      }
-
-
-
-      // If it's the first occurrence, add it to the result and map
-
-
-    });
-
-    // After processing, extract the parts with updated quantities
-    // FinalPartList = Object.values(partCountMap);
-
-
-    let ProjectDetails = {
-      "project_name": "Project 1",
-      "project_description": "This is a test data"
-    }
-
-
-    utils.commonResponse(res, 200, "success", { "CRPartList": SwitchBoardWithCRWithParts, "PartList": FinalPartList, "ProjectDetails": ProjectDetails });
-
-    await Parts.insertMany(parts);
+  
+    // Insert parts into the database if needed
+    // if (EntirePartList.length > 0) {
+    //   await Parts.insertMany(EntirePartList);
+    // }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
-};
+  
+}
 
 async function getAvailableCommonReffData(crNumberList) {
   const crData = await CommercialReference.aggregate([
