@@ -79,16 +79,14 @@ exports.getAllProjects = async (req, res) => {
 
 exports.createNewOrderFromHub = async (req, res) => {
   try {
-
+    console.log("creating new project...")
     let data = req.body
 
     let order_data = data.cr_list
-
     // console.log('cr list', data.cr_list)
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
-
     // order data contain list of cr s and the parts in it
     // console.log(order_data)
     // console.log(hub_id)
@@ -102,7 +100,7 @@ exports.createNewOrderFromHub = async (req, res) => {
     //   await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
     //     _rowData = rowData.toObject();
 
-    //     BOM_data.push(_rowData);
+    //     BOM_data.push(_rowData);23
     //   });
 
     //   switch_board = collect(
@@ -120,12 +118,14 @@ exports.createNewOrderFromHub = async (req, res) => {
         components: [],
       };
 
-      sb.parts.forEach((element) => {
+      sb.parts.forEach((cr) => {
         // if (element.SwitchBoard == sb) {
         //   if (element.Reference != "") {
         // console.log('element',element)
 
-        sb_data.components.push(element);
+        sb_data.components.push(cr);
+
+        
         //   }
         // }
       });
@@ -136,15 +136,24 @@ exports.createNewOrderFromHub = async (req, res) => {
 
 
 
+    // await Projects.create({
+    //   ProjectName: project_name,
+    //   // // ProjectID: req.body.projectId,
+    //   createdBy: spoke_id,
+    //   createdTo: hub_id,
+    //   status: "open",
+    //   switchBoardData: switchborad_data,
+    // });
+
     await Projects.create({
-      ProjectName: project_name,
+      ProjectName: ['project_name'],
       // // ProjectID: req.body.projectId,
-      createdBy: spoke_id,
+      createdBy: {"spoke_id":"akhil"},
       createdTo: hub_id,
       status: "open",
       switchBoardData: switchborad_data,
     });
-
+    console.log("project creation completed")
 
     utils.commonResponse(res, 200, "success", {});
 

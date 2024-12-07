@@ -262,6 +262,7 @@ async function updatePartsIDs(newItems, partNumber) {
     console.log("error: ", error);
   }
 }
+
 exports.uploadBomGoogleSheet = async (req, res) => {
   try {
     const serviceAccountAuth = new JWT({
@@ -499,13 +500,13 @@ exports.uploadBomGoogleSheet = async (req, res) => {
   }
 };
 
-
-exports.uploadCRFromAdmin= async (req, res) => {
+exports.uploadCRFromAdmin = async (req, res) => {
   try {
-     // GETTING THE ORDER CR FILE AND ORGANIZING FOR PREVIEW
-     if (!req.file) {
+    // GETTING THE ORDER CR FILE AND ORGANIZING FOR PREVIEW
+    if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
+
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
@@ -513,7 +514,7 @@ exports.uploadCRFromAdmin= async (req, res) => {
     const rows = XLSX.utils.sheet_to_json(worksheet);
 
 
-    console.log("rows",rows)
+    console.log("rows", rows)
 
     commercialReff = [];
     productsList = [];
@@ -630,38 +631,7 @@ exports.uploadCRFromAdmin= async (req, res) => {
       );
     }
 
-    // const partMap = new Map();
-    // console.log(partsList.length);
 
-    // partsList.forEach((val) => {
-    //   if (!partMap.has(val.partNumber)) {
-    //     // Add new entry in map with initialized parentIds
-    //     partMap.set(val.partNumber, {
-    //       ...val,
-    //       parentIds: [
-    //         {
-    //           productNumber: val.parentNumber,
-    //           crNumber: val.crNumber,
-    //         },
-    //       ],
-    //     });
-    //   } else {
-    //     // Update existing part's parentIds if unique
-    //     const existingPart = partMap.get(val.partNumber);
-    //     const parentExists = existingPart.parentIds.some(
-    //       (parent) =>
-    //         parent.productNumber === val.parentNumber &&
-    //         parent.crNumber === val.crNumber
-    //     );
-
-    //     if (!parentExists) {
-    //       existingPart.parentIds.push({
-    //         productNumber: val.parentNumber,
-    //         crNumber: val.crNumber,
-    //       });
-    //     }
-    //   }
-    // });
     const uniqueParts = await getUniqueParts(partsList);
 
     const partsListnew = Array.from(uniqueParts.values());
@@ -704,23 +674,6 @@ exports.uploadCRFromAdmin= async (req, res) => {
       uniqueAlreadyParts = await getUniqueParts(alreadyCreatedParts);
       uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
 
-      // uniqueAlreadyParts.forEach(async (parts) => {
-      //   console.log("parts: ", parts);
-      //   // const updateDoc = {
-      //   //   $addToSet: {
-      //   //     parentIds: {
-      //   //       $each: parts.parentIds ?? [],
-      //   //     },
-      //   //   },
-      //   // };
-      //   // await Parts.findOneAndUpdate(
-      //   //   { partNumber: parts.parentNumber },
-      //   //   updateDoc,
-      //   //   { new: true }
-      //   // );
-      //   await updatePartsIDs(parts.parentIds ?? [], parts.parentNumber);
-      // });
-
       await Promise.all(
         uniqueAlreadyParts.map((parts) =>
           updatePartsIDs(parts.parentIds ?? [], parts.partNumber)
@@ -729,8 +682,6 @@ exports.uploadCRFromAdmin= async (req, res) => {
     }
 
     utils.commonResponse(res, 200, "success", {});
-
-    // await Parts.insertMany(parts);
   } catch (error) {
     console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
@@ -740,7 +691,7 @@ exports.uploadCRFromAdmin= async (req, res) => {
 exports.uploadCRExcelFromHub = async (req, res) => {
   try {
 
-    // GETTING THE ORDER CR FILE AND ORGANIZING FOR PREVIEW
+    // GETTING THE ORDER XL FILE AND ORGANIZING FOR PREVIEW
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
@@ -755,17 +706,16 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     parts = []
     cr = {};
     parentIdsList = [];
-    data = [];
+    CrsListFromExcel = [];
 
     // CONVERT XL DATA TO JS OBJECT
     await Bluebird.each(rows, async (_rowData, _rowIndex) => {
-      // _rowData = rowData.toObject();
       if (
         _rowData.Reference != "" &&
         _rowData.Reference != null &&
         _rowData.Reference != undefined
       ) {
-        data.push({
+        CrsListFromExcel.push({
 
           SwitchBoard: _rowData.SwitchBoard,
           Reference: _rowData.Reference,
@@ -781,173 +731,67 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }
     });
 
-    // console.log(data)
-
-    // GETTING ALL THE CR NUMBERS FROM GLOBAL CRPARTLIST IN DB
-    // comReffNos = await CommercialReference.aggregate([
-    //   {
-    //     $project: {
-    //       referenceNumber: 1,
-    //     },
-    //   },
-    // ]);
-
-
-    // existingPartNos = collect(comReffNos).pluck("referenceNumber");
-
-    // newPartNos = data
-    //   .map((_data) => {
-    //     if (!existingPartNos.items.includes(_data.componentName)) {
-    //       return _data;
-    //     }
-    //   })
-    //   .filter((notUndefined) => notUndefined !== undefined);
-
-    // if (newPartNos.length > 0) {
-    //   return utils.commonResponse(
-    //     res,
-    //     404,
-    //     "There are some commorcial refference are yet to create",
-    //     newPartNos.map((e) => e.componentName)
-    //   );
-    // }
-
-    // if (newPartNos.length > 0) {
-    //   newComponents = JSON.parse(
-    //     JSON.stringify(await Component.create(newPartNos))
-    //   );
-
-    //   newComponentSerialNos = newComponents.map((newComponent) => {
-    //     return {
-    //       hubSerialNo: [],
-    //       componentID: newComponent._id,
-    //       componentName: newComponent.componentName,
-    //     };
-    //   });
-    //   await ComponentSerialNo.create(newComponentSerialNos);
-    // }
-    // const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
-    // const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
-    // BOM_data = [];
-    // await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
-    //   _rowData = rowData.toObject();
-
-    //   BOM_data.push(_rowData);
-    // });
-
-    // console.log(BOM_data)
-
     // switch is an array that contain the switchboard names or unit name
     switch_board = collect(
-      data.filter((cr) => {
+      crsInObject.filter((cr) => {
         return cr.Enclosure == "Common Total";
       })
     ).pluck("SwitchBoard").items;
 
-    switchborad_data = [];
-    switch_board.forEach((sb) => {
+    SwitchboardListWithCrs = [];
+    switch_board.forEach((currentSwitchBoard) => {
       // creating a unit/switchboard
-      sb_data = {
+      CrsForCurrentSwitchBoard = {
         switchBoard: sb,
         components: [],
       };
       // Add the 
 
-      data.forEach((element) => {
-        if (element.SwitchBoard == sb) {
-          console.log(element.Reference)
-          if (element.Reference != "") {
-
-
-            sb_data.components.push(element);
+      CrsListFromExcel.forEach((CurrentRow) => {
+        if (CurrentRow.SwitchBoard == currentSwitchBoard) {
+          if (CurrentRow.Reference != "") {
+            CrsForCurrentSwitchBoard.components.push(CurrentRow);
           }
         }
       });
-      switchborad_data.push(sb_data);
+      SwitchboardListWithCrs.push(CrsForCurrentSwitchBoard);
       // console.log("swtch",switchborad_data)
     });
 
-
-    // const project = await Projects.findOne({ ProjectID: req.body.projectId });
-    // console.log("project: ", project);
-
-    // console.log("project: ", project);
-    //   if (!project) {
-    //     await Projects.create({
-    //       ProjectName: shortid.generate(10),
-    //       ProjectID: req.body.projectId,
-    //       createdBy: req.body.spokeId,
-    //       createdTo: req.body.hubId,
-    //       status: "open",
-    //       switchBoardData: switchborad_data,
-    //     });
-    //   } else {
-    //     return utils.commonResponse(res, 200, "Project ID already exist", {});
-    //   }
-
-    //   utils.commonResponse(res, 200, "success", {});
-    // } catch (error) {
-    //   console.log(error);
-    //   utils.commonResponse(res, 500, "server error", error.toString());
-    // }
-
-    // hereeee
-
-    // await Bluebird.each(rows, async (_rowData, _rowIndex) => {
-    //   // console.log(rowData)
-    //   // _rowData = rowData.toObject();
-
-    //   if (_rowData.Level == "0") {
-    //     cr = {};
-    //     cr.referenceNumber = _rowData.Number;
-    //     cr.description = _rowData.EnglishDescription;
-
-    //     cr.parts = [];
-    //   }
-    //   if (
-    //     !commercialRefInOrder.some((e) => e.referenceNumber == cr.referenceNumber)
-    //   ) {
-    //     commercialRefInOrder.push(cr);
-    //   }
-    // });
-
-
-
     // Getting the array of entire cr reference from global cr list
     EntireCommerialRef = await CommercialReference.find();
-
-
-
-    // Gettgin the array of cr reference in the current order
-    order_data = []
-    switchborad_data.map((switchboard, key) => {
-      switchboard.components.map((cr, key) => {
-        order_data.push(cr)
-      })
-    })
-
-    console.log("swtch",order_data)
-
     // list of order reference number
-    CommertialRefinOrder = collect(order_data).pluck("Reference");
-
-    // console.log("order cr:",CommertialRefinOrder,"entire cr", EntireCommerialRef)
-
-// order_data contains all the
+    CRsinCurrentOrder = collect(CrsListFromExcel).pluck("Reference");
     // First Output CRpartlist of order for preview
-    let CRPartList = []
-    order_data
-      .map((order_cr) => {
-        EntireCommerialRef.map((entire_cr)=>{
+    let CRsWithParts = []
+    CRsinCurrentOrder
+      .map((CurrentCRofOrder) => {
+        EntireCommerialRef.map((CurrentCRofEntireList) => {
           // console.log("result",order_cr, entire_cr)
-          if(order_cr.Reference === entire_cr.referenceNumber){
-            CRPartList.push(entire_cr)
+          if (CurrentCRofOrder.Reference === CurrentCRofEntireList.referenceNumber) {
+            CRsWithParts.push(CurrentCRofEntireList)
           }
         })
       })
       .filter((notUndefined) => notUndefined !== undefined);
 
-    console.log("crpartlist", CRPartList)
+
+    let SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map((Switchboard, key) => {
+      Switchboard.map((CR, key) => {
+        CRsWithParts.map((innerCR)=>{
+          const updatedCR = innerCR.filter((cr) => cr.Reference == CR.Reference);
+          return updatedCR;
+        })
+
+        return {
+          ...CR,
+          updatedCR
+        }
+       
+      })
+    })
+
+    // console.log("crpartlist", CRPartList)
     // Secont Ouput Partlist of the order for preview
     let EntirePartList = []
     CRPartList.map((cr, key) => {
@@ -997,7 +841,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     }
 
 
-    utils.commonResponse(res, 200, "success", { "CRPartList": CRPartList, "PartList": FinalPartList, "ProjectDetails": ProjectDetails });
+    utils.commonResponse(res, 200, "success", { "CRPartList": SwitchBoardWithCRWithParts, "PartList": FinalPartList, "ProjectDetails": ProjectDetails });
 
     await Parts.insertMany(parts);
   } catch (error) {

@@ -21,6 +21,25 @@ exports.createHubs = async (req, res) => {
     }
 }
 
+exports.deleteHub = async (req, res) => {
+    try {
+        // Attempt to delete the hub
+        const result = await Hubs.deleteOne({ hubName, hubShortName, hubUsername, hubPassword });
+        
+        if (result.deletedCount > 0) {
+            // Fetch all remaining hubs after deletion
+            const allHubs = await Hubs.find();
+            utils.commonResponse(res, 200, "Hub deleted successfully", allHubs);
+        } else {
+            utils.commonResponse(res, 404, "Hub not found or already deleted");
+        }
+    } catch (err) {
+        // Handle unexpected errors
+        utils.commonResponse(res, 500, "Unexpected server error", err.toString());
+    }
+    
+}
+
 exports.getAllHubs = async (req, res) => {
     try {
         const allHubs = await Hubs.find();
