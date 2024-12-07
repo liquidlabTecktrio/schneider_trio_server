@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const PartsSchema = new Schema({
+  partNumber: String,
+  partDescription: String,
+  quantity: Number,
+  isCritical: Boolean,
+  _id: Number
+})
+
 const componentSchema = new Schema({
   Enclosure: {
     type: String,
@@ -14,9 +22,12 @@ const componentSchema = new Schema({
   Quantity: {
     type: Number,
   },
-  FixedQuantity:{
-    type:Number,
-    default:0
+  FixedQuantity: {
+    type: Number,
+    default: 0
+  },
+  Parts: {
+    type: [PartsSchema]
   }
 });
 

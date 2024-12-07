@@ -82,11 +82,21 @@ exports.createNewOrderFromHub = async (req, res) => {
     console.log("creating new project...")
     let data = req.body
 
-    let order_data = data.cr_list
+    let switchBoards = data.switchBoards
     // console.log('cr list', data.cr_list)
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
+
+
+
+    switchBoards.map((swt, key)=>{
+      swt.components.map((cr,key)=>{
+        console.log(cr.parts)
+
+      })
+
+    })
     // order data contain list of cr s and the parts in it
     // console.log(order_data)
     // console.log(hub_id)
@@ -109,30 +119,30 @@ exports.createNewOrderFromHub = async (req, res) => {
     //     })
     //   ).pluck("SwitchBoard").items;
 
-    switchboards = [];
+    // switchboards = [];
 
-    order_data.forEach((sb) => {
-      console.log('sb', sb)
-      sb_data = {
-        switchBoard: sb.referenceNumber,
-        components: [],
-      };
+    // order_data.forEach((sb) => {
+    //   console.log('sb', sb)
+    //   sb_data = {
+    //     switchBoard: sb.referenceNumber,
+    //     components: [],
+    //   };
 
-      sb.parts.forEach((cr) => {
-        // if (element.SwitchBoard == sb) {
-        //   if (element.Reference != "") {
-        // console.log('element',element)
+    //   sb.parts.forEach((cr) => {
+    //     // if (element.SwitchBoard == sb) {
+    //     //   if (element.Reference != "") {
+    //     // console.log('element',element)
 
-        sb_data.components.push(cr);
+    //     sb_data.components.push(cr);
 
         
-        //   }
-        // }
-      });
-      // switchborad_data.push('sb_data',sb_data);
-    });
+    //     //   }
+    //     // }
+    //   });
+    //   // switchborad_data.push('sb_data',sb_data);
+    // });
 
-    console.log(switchborad_data)
+    // console.log(switchborad_data)
 
 
 
@@ -145,14 +155,16 @@ exports.createNewOrderFromHub = async (req, res) => {
     //   switchBoardData: switchborad_data,
     // });
 
-    await Projects.create({
-      ProjectName: ['project_name'],
+    let newProjectData = {
+      ProjectName: project_name,
       // // ProjectID: req.body.projectId,
-      createdBy: {"spoke_id":"akhil"},
+      createdBy: spoke_id,
       createdTo: hub_id,
       status: "open",
-      switchBoardData: switchborad_data,
-    });
+      switchBoardData: switchBoards,
+    }
+
+    await Projects.create(newProjectData);
     console.log("project creation completed")
 
     utils.commonResponse(res, 200, "success", {});
