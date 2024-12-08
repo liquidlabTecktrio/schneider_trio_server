@@ -2,11 +2,20 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PartsSchema = new Schema({
-  partNumber: String,
-  partDescription: String,
-  quantity: Number,
-  isCritical: Boolean,
-  _id: Number
+  partNumber: {
+    type: String,
+  },
+
+  partDescription: {
+    type: String,
+  },
+  quantity: {
+    type: Number,
+  },
+
+  isCritical: {
+    type: Boolean,
+  }
 })
 
 const componentSchema = new Schema({
@@ -16,7 +25,13 @@ const componentSchema = new Schema({
   Reference: {
     type: String,
   },
-  Description: {
+  compDescription: {
+    type: String,
+  },
+  componentName: {
+    type: String,
+  },
+  compShortName: {
     type: String,
   },
   Quantity: {
@@ -26,7 +41,10 @@ const componentSchema = new Schema({
     type: Number,
     default: 0
   },
-  Parts: {
+  isCritical: {
+    type: Number,
+  },
+  parts: {
     type: [PartsSchema]
   }
 });
@@ -44,7 +62,7 @@ const Projects = new Schema(
   {
     ProjectName: {
       type: String,
-      // required: true,
+      required: true,
     },
     ProjectID: {
       type: String,
@@ -52,11 +70,11 @@ const Projects = new Schema(
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
-      // required: true,
+      required: true,
     },
     createdTo: {
       type: mongoose.Types.ObjectId,
-      // required: true
+      required: true
     },
     status: {
       type: String,

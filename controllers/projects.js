@@ -79,24 +79,23 @@ exports.getAllProjects = async (req, res) => {
 
 exports.createNewOrderFromHub = async (req, res) => {
   try {
-    console.log("creating new project...")
     let data = req.body
 
     let switchBoards = data.switchBoards
-    // console.log('cr list', data.cr_list)
+    // console.log('cr list', data.switchBoards)
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
 
 
 
-    switchBoards.map((swt, key)=>{
-      swt.components.map((cr,key)=>{
-        console.log(cr.parts)
+    // switchBoards.map((swt, key)=>{
+    //   swt.components.map((cr,key)=>{
+    //     console.log(cr)
 
-      })
+    //   })
 
-    })
+    // })
     // order data contain list of cr s and the parts in it
     // console.log(order_data)
     // console.log(hub_id)
@@ -157,13 +156,13 @@ exports.createNewOrderFromHub = async (req, res) => {
 
     let newProjectData = {
       ProjectName: project_name,
-      // // ProjectID: req.body.projectId,
+      // Description:
       createdBy: spoke_id,
       createdTo: hub_id,
       status: "open",
       switchBoardData: switchBoards,
     }
-
+    console.log("creating new project...")
     await Projects.create(newProjectData);
     console.log("project creation completed")
 
@@ -775,6 +774,8 @@ exports.getProjectDetailsWithParts = async (req, res) => {
   try {
     const projectId = req.body.projectId;
 
+    // console.log(await Project.findOne({_id: new mongoose.Types.ObjectId(projectId)}))
+
     projectDetails = await Project.aggregate([
       {
         $match: {
@@ -817,42 +818,43 @@ exports.getProjectDetailsWithParts = async (req, res) => {
       {
         $unwind: "$switchBoardData.components",
       },
-      {
-        $lookup: {
-          from: "commercialreferences",
-          localField: "switchBoardData.components.Reference",
-          foreignField: "referenceNumber",
-          as: "commercialReferenceData",
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: "commercialreferences",
+      //     localField: "switchBoardData.components.Reference",
+      //     foreignField: "referenceNumber",
+      //     as: "commercialReferenceData",
+      //   },
+      // },
       {
         $project: {
           "switchBoardData.components.Reference": 0,
           "switchBoardData.components.Description": 0,
+          // "switchBoardData.components.parts": 1,
           // "switchBoardData.components.Quantity": 0,
         },
       },
-      {
-        $unwind: {
-          path: "$commercialReferenceData",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $addFields: {
-          "switchBoardData.components": {
-            $mergeObjects: [
-              "$switchBoardData.components",
-              {
-                referenceNumber: "$commercialReferenceData.referenceNumber",
-                description: "$commercialReferenceData.description",
-                parts: "$commercialReferenceData.parts",
-                productNumber: "$commercialReferenceData.productNumber",
-              },
-            ],
-          },
-        },
-      },
+      // {
+      //   $unwind: {
+      //     path: "$commercialReferenceData",
+      //     preserveNullAndEmptyArrays: true,
+      //   },
+      // },
+      // {
+      //   $addFields: {
+      //     "switchBoardData.components": {
+      //       $mergeObjects: [
+      //         "$switchBoardData.components",
+      //         {
+      //           referenceNumber: "$commercialReferenceData.referenceNumber",
+      //           description: "$commercialReferenceData.description",
+      //           parts: "$commercialReferenceData.parts",
+      //           productNumber: "$commercialReferenceData.productNumber",
+      //         },
+      //       ],
+      //     },
+      //   },
+      // },
       {
         $group: {
           _id: {
