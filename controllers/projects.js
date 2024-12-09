@@ -631,7 +631,7 @@ exports.shipProject = async (req, res) => {
     });
     
     // List of parts
-    console.log("projectComponents: ", projectComponentWithQuantityAdded);
+    // console.log("projectComponents: ", projectComponentWithQuantityAdded);
     
 
     // Step 2: Fetch Shipped Components from Boxes
@@ -653,29 +653,47 @@ exports.shipProject = async (req, res) => {
       },
     ]);
 
-    console.log('boxComponents: ', boxComponents);
-    console.log('projectComponents: ', projectComponents);
+    // console.log('boxComponents: ', boxComponents);
+    // console.log('projectComponents: ', projectComponents);
     
     // Step 3: Compare Required and Shipped Quantities
     const missingComponents = [];
     
     // Create a Map from boxComponents for fast lookups
-    const boxComponentsMap = new Map(
-      boxComponents.map((comp) => [comp.partNumber, comp.totalShippedQuantity])
-    );
+    // const boxComponentsMap = new Map(
+    //   boxComponents.map((comp) => [comp.partNumber, comp.totalShippedQuantity])
+    // );
     
     // Iterate over projectComponents to find missing parts
-    projectComponents.forEach((projectComponent) => {
-      const shippedQuantity = boxComponentsMap.get(projectComponent.partNumber) || 0; // Get shipped quantity or default to 0
-      if (shippedQuantity < projectComponent.totalRequiredQuantity) {
-        missingComponents.push({
-          reference: projectComponent.reference,
-          partNumber: projectComponent.partNumber,
-          partDescription: projectComponent.partDescription,
-          qnty: projectComponent.totalRequiredQuantity - shippedQuantity, // Calculate the missing quantity
-        });
+    projectComponentWithQuantityAdded.forEach((part) => {
+      let InBox = false;
+      boxComponents.forEach((partInBox) => {
+        if (partInBox.partNumber === part.partNumber) {
+          InBox = true;
+          let pendingQuantity = Math.abs(partInBox.totalShippedQuantity - part.totalQuantity);
+          if (pendingQuantity > 0) {
+            part.totalQuantity = pendingQuantity;
+            InBox = false;  // Only set it to false if there is a discrepancy in quantity
+          }
+        }
+      });
+      if (!InBox) {
+        missingComponents.push(part);
       }
     });
+    
+
+    // projectComponentWithQuantityAdded.forEach((projectComponent) => {
+    //   const shippedQuantity = projectComponent.totalQuantity
+    //   if (shippedQuantity < projectComponent.totalRequiredQuantity) {
+    //     missingComponents.push({
+    //       reference: projectComponent.reference,
+    //       partNumber: projectComponent.partNumber,
+    //       partDescription: projectComponent.partDescription,
+    //       qnty: projectComponent.totalRequiredQuantity - shippedQuantity, // Calculate the missing quantity
+    //     });
+    //   }
+    // });
     
     // Log the missing components
     console.log('Missing Components: ', missingComponents);
