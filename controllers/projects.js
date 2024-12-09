@@ -610,21 +610,29 @@ exports.shipProject = async (req, res) => {
     ])
 
 
-    let projectComponentWithQuantityAdded = []
+    let projectComponentWithQuantityAdded = [];
 
-    projectComponents.map((part,key)=>{
-      if(projectComponentWithQuantityAdded.some(inner_part => inner_part.partNumber == part.parts.partNumber)){
-        part.parts.quantity += 1
+    projectComponents.forEach((part) => {
+      // Check if the part already exists in the array
+      const existingPart = projectComponentWithQuantityAdded.find(
+        (inner_part) => inner_part.partNumber === part.parts.partNumber
+      );
+    
+      if (existingPart) {
+        // If it exists, increment the total quantity
+        existingPart.totalQuantity += part.parts.quantity;
+      } else {
+        // If it doesn't exist, add it to the array
+        projectComponentWithQuantityAdded.push({
+          partNumber: part.parts.partNumber,
+          totalQuantity: part.parts.quantity,
+        });
       }
-      else{
-        projectComponentWithQuantityAdded.push({partNumber:part.parts.partNumber,totalQuantity:part.parts.quantity})
-      }
-    })
-
-
-
-    // list of parts
-    console.log('projectComponents: ', projectComponentWithQuantityAdded);
+    });
+    
+    // List of parts
+    console.log("projectComponents: ", projectComponentWithQuantityAdded);
+    
 
     // Step 2: Fetch Shipped Components from Boxes
     const boxComponents = await Boxes.aggregate([
