@@ -653,8 +653,8 @@ exports.shipProject = async (req, res) => {
       },
     ]);
 
-    // console.log('boxComponents: ', boxComponents);
-    // console.log('projectComponents: ', projectComponents);
+    console.log('boxComponents: ', boxComponents);
+    console.log('projectComponents: ', projectComponents);
     
     // Step 3: Compare Required and Shipped Quantities
     const missingComponents = [];
@@ -682,22 +682,22 @@ exports.shipProject = async (req, res) => {
     
 
     // Step 4: Respond Based on Missing Components
-    // if (missingComponents.length > 0) {
-    //   return utils.commonResponse(
-    //     res,
-    //     201,
-    //     "The project cannot be shipped as the following items are not shipped",
-    //     missingComponents
-    //   );
-    // } else {
-    //   // Update Project Status to Shipped
-    //   await Project.updateOne(
-    //     { _id: new mongoose.Types.ObjectId(projectId) },
-    //     { $set: { status: "shipped" } }
-    //   );
+    if (missingComponents.length > 0) {
+      return utils.commonResponse(
+        res,
+        201,
+        "The project cannot be shipped as the following items are not shipped",
+        missingComponents
+      );
+    } else {
+      // Update Project Status to Shipped
+      await Project.updateOne(
+        { _id: new mongoose.Types.ObjectId(projectId) },
+        { $set: { status: "shipped" } }
+      );
 
-    //   return utils.commonResponse(res, 200, "The project has been shipped successfully");
-    // }
+      return utils.commonResponse(res, 200, "The project has been shipped successfully");
+    }
   } catch (error) {
     console.error("Error in shipProject:", error);
     return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
