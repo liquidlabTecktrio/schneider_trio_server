@@ -1010,6 +1010,7 @@ exports.addPartsToBox = async (req, res) => {
       _id: new mongoose.Types.ObjectId(partID),
     });
 
+    console.log(partNumber)
     const findComponentExist = await checkPartExistInThisProjectsCollection(
       res,
       partNumber,
