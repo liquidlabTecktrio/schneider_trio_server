@@ -1019,11 +1019,10 @@ exports.addPartsToBox = async (req, res) => {
 
         // If no match is found, return false manually
 
-    const isComponentExist = 
-    findComponentExist.length > 0 ? findComponentExist[0].isComponentExist : false;
-    console.log(isComponentExist)
+    // const isComponentExist = 
+    console.log(findComponentExist)
 
-    if (!isComponentExist) {
+    if (findComponentExist.length == 0 ) {
         return utils.commonResponse(
           res,
           201,
