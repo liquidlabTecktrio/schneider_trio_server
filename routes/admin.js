@@ -43,8 +43,10 @@ const upload = multer({ storage: storage });
 router.post("/adminLogin", adminController.adminLogin);
 router.post("/createComponent", componentController.createComponent);
 router.post("/createHub", hubController.createHubs);
+router.post("/deleteHub", hubController.deleteHub);
 router.get("/getAllHubs", hubController.getAllHubs);
 router.post("/createSpoke", spokeController.createSpoke);
+router.post("/deleteSpoke", spokeController.deleteSpoke);
 router.get("/getAllHubs", spokeController.getAllSpokes);
 router.get("/getAllSpokes", spokeController.getAllSpokes);
 router.get("/getAllComponents", componentController.getAllComponents);
@@ -59,6 +61,12 @@ router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
 
 router.post("/uploadCR", sheetController.uploadBomGoogleSheet);
 router.post("/uploadCRFromAdmin", upload.single("file"), sheetController.uploadCRFromAdmin);
+
+
+router.post("/createCR", sheetController.createCR);
+router.post("/createPart", sheetController.createPart);
+
+
 // router.post("/updatePartsIDs", sheetController.updatePartsIDs);
 
 module.exports = router;

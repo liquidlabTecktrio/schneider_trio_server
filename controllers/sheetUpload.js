@@ -144,6 +144,69 @@ exports.createPOFromGoogleSheet = async (req, res) => {
   }
 };
 
+
+exports.createCR = async (req, res) => {
+  let newCR = {
+    referenceNumber: req.body.referenceNumber,
+    description: req.body.description,
+    productNumber: req.body.productNumber,
+    parts: req.body.parts
+  }
+  console.log(newCR)
+
+  const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
+  if (!ExistingCR) {
+    newCR.parts.map(async (part, key) => {
+      // add this cr_reference number in part in parts collection
+      // find the parts in parts with partnumber
+      const ExistingPart = await Parts.findOne({ 'PartNumber': part.PartNumber })
+      // console.log(ExistingPart,"esidffkj")
+      if (ExistingPart) {
+        if (!ExistingPart.parentIds.some((parent) => parent.crNumber == newCR.referenceNumber)) {
+          ExistingPart.parentIds.push({productNumber:"",crNumber:newCR.referenceNumber})
+        }
+      }
+      else {
+        utils.commonResponse(res, 404, "Part Do Not exist, add part first")
+      }
+
+      console.log('existing part',ExistingPart)
+
+      await ExistingPart.save();
+      // add part_id in the current cr 
+
+    })
+    // utils.commonResponse(res, 200, "success", {})
+
+    CommercialReference.create(newCR).then((data) => {
+      utils.commonResponse(res, 200, "success", {})
+    })
+  }
+  else {
+    utils.commonResponse(res, 409, "ReferenceNumber exist")
+  }
+}
+
+exports.createPart = (async (req, res) => {
+
+  let newPart = {
+    partNumber: req.body.partNumber,
+    partDescription: req.body.partDescription,
+    quantity: req.body.quantity
+  }
+  // console.log(newPart)
+
+  const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
+  if (ExistingPart) {
+    utils.commonResponse(res, 409, "PartNumber Exist", {})
+  }
+  else {
+    Parts.create(newPart).then((data) => {
+      utils.commonResponse(res, 200, "success", {})
+    })
+  }
+})
+
 // async function getUniqueParts(partsList) {
 //   const partMap = new Map();
 //   console.log(partsList.length);
@@ -509,7 +572,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
 
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
+    const sheetName = workbook.SheetNames[1];
     const worksheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(worksheet);
 
@@ -536,17 +599,17 @@ exports.uploadCRFromAdmin = async (req, res) => {
 
         cr.parts = [];
       }
-      if (_rowData.Level == "1") {
-        product = {};
-        product.productNumber = _rowData.Number;
-        product.productDescription = _rowData.EnglishDescription;
-        product.crNumber = cr.referenceNumber;
-        product.quantity = _rowData.Quantity;
+      // if (_rowData.Level == "1") {
+      //   product = {};
+      //   product.productNumber = _rowData.Number;
+      //   product.productDescription = _rowData.EnglishDescription;
+      //   product.crNumber = cr.referenceNumber;
+      //   product.quantity = _rowData.Quantity;
 
-        cr.productNumber = _rowData.Number;
-        productsList.push(product);
-      }
-      if (_rowData.Level == "2") {
+      //   cr.productNumber = _rowData.Number;
+      //   productsList.push(product);
+      // }
+      if (_rowData.Level == "1") {
         part = {};
 
         part.partNumber = _rowData.Number;
@@ -561,6 +624,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
         partsList.push(part);
       }
 
+      // if there is no cr exist within the commercialReff array it will add the current cr to it
       if (
         !commercialReff.some((e) => e.referenceNumber == cr.referenceNumber)
       ) {
@@ -694,13 +758,13 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
-  
+
     // Reading and processing the Excel file
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(worksheet);
-  
+
     // Initializing variables
     const CrsListFromExcel = rows
       .filter(row => row.Reference) // Filter rows with a valid reference
@@ -708,35 +772,35 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         SwitchBoard: row.SwitchBoard,
         Reference: row.Reference,
         Enclosure: row.Enclosure,
-        componentName: row.Reference,
+        referenceNumber: row.Reference,
         compShortName: row.Reference,
         compPartNo: row.Reference,
-        compDescription: row.Description,
+        description: row.Description,
         fixedQuantity: row.FixedQuantity,
         quantity: row.Quantity,
         isCritical: row["Core / Non core"] !== "Non-Core"
       }));
-  
+
     // Extract unique switchboards with "Common Total" enclosures
     const switchBoards = [...new Set(CrsListFromExcel
       .filter(cr => cr.Enclosure === "Common Total")
       .map(cr => cr.SwitchBoard))];
-  
+
     // Group CRs by switchboard
     const SwitchboardListWithCrs = switchBoards.map(switchBoard => ({
       switchBoard,
       components: CrsListFromExcel.filter(cr => cr.SwitchBoard === switchBoard && cr.Reference)
     }));
-  
+
     // Fetch all commercial references from the database
     const EntireCommerialRef = await CommercialReference.find();
     const CRsinCurrentOrder = CrsListFromExcel.map(cr => cr.Reference);
-  
+
     // Map order CRs to their parts
     const CRsWithParts = CRsinCurrentOrder.flatMap(currentRef =>
       EntireCommerialRef.filter(entireCR => entireCR.referenceNumber === currentRef)
     );
-  
+
     // Map switchboards to CRs with parts
     const SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map(switchboard => ({
       ...switchboard,
@@ -745,7 +809,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         parts: CRsWithParts.find(innerCR => innerCR.referenceNumber === cr.Reference)?.parts || []
       }))
     }));
-  
+
     // Generate a final list of parts with aggregated quantities
     const EntirePartList = CRsWithParts.flatMap(cr => cr.parts || []);
     const FinalPartList = EntirePartList.reduce((acc, part) => {
@@ -757,13 +821,13 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }
       return acc;
     }, []);
-  
+
     // Project details (static for now, can be dynamic)
     const ProjectDetails = {
       project_name: "Project 1",
       project_description: "This is a test data"
     };
-  
+
     // Sending the response
     // console.log("crpartlist",SwitchBoardWithCRWithParts, "partlist",FinalPartList)
     utils.commonResponse(res, 200, "success", {
@@ -771,7 +835,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       PartList: FinalPartList,
       ProjectDetails
     });
-  
+
     // Insert parts into the database if needed
     // if (EntirePartList.length > 0) {
     //   await Parts.insertMany(EntirePartList);
@@ -780,7 +844,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     console.error(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
-  
+
 }
 
 async function getAvailableCommonReffData(crNumberList) {
