@@ -600,13 +600,13 @@ exports.shipProject = async (req, res) => {
             _id: 0
           }
       },
-      {
-        $project: {
-          isComponentExist: {
-            $literal: true
-          } // If a match is found, return true
-        }
-      }
+      // {
+      //   $project: {
+      //     isComponentExist: {
+      //       $literal: true
+      //     } // If a match is found, return true
+      //   }
+      // }
     ])
 
 
