@@ -1015,14 +1015,13 @@ exports.addPartsToBox = async (req, res) => {
       projectID
     );
 
-    if (findComponentExist.length > 0) {
-      if (!findComponentExist[0].isComponentExist) {
+    if (findComponentExist) {
         return utils.commonResponse(
           res,
           201,
           "This Part/item not listed in this project, please check..."
         );
-      }
+      
     }
 
     const box = await Boxes.findOne({
