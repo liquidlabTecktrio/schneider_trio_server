@@ -917,28 +917,33 @@ async function checkPartExistInThisProjectsCollection(res, partNumber, projectID
     console.log(partNumber, projectID)
     const findComponentExist = await Projects.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(projectID) }, // Match the project ID
+        $match: {
+          _id: ObjectId("6756b353c001bf3fd30ac592")
+        } // Match the project ID
       },
-      { 
+      {
         $unwind: "$switchBoardData" // Unwind switchBoardData
       },
-      { 
+      {
         $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
       },
-      { 
+      {
         $unwind: "$switchBoardData.components.parts" // Unwind parts within components
       },
       {
         $match: {
-          // "switchBoardData.components.Reference": referenceNumber, // Match the Reference (crNumber)
-          "switchBoardData.components.parts.partNumber": partNumber, // Match the partNumber
-        },
+          // "switchBoardData.components.Reference": "BQT97814", // Match the Reference (crNumber)
+          "switchBoardData.components.parts.partNumber":
+            "NVE95349" // Match the partNumber
+        }
       },
       {
         $project: {
-          isComponentExist: { $literal: true }, // If a match is found, return true
-        },
-      },
+          isComponentExist: {
+            $literal: true
+          } // If a match is found, return true
+        }
+      }
     ]);
 
     return findComponentExist
