@@ -777,7 +777,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         compPartNo: row.Reference,
         description: row.Description,
         fixedQuantity: row.FixedQuantity,
-        quantity: row.Quantity,
+        Quantity: row.Quantity,
         isCritical: row["Core / Non core"] !== "Non-Core"
       }));
 
