@@ -610,7 +610,18 @@ exports.shipProject = async (req, res) => {
     ])
 
 
-    console.log('projectComponents: ', projectComponents);
+    let projectComponentWithQuantityAdded = []
+
+    projectComponents.map((part,key)=>{
+      if(projectComponentWithQuantityAdded.some(partNumber => partNumber == part.parts.partNumber)){
+        part.parts.quantity += 1
+      }
+    })
+
+
+
+    // list of parts
+    console.log('projectComponents: ', projectComponentWithQuantityAdded);
 
     // Step 2: Fetch Shipped Components from Boxes
     const boxComponents = await Boxes.aggregate([
