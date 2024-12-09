@@ -616,6 +616,9 @@ exports.shipProject = async (req, res) => {
       if(projectComponentWithQuantityAdded.some(partNumber => partNumber == part.parts.partNumber)){
         part.parts.quantity += 1
       }
+      else{
+        projectComponentWithQuantityAdded.push(part.parts.partNumber)
+      }
     })
 
 
