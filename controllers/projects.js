@@ -532,47 +532,82 @@ exports.shipProject = async (req, res) => {
     const { projectId } = req.body;
 
     // Step 1: Retrieve Project Components and Calculate Required Quantities
-    const projectComponents = await Project.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(projectId) } },
-      { $project: { "switchBoardData.components": 1 } },
-      { $unwind: "$switchBoardData" },
-      { $unwind: "$switchBoardData.components" },
-      {
-        $lookup: {
-          from: "parts",
-          localField: "switchBoardData.components.Reference",
-          foreignField: "parentIds.crNumber",
-          as: "partDetails",
-        },
-      },
-      { $unwind: "$partDetails" },
-      {
-        $project: {
-          reference: "$switchBoardData.components.Reference",
-          requiredQuantity: {
-            $multiply: ["$switchBoardData.components.Quantity", "$partDetails.quantity"],
-          },
-          partNumber: "$partDetails.partNumber",
-          partDescription: "$partDetails.partDescription",
-        },
-      },
-      {
-        $group: {
-          _id: { reference: "$reference", partNumber: "$partNumber", partDescription: "$partDescription" },
-          totalRequiredQuantity: { $sum: "$requiredQuantity" },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          reference: "$_id.reference",
-          partNumber: "$_id.partNumber",
-          partDescription: "$_id.partDescription",
-          totalRequiredQuantity: 1,
-        },
-      },
-    ]);
+    // const projectComponents = await Project.aggregate([
+    //   { $match: { _id: new mongoose.Types.ObjectId(projectId) } },
+    //   { $project: { "switchBoardData.components": 1 } },
+    //   { $unwind: "$switchBoardData" },
+    //   { $unwind: "$switchBoardData.components" },
+    //   {
+    //     $lookup: {
+    //       from: "parts",
+    //       localField: "switchBoardData.components.Reference",
+    //       foreignField: "parentIds.crNumber",
+    //       as: "partDetails",
+    //     },
+    //   },
+    //   { $unwind: "$partDetails" },
+    //   {
+    //     $project: {
+    //       reference: "$switchBoardData.components.Reference",
+    //       requiredQuantity: {
+    //         $multiply: ["$switchBoardData.components.Quantity", "$partDetails.quantity"],
+    //       },
+    //       partNumber: "$partDetails.partNumber",
+    //       partDescription: "$partDetails.partDescription",
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: { reference: "$reference", partNumber: "$partNumber", partDescription: "$partDescription" },
+    //       totalRequiredQuantity: { $sum: "$requiredQuantity" },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       reference: "$_id.reference",
+    //       partNumber: "$_id.partNumber",
+    //       partDescription: "$_id.partDescription",
+    //       totalRequiredQuantity: 1,
+    //     },
+    //   },
+    // ]);
 
+    const projectComponents = await Project.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(projectId)
+        } // Match the project ID
+      },
+      {
+        $unwind: "$switchBoardData" // Unwind switchBoardData
+      },
+      {
+        $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
+      },
+      {
+        $unwind: "$switchBoardData.components.parts" // Unwind parts within components
+      },
+      {
+        $project:
+          /**
+           * specifications: The fields to
+           *   include or exclude.
+           */
+          {
+            parts:
+              "$switchBoardData.components.parts",
+            _id: 0
+          }
+      },
+      {
+        $project: {
+          isComponentExist: {
+            $literal: true
+          } // If a match is found, return true
+        }
+      }
+    ])
 
 
     console.log('projectComponents: ', projectComponents);
