@@ -913,6 +913,8 @@ exports.updateBoxStatus = async (req, res) => {
 
 async function checkPartExistInThisProjectsCollection(res, partNumber, projectID){
   try{
+
+    console.log(partNumber, projectID)
     const findComponentExist = await Projects.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(projectID) }, // Match the project ID
