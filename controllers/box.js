@@ -261,6 +261,7 @@ async function checkComponentQuntityExceeded(
     return isExceedded;
   }
 }
+
 exports.addComponentsToBox = async (req, res) => {
   try {
     const {
@@ -287,6 +288,7 @@ exports.addComponentsToBox = async (req, res) => {
       componentID,
       projectID
     );
+
     if (findComponentExist.length > 0) {
       if (!findComponentExist[0].isComponentExist) {
         return utils.commonResponse(
@@ -296,6 +298,7 @@ exports.addComponentsToBox = async (req, res) => {
         );
       }
     }
+
     const box = await Boxes.findOne({ serialNo: boxSerialNo });
     if (!box) {
       return utils.commonResponse(res, 404, "Box serial number not found");
@@ -908,6 +911,44 @@ exports.updateBoxStatus = async (req, res) => {
   }
 };
 
+async function checkPartExistInThisProjectsCollection(res, partID, projectID){
+  try{
+    const findexist = await Project.aggregate([
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId(projectID)
+        } // Match the project ID
+      },
+      {
+        $unwind: "$switchBoardData" // Unwind switchBoardData
+      },
+      {
+        $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
+      },
+      {
+        $unwind: "$switchBoardData.components.parts" // Unwind parts within components
+      },
+      {
+        $match: {
+          // "switchBoardData.components.Reference": "BQT97814", // Match the Reference (crNumber)
+          "switchBoardData.components.parts.partNumber":partID// Match the partNumber
+        }
+      },
+      {
+        $project: {
+          isComponentExist: {
+            $literal: true
+          } // If a match is found, return true
+        }
+      }
+    ])
+  }
+  catch(error){
+    utils.commonResponse(res, 500, error.toString());
+  }
+
+}
+
 async function checkPartExistInTheProject(res, partID, projectID) {
   try {
     const findComponentExist = await Parts.aggregate([
@@ -968,7 +1009,7 @@ exports.addPartsToBox = async (req, res) => {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
 
-    const findComponentExist = await checkPartExistInTheProject(
+    const findComponentExist = await checkPartExistInThisProjectsCollection(
       res,
       partID,
       projectID
