@@ -613,7 +613,7 @@ exports.shipProject = async (req, res) => {
     let projectComponentWithQuantityAdded = []
 
     projectComponents.map((part,key)=>{
-      if(projectComponentWithQuantityAdded.some(part => part.partNumber == part.parts.partNumber)){
+      if(projectComponentWithQuantityAdded.some(inner_part => inner_part.partNumber == part.parts.partNumber)){
         part.parts.quantity += 1
       }
       else{
