@@ -1019,14 +1019,14 @@ exports.addPartsToBox = async (req, res) => {
     findComponentExist.length > 0 ? findComponentExist[0].isComponentExist : false;
     console.log(isComponentExist)
 
-    // if (isComponentExist) {
+    if (!isComponentExist) {
         return utils.commonResponse(
           res,
           201,
           "This Part/item not listed in this project, please check..."
         );
       
-    // }
+    }
 
     const box = await Boxes.findOne({
       serialNo: boxSerialNo,
