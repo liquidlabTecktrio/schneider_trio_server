@@ -911,7 +911,7 @@ exports.updateBoxStatus = async (req, res) => {
   }
 };
 
-async function checkPartExistInThisProjectsCollection(res, partID, projectID){
+async function checkPartExistInThisProjectsCollection(res, partNumber, projectID){
   try{
     const findComponentExist = await Projects.aggregate([
       {
@@ -929,7 +929,7 @@ async function checkPartExistInThisProjectsCollection(res, partID, projectID){
       {
         $match: {
           // "switchBoardData.components.Reference": referenceNumber, // Match the Reference (crNumber)
-          "switchBoardData.components.parts.partNumber": partID, // Match the partNumber
+          "switchBoardData.components.parts.partNumber": partNumber, // Match the partNumber
         },
       },
       {
@@ -1006,10 +1006,13 @@ exports.addPartsToBox = async (req, res) => {
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
+    const partNumber = await Parts.findOne({
+      _id: new mongoose.Types.ObjectId(partID),
+    });
 
     const findComponentExist = await checkPartExistInThisProjectsCollection(
       res,
-      partID,
+      partNumber,
       projectID
     );
 
@@ -1041,9 +1044,9 @@ exports.addPartsToBox = async (req, res) => {
       partId: partID,
     });
 
-    const partNumber = await Parts.findOne({
-      _id: new mongoose.Types.ObjectId(partID),
-    });
+    // const partNumber = await Parts.findOne({
+    //   _id: new mongoose.Types.ObjectId(partID),
+    // });
 
     if (!part) {
       return utils.commonResponse(res, 404, "Part ID not found");
