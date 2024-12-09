@@ -150,40 +150,60 @@ exports.createCR = async (req, res) => {
     referenceNumber: req.body.referenceNumber,
     description: req.body.description,
     productNumber: req.body.productNumber,
-    parts: req.body.parts
+    partNumbers: req.body.partNumbers
   }
-  console.log(newCR)
-
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
+  if (ExistingCR) return utils.commonResponse(res, 409, "ReferenceNumber exist")
+
   if (!ExistingCR) {
-    newCR.parts.map(async (part, key) => {
-      // add this cr_reference number in part in parts collection
-      // find the parts in parts with partnumber
-      const ExistingPart = await Parts.findOne({ 'PartNumber': part.PartNumber })
-      // console.log(ExistingPart,"esidffkj")
-      if (ExistingPart) {
-        if (!ExistingPart.parentIds.some((parent) => parent.crNumber == newCR.referenceNumber)) {
-          ExistingPart.parentIds.push({productNumber:"",crNumber:newCR.referenceNumber})
-        }
-      }
-      else {
-        utils.commonResponse(res, 404, "Part Do Not exist, add part first")
+    // Iterate through the partNumbers sequentially
+    for (const partNumber of newCR.partNumbers) {
+      // Check if the part exists
+      const existingPart = await Parts.findOne({ partNumber });
+
+      if (!existingPart) {
+        return utils.commonResponse(res, 404, "Part does not exist, add part first");
       }
 
-      console.log('existing part',ExistingPart)
+      // Check if the CR number is already in the part's parentIds
+      const alreadyLinked = existingPart.parentIds.some(
+        (parent) => parent.crNumber === newCR.referenceNumber
+      );
 
-      await ExistingPart.save();
-      // add part_id in the current cr 
+      if (!alreadyLinked) {
+        existingPart.parentIds.push({
+          productNumber: "",
+          crNumber: newCR.referenceNumber,
+        });
+        await existingPart.save();
+      } else {
+        return utils.commonResponse(res, 409, "CR ID already added to part");
+      }
+    }
+    // newCR.partNumbers.foreach(async (partNumber, key) => {
+    //   // add this cr_reference number in part in parts collection
+    //   // find the parts in parts with partnumber
+    //   const ExistingPart = await Parts.findOne({ 'partNumber': partNumber })
+    //   // console.log(ExistingPart)
+    //   if(!ExistingPart)return utils.commonResponse(res, 404, "Cr Id already added to part")
 
-    })
-    // utils.commonResponse(res, 200, "success", {})
+    //   if (ExistingPart) {
+    //     if (!ExistingPart.parentIds.some((parent) => parent.crNumber == newCR.referenceNumber)) {
+    //       ExistingPart.parentIds.push({ productNumber: "", crNumber: newCR.referenceNumber })
+    //       await ExistingPart.save();
+    //     }
+    //   }
+
+    //   else {
+    //     // console.log("do not exist")
+    //     return utils.commonResponse(res, 404, "Part Do Not exist, add part first")
+    //   }
+    // })
 
     CommercialReference.create(newCR).then((data) => {
-      utils.commonResponse(res, 200, "success", {})
+      return utils.commonResponse(res, 200, "success", {})
     })
-  }
-  else {
-    utils.commonResponse(res, 409, "ReferenceNumber exist")
+    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
 }
 
@@ -198,11 +218,11 @@ exports.createPart = (async (req, res) => {
 
   const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
   if (ExistingPart) {
-    utils.commonResponse(res, 409, "PartNumber Exist", {})
+    return utils.commonResponse(res, 409, "PartNumber Exist", ExistingPart)
   }
   else {
     Parts.create(newPart).then((data) => {
-      utils.commonResponse(res, 200, "success", {})
+      return utils.commonResponse(res, 200, "success", {})
     })
   }
 })
