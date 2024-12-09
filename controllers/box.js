@@ -913,38 +913,36 @@ exports.updateBoxStatus = async (req, res) => {
 
 async function checkPartExistInThisProjectsCollection(res, partID, projectID){
   try{
-    const findexist = await Project.aggregate([
+    const findComponentExist = await Projects.aggregate([
       {
-        $match: {
-          _id: mongoose.Types.ObjectId(projectID)
-        } // Match the project ID
+        $match: { _id: new mongoose.Types.ObjectId(projectID) }, // Match the project ID
       },
-      {
+      { 
         $unwind: "$switchBoardData" // Unwind switchBoardData
       },
-      {
+      { 
         $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
       },
-      {
+      { 
         $unwind: "$switchBoardData.components.parts" // Unwind parts within components
       },
       {
         $match: {
-          // "switchBoardData.components.Reference": "BQT97814", // Match the Reference (crNumber)
-          "switchBoardData.components.parts.partNumber":partID// Match the partNumber
-        }
+          // "switchBoardData.components.Reference": referenceNumber, // Match the Reference (crNumber)
+          "switchBoardData.components.parts.partNumber": partID, // Match the partNumber
+        },
       },
       {
         $project: {
-          isComponentExist: {
-            $literal: true
-          } // If a match is found, return true
-        }
-      }
-    ])
+          isComponentExist: { $literal: true }, // If a match is found, return true
+        },
+      },
+    ]);
+
+    return findComponentExist
   }
   catch(error){
-    utils.commonResponse(res, 500, error.toString());
+    return []
   }
 
 }
@@ -1015,7 +1013,13 @@ exports.addPartsToBox = async (req, res) => {
       projectID
     );
 
-    if (findComponentExist) {
+        // If no match is found, return false manually
+
+    const isComponentExist = 
+    findComponentExist.length > 0 ? findComponentExist[0].isComponentExist : false;
+    console.log(isComponentExist)
+
+    if (isComponentExist) {
         return utils.commonResponse(
           res,
           201,
