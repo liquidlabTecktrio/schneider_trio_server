@@ -25,10 +25,10 @@ const componentSchema = new Schema({
   Reference: {
     type: String,
   },
-  compDescription: {
+  description: {
     type: String,
   },
-  componentName: {
+  referenceNumber: {
     type: String,
   },
   compShortName: {
