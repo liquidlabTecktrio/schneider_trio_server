@@ -654,21 +654,32 @@ exports.shipProject = async (req, res) => {
     ]);
 
     console.log('boxComponents: ', boxComponents);
+    console.log('projectComponents: ', projectComponents);
+    
     // Step 3: Compare Required and Shipped Quantities
     const missingComponents = [];
-    const boxComponentsMap = new Map(boxComponents.map(comp => [comp.partNumber, comp.totalShippedQuantity]));
-
+    
+    // Create a Map from boxComponents for fast lookups
+    const boxComponentsMap = new Map(
+      boxComponents.map((comp) => [comp.partNumber, comp.totalShippedQuantity])
+    );
+    
+    // Iterate over projectComponents to find missing parts
     projectComponents.forEach((projectComponent) => {
-      const shippedQuantity = boxComponentsMap.get(projectComponent.partNumber) || 0;
+      const shippedQuantity = boxComponentsMap.get(projectComponent.partNumber) || 0; // Get shipped quantity or default to 0
       if (shippedQuantity < projectComponent.totalRequiredQuantity) {
         missingComponents.push({
           reference: projectComponent.reference,
           partNumber: projectComponent.partNumber,
           partDescription: projectComponent.partDescription,
-          qnty: projectComponent.totalRequiredQuantity - shippedQuantity,
+          qnty: projectComponent.totalRequiredQuantity - shippedQuantity, // Calculate the missing quantity
         });
       }
     });
+    
+    // Log the missing components
+    console.log('Missing Components: ', missingComponents);
+    
 
     // Step 4: Respond Based on Missing Components
     if (missingComponents.length > 0) {
