@@ -1006,14 +1006,14 @@ exports.addPartsToBox = async (req, res) => {
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-    const partNumber = await Parts.findOne({
+    const part = await Parts.findOne({
       _id: new mongoose.Types.ObjectId(partID),
     });
 
-    console.log(partNumber)
+    console.log(part.partNumber)
     const findComponentExist = await checkPartExistInThisProjectsCollection(
       res,
-      partNumber,
+      part.partNumber,
       projectID
     );
 
@@ -1041,13 +1041,13 @@ exports.addPartsToBox = async (req, res) => {
       return utils.commonResponse(res, 404, "Box serial number not found");
     }
 
-    const part = await PartsSerialNo.findOne({
-      partId: partID,
-    });
-
-    // const partNumber = await Parts.findOne({
-    //   _id: new mongoose.Types.ObjectId(partID),
+    // const part = await PartsSerialNo.findOne({
+    //   partId: partID,
     // });
+
+    const partNumber = await Parts.findOne({
+      _id: new mongoose.Types.ObjectId(partID),
+    });
 
     if (!part) {
       return utils.commonResponse(res, 404, "Part ID not found");
