@@ -1007,74 +1007,29 @@ async function checkPartExistInTheProject(res, partID, projectID) {
 
 exports.addPartsToBox = async (req, res) => {
   try {
-    const { hubID, partID, boxSerialNo, projectID, partSerialNumber } =
-      req.body;
+    const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-    const part = await Parts.findOne({
-      _id: new mongoose.Types.ObjectId(partID),
-    });
 
-    //console.log(part.partNumber)
-    const findComponentExist = await checkPartExistInThisProjectsCollection(
-      res,
-      part.partNumber,
-      projectID
-    );
+    const [part, box, hub] = await Promise.all([
+      Parts.findById(partID),
+      Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
+      Hub.findById(hubID),
+    ]);
 
-    // If no match is found, return false manually
+    if (!part) return utils.commonResponse(res, 404, "Part ID not found");
+    if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
+    if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
 
-    // const isComponentExist = 
-    //console.log(findComponentExist)
-
-    if (findComponentExist.length == 0) {
-      return utils.commonResponse(
-        res,
-        201,
-        "This Part/item not listed in this project, please check..."
-      );
-
-    }
-
-    const box = await Boxes.findOne({
-      serialNo: boxSerialNo,
-      projectId: projectID,
-    });
-
-    if (!box) {
-      return utils.commonResponse(res, 404, "Box serial number not found");
-    }
-
-    // const part = await PartsSerialNo.findOne({
-    //   partId: partID,
-    // });
-
-    const partNumber = await Parts.findOne({
-      _id: new mongoose.Types.ObjectId(partID),
-    });
-
-    if (!part) {
-      return utils.commonResponse(res, 404, "Part ID not found");
-    }
-
-    const hub = await Hub.findById(hubID);
-    if (!hub) {
-      return utils.commonResponse(res, 404, "Hub ID not found");
-    }
-
-    const partSerialEntry = await PartsSerialNo.findOne({
-      partId: new mongoose.Types.ObjectId(partID),
+    const isSerialValid = await PartsSerialNo.exists({
+      partId: partID,
       hubSerialNo: {
-        $elemMatch: {
-          hubId: new mongoose.Types.ObjectId(hubID),
-          serialNos: partSerialNumber,
-        },
+        $elemMatch: { hubId: hubID, serialNos: partSerialNumber },
       },
     });
-
-    if (!partSerialEntry) {
+    if (!isSerialValid) {
       return utils.commonResponse(
         res,
         404,
@@ -1082,108 +1037,46 @@ exports.addPartsToBox = async (req, res) => {
       );
     }
 
-    const partIDObject = new mongoose.Types.ObjectId(partID);
+    const projectBoxes = await Boxes.find({ projectId: projectID });
 
+    // Check if the part exists in any project box
+    const existingPart = projectBoxes.flatMap(box => box.components).find(
+      comp => comp.componentID?.equals(partID) && comp.componentSerialNo.includes(partSerialNumber)
+    );
 
-
-    let projectBoxes = await Boxes.find({
-      projectId: projectID
-    })
-
-    // console.log(projectBoxes,
-    //   "projectboxes")
-    let partExistingBoxs =[];
-
-    // Loop through projectBoxes
-    for (let i = 0; i < projectBoxes.length; i++) {
-      const existingPart = projectBoxes[i].components.find(
-        (comp) => comp.componentID && comp.componentID.equals(partIDObject)
+    if (existingPart) {
+      return utils.commonResponse(
+        res,
+        400,
+        "Serial number already exists for this Part in the box"
       );
-
-      if (existingPart) {
-
-        partExistingBoxs.push(projectBoxes[i].components.find(
-          (comp) => comp.componentID && comp.componentID.equals(partIDObject)
-        )) // Update the flag with the found part
-        // break; // Exit the loop
-      }
     }
 
-    console.log("Triggered")
-    // Handle if part exists
-    if (partExistingBoxs.length > 0) {
-      // console.log("Part exist in box",partExistingBoxs)
-      // Check for duplicate serial number
-
-      // if (box.components.componentSerialNo.includes(partSerialNumber)) {
-      //   console.log("Duplicate serial number found")
-
-
-      partExistingBoxs.forEach(existingBox=>{
-        
-          console.log(existingBox)
-
-        existingBox.componentSerialNo.map((serial_no,key)=>{
-          // component.componentSerialNo.map((serial_no,key)=>{
-            console.log(serial_no)
-          // })
-        })
-      
-      })
-        return utils.commonResponse(
-          res,
-          400,
-          "Serial number already exists for this Part in the box"
-        );
-      // }
-      // Add the serial number and update the quantity
-      // box.components.componentSerialNo.push(partSerialNumber);
-      // ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
-    } 
-    
-    else {
-      console.log("Part do not exist in any box")
-      // If the part does not exist, add it as a new component
+    // Add the part to the box or update its quantity and serial numbers
+    const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
+    if (existingComponent) {
+      existingComponent.componentSerialNo.push(partSerialNumber);
+      existingComponent.quantity += 1;
+    } else {
       box.components.push({
         componentID: partID,
-        componentName: partNumber.partNumber,
+        componentName: part.partNumber,
         componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
     }
 
+    // Check if the total quantity exceeds the allowed limit
     const totalComponentsQuantity = await Boxes.aggregate([
-      {
-        $match: {
-          projectId: new mongoose.Types.ObjectId(projectID),
-        },
-      },
-      {
-        $unwind: "$components",
-      },
-      {
-        $match: {
-          "components.componentID": new mongoose.Types.ObjectId(partID),
-        },
-      },
-      {
-        $group: {
-          _id: "$components.componentID",
-          totalQuantity: {
-            $sum: "$components.quantity",
-          },
-        },
-      },
+      { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
+      { $unwind: "$components" },
+      { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
+      { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
     ]);
 
-    const isExeed = await checkComponentQuntityExceeded(
-      totalComponentsQuantity.length > 0
-        ? totalComponentsQuantity[0].totalQuantity ?? 0
-        : 0,
-      partNumber.partNumber,
-      projectID
-    );
-    if (isExeed) {
+    const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
+    const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
+    if (isExceed) {
       return utils.commonResponse(
         res,
         201,
@@ -1191,16 +1084,17 @@ exports.addPartsToBox = async (req, res) => {
       );
     }
 
+    // Save the box and respond
     box.quantity += 1;
     await box.save();
 
-    utils.commonResponse(res, 200, "Part added to box successfully", {
-      boxid: box._id,
+    return utils.commonResponse(res, 200, "Part added to box successfully", {
+      boxId: box._id,
       totalParts: box.quantity,
     });
   } catch (error) {
-    console.error("Error in addComponentsToBox:", error);
-    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+    console.error("Error in addPartsToBox:", error);
+    return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
 
