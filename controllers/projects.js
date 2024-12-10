@@ -620,11 +620,11 @@ exports.shipProject = async (req, res) => {
     
       if (existingPart) {
         // If it exists, increment the total quantity
-        existingPart.totalQuantity += part.parts.quantity;
+        existingPart.qnty += part.parts.quantity;
       } else {
         // If it doesn't exist, add it to the array
         projectComponentWithQuantityAdded.push({
-          reference: part.part.reference,
+          reference: part.parts.reference,
           partNumber: part.parts.partNumber,
           qnty: part.parts.quantity,
           partDescription: part.parts.description,
