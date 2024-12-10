@@ -1089,7 +1089,7 @@ exports.addPartsToBox = async (req, res) => {
     await box.save();
 
     return utils.commonResponse(res, 200, "Part added to box successfully", {
-      boxId: box._id,
+      boxid: box._id,
       totalParts: box.quantity,
     });
   } catch (error) {
