@@ -1101,9 +1101,7 @@ exports.addPartsToBox = async (req, res) => {
       );
 
       if (existingPart) {
-        ispartExistInAnyBox = projectBoxes[i].components.find(
-          (comp) => comp.componentID && comp.componentID.equals(partIDObject)
-        ); // Update the flag with the found part
+        ispartExistInAnyBox = existingPart; // Update the flag with the found part
         break; // Exit the loop
       }
     }
@@ -1119,12 +1117,12 @@ exports.addPartsToBox = async (req, res) => {
           400,
           "Serial number already exists for this Part in the box"
         );
-      }else{
-        console.log("Part serialNumber pushing to box")
-      // Add the serial number and update the quantity
-      ispartExistInAnyBox.componentSerialNo.push(partSerialNumber);
-      ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
       }
+      // Add the serial number and update the quantity
+      projectBoxes[i].components.find(
+        (comp) => comp.componentID && comp.componentID.equals(partIDObject)).componentSerialNo.push(partSerialNumber);
+        projectBoxes[i].components.find(
+          (comp) => comp.componentID && comp.componentID.equals(partIDObject)).quantity = ispartExistInAnyBox.componentSerialNo.length;
     } 
     
     else {
@@ -1136,7 +1134,7 @@ exports.addPartsToBox = async (req, res) => {
         componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
-    
+    }
 
     const totalComponentsQuantity = await Boxes.aggregate([
       {
@@ -1184,7 +1182,6 @@ exports.addPartsToBox = async (req, res) => {
       boxid: box._id,
       totalParts: box.quantity,
     });
-  }
   } catch (error) {
     console.error("Error in addComponentsToBox:", error);
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
