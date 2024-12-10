@@ -1089,14 +1089,16 @@ exports.addPartsToBox = async (req, res) => {
     })
 
     ispartExistInAnyBox = false
-    projectBoxes.map((box, key)=>{
+
+   for(i = 0; i < projectBoxes.length();i++){
       const existingPart = box.components.find(
         (comp) => comp.componentID && comp.componentID.equals(partIDObject)
       );
       if(existingPart){
         ispartExistInAnyBox = existingPart
+        break;
       }
-    })
+    }
   
 
     if (ispartExistInAnyBox) {
