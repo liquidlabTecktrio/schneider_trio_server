@@ -1107,7 +1107,7 @@ exports.addPartsToBox = async (req, res) => {
     }
   
 
-    if (ispartExistInAnyBox) {
+    if (ispartExistInAnyBox.length > 0) {
       // If the part already exists, check for duplicate serial number
       if (ispartExistInAnyBox.componentSerialNo.includes(partSerialNumber)) {
         return utils.commonResponse(
