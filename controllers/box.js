@@ -1084,7 +1084,9 @@ exports.addPartsToBox = async (req, res) => {
 
     const partIDObject = new mongoose.Types.ObjectId(partID);
 
-    const projectBoxes = await Boxes.find({
+
+    const projectBoxes = []
+    projectBoxes = await Boxes.find({
       projectId: projectID
     })
 
