@@ -1121,8 +1121,8 @@ exports.addPartsToBox = async (req, res) => {
         );
       }
       // Add the serial number and update the quantity
-      ispartExistInAnyBox.componentSerialNo.push(partSerialNumber);
-      ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
+      box.components.componentSerialNo.push(partSerialNumber);
+      // ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
     } 
     
     else {
@@ -1131,7 +1131,7 @@ exports.addPartsToBox = async (req, res) => {
       box.components.push({
         componentID: partID,
         componentName: partNumber.partNumber,
-        componentSerialNo: ispartExistInAnyBox.componentSerialNo,
+        componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
     }
