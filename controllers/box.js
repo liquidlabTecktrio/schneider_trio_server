@@ -1104,7 +1104,7 @@ exports.addPartsToBox = async (req, res) => {
         partExistingBox = projectBoxes[i].components.find(
           (comp) => comp.componentID && comp.componentID.equals(partIDObject)
         ); // Update the flag with the found part
-        break; // Exit the loop
+        // break; // Exit the loop
       }
     }
     console.log("Triggered")
