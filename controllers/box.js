@@ -1093,7 +1093,7 @@ exports.addPartsToBox = async (req, res) => {
     // console.log(projectBoxes,
     //   "projectboxes")
 
-    ispartExistInAnyBox = []
+    ispartExistInAnyBox = {}
 
    for(i = 0; i < projectBoxes.length;i++){
       const existingPart = projectBoxes[i].components.find(
@@ -1107,7 +1107,7 @@ exports.addPartsToBox = async (req, res) => {
     }
   
 
-    if (ispartExistInAnyBox.length > 0) {
+    if (ispartExistInAnyBox === null) {
       // If the part already exists, check for duplicate serial number
       if (ispartExistInAnyBox.componentSerialNo.includes(partSerialNumber)) {
         return utils.commonResponse(
