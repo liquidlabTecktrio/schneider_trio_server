@@ -1051,9 +1051,9 @@ exports.addPartsToBox = async (req, res) => {
     //   partId: partID,
     // });
 
-    const partNumber = await Parts.findOne({
-      _id: new mongoose.Types.ObjectId(partID),
-    });
+    // const partNumber = await Parts.findOne({
+    //   _id: new mongoose.Types.ObjectId(partID),
+    // });
 
     if (!part) {
       return utils.commonResponse(res, 404, "Part ID not found");
@@ -1083,13 +1083,25 @@ exports.addPartsToBox = async (req, res) => {
     }
 
     const partIDObject = new mongoose.Types.ObjectId(partID);
-    const existingPart = box.components.find(
-      (comp) => comp.componentID && comp.componentID.equals(partIDObject)
-    );
 
-    if (existingPart) {
+    projectBoxes = Boxes.find({
+      projectId: projectID
+    })
+
+    ispartExistInAnyBox = false
+    projectBoxes.forEach((box, key)=>{
+      const existingPart = box.components.find(
+        (comp) => comp.componentID && comp.componentID.equals(partIDObject)
+      );
+      if(existingPart){
+        ispartExistInAnyBox = existingPart
+      }
+    })
+  
+
+    if (ispartExistInAnyBox) {
       // If the part already exists, check for duplicate serial number
-      if (existingPart.componentSerialNo.includes(partSerialNumber)) {
+      if (ispartExistInAnyBox.componentSerialNo.includes(partSerialNumber)) {
         return utils.commonResponse(
           res,
           400,
@@ -1104,7 +1116,7 @@ exports.addPartsToBox = async (req, res) => {
       // If the part does not exist, add it as a new component
       box.components.push({
         componentID: partID,
-        componentName: partNumber.partNumber,
+        componentName: part.partNumber,
         componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
