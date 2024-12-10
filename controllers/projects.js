@@ -624,8 +624,10 @@ exports.shipProject = async (req, res) => {
       } else {
         // If it doesn't exist, add it to the array
         projectComponentWithQuantityAdded.push({
+          reference: part.part.reference,
           partNumber: part.parts.partNumber,
-          totalQuantity: part.parts.quantity,
+          qnty: part.parts.quantity,
+          partDescription: part.parts.description,
         });
       }
     });
@@ -665,22 +667,26 @@ exports.shipProject = async (req, res) => {
     // );
     
     // Iterate over projectComponents to find missing parts
-    projectComponentWithQuantityAdded.forEach((part) => {
-      let InBox = false;
-      boxComponents.forEach((partInBox) => {
-        if (partInBox.partNumber === part.partNumber) {
-          InBox = true;
-          let pendingQuantity = Math.abs(partInBox.totalShippedQuantity - part.totalQuantity);
-          if (pendingQuantity > 0) {
-            part.totalQuantity = pendingQuantity;
-            InBox = false;  // Only set it to false if there is a discrepancy in quantity
+      projectComponentWithQuantityAdded.forEach((part) => {
+        let InBox = false;
+        // Use a for-loop to break early if part is found
+        for (let partInBox of boxComponents) {
+          if (partInBox.partNumber === part.partNumber) {
+            InBox = true;
+            let pendingQuantity = Math.abs(partInBox.totalShippedQuantity - part.qnty);
+            if (pendingQuantity > 0) {
+              part.qnty = pendingQuantity;
+              InBox = false;  // Reset InBox if there's a discrepancy in quantity
+            }
+            break; // Exit the loop early when the part is found
           }
         }
+        // If part is not found in box components, add it to missing components
+        if (!InBox) {
+          missingComponents.push(part);
+        }
       });
-      if (!InBox) {
-        missingComponents.push(part);
-      }
-    });
+      
     
 
     // projectComponentWithQuantityAdded.forEach((projectComponent) => {
