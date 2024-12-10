@@ -1051,9 +1051,9 @@ exports.addPartsToBox = async (req, res) => {
     //   partId: partID,
     // });
 
-    // const partNumber = await Parts.findOne({
-    //   _id: new mongoose.Types.ObjectId(partID),
-    // });
+    const partNumber = await Parts.findOne({
+      _id: new mongoose.Types.ObjectId(partID),
+    });
 
     if (!part) {
       return utils.commonResponse(res, 404, "Part ID not found");
@@ -1120,7 +1120,7 @@ exports.addPartsToBox = async (req, res) => {
       // If the part does not exist, add it as a new component
       box.components.push({
         componentID: partID,
-        componentName: part.partNumber,
+        componentName: partNumber.partNumber,
         componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
