@@ -1092,7 +1092,7 @@ exports.addPartsToBox = async (req, res) => {
 
     // console.log(projectBoxes,
     //   "projectboxes")
-    let partExistingBox = false;
+    let partExistingBoxs =[];
 
     // Loop through projectBoxes
     for (let i = 0; i < projectBoxes.length; i++) {
@@ -1101,16 +1101,18 @@ exports.addPartsToBox = async (req, res) => {
       );
 
       if (existingPart) {
-        partExistingBox = projectBoxes[i].components.find(
+
+        partExistingBoxs.push(projectBoxes[i].components.find(
           (comp) => comp.componentID && comp.componentID.equals(partIDObject)
-        ); // Update the flag with the found part
+        )) // Update the flag with the found part
         // break; // Exit the loop
       }
     }
+
     console.log("Triggered")
     // Handle if part exists
-    if (partExistingBox) {
-      console.log("Part exist in box",partExistingBox)
+    if (partExistingBoxs.length > 0) {
+      console.log("Part exist in box",partExistingBoxs)
       // Check for duplicate serial number
 
       // if (box.components.componentSerialNo.includes(partSerialNumber)) {
@@ -1122,7 +1124,7 @@ exports.addPartsToBox = async (req, res) => {
       //   );
       // }
       // Add the serial number and update the quantity
-      box.components.componentSerialNo.push(partSerialNumber);
+      // box.components.componentSerialNo.push(partSerialNumber);
       // ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
     } 
     
