@@ -1117,11 +1117,11 @@ exports.addPartsToBox = async (req, res) => {
 
       // if (box.components.componentSerialNo.includes(partSerialNumber)) {
       //   console.log("Duplicate serial number found")
-      //   return utils.commonResponse(
-      //     res,
-      //     400,
-      //     "Serial number already exists for this Part in the box"
-      //   );
+        return utils.commonResponse(
+          res,
+          400,
+          "Serial number already exists for this Part in the box"
+        );
       // }
       // Add the serial number and update the quantity
       // box.components.componentSerialNo.push(partSerialNumber);
