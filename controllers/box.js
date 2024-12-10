@@ -1112,7 +1112,7 @@ exports.addPartsToBox = async (req, res) => {
     console.log("Triggered")
     // Handle if part exists
     if (partExistingBoxs.length > 0) {
-      console.log("Part exist in box",partExistingBoxs)
+      // console.log("Part exist in box",partExistingBoxs)
       // Check for duplicate serial number
 
       // if (box.components.componentSerialNo.includes(partSerialNumber)) {
@@ -1120,19 +1120,16 @@ exports.addPartsToBox = async (req, res) => {
 
 
       partExistingBoxs.forEach(existingBox=>{
-        return(
+        
           console.log(existingBox)
 
-        )
-      }
-        
-        
-        // existingBox.components.map((component,key)=>{
-        //   component.componentSerialNo.map((serial_no,key)=>{
-        //     console.log(serial_no)
-        //   })
-        // })
-      )
+        existingBox.componentSerialNo.map((serial_no,key)=>{
+          // component.componentSerialNo.map((serial_no,key)=>{
+            console.log(serial_no)
+          // })
+        })
+      
+      })
         return utils.commonResponse(
           res,
           400,
