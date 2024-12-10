@@ -1112,7 +1112,7 @@ exports.addPartsToBox = async (req, res) => {
     if (ispartExistInAnyBox) {
       console.log("Part exist in box")
       // Check for duplicate serial number
-      if (ispartExistInAnyBox.componentSerialNo.includes(partSerialNumber)) {
+      if (box.components.componentSerialNo.includes(partSerialNumber)) {
         console.log("Duplicate serial number found")
         return utils.commonResponse(
           res,
