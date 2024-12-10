@@ -1101,7 +1101,9 @@ exports.addPartsToBox = async (req, res) => {
       );
 
       if (existingPart) {
-        ispartExistInAnyBox = existingPart; // Update the flag with the found part
+        ispartExistInAnyBox = projectBoxes[i].components.find(
+          (comp) => comp.componentID && comp.componentID.equals(partIDObject)
+        ); // Update the flag with the found part
         break; // Exit the loop
       }
     }
