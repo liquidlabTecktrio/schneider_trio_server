@@ -1120,8 +1120,10 @@ exports.addPartsToBox = async (req, res) => {
 
 
       partExistingBoxs.forEach(existingBox=>
-        
+        return(
           console.log(existingBox)
+
+        )
         
         // existingBox.components.map((component,key)=>{
         //   component.componentSerialNo.map((serial_no,key)=>{
