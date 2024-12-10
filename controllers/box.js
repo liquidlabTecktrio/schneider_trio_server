@@ -885,12 +885,12 @@ exports.updateBoxStatus = async (req, res) => {
       utils.commonResponse(res, 400, "Both _id and status are required.");
     }
 
-    const validStatuses = ["open", "closed"];
+    const validStatuses = ["open", "shipped"];
     if (!validStatuses.includes(status)) {
       utils.commonResponse(
         res,
         400,
-        "Invalid status. Must be 'open' or 'closed'."
+        "Invalid status. Must be 'open' or 'shipped'."
       );
     }
 
