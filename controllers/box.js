@@ -1136,7 +1136,7 @@ exports.addPartsToBox = async (req, res) => {
         componentSerialNo: [partSerialNumber],
         quantity: 1,
       });
-    }
+    
 
     const totalComponentsQuantity = await Boxes.aggregate([
       {
@@ -1184,6 +1184,7 @@ exports.addPartsToBox = async (req, res) => {
       boxid: box._id,
       totalParts: box.quantity,
     });
+  }
   } catch (error) {
     console.error("Error in addComponentsToBox:", error);
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
