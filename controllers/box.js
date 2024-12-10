@@ -1131,7 +1131,7 @@ exports.addPartsToBox = async (req, res) => {
       box.components.push({
         componentID: partID,
         componentName: partNumber.partNumber,
-        componentSerialNo: [partSerialNumber],
+        componentSerialNo: ispartExistInAnyBox.componentSerialNo,
         quantity: 1,
       });
     }
