@@ -10,7 +10,7 @@ exports.createComponent = async (req, res) => {
     const { componentName, compShortName, compPartNo, compDescription } =
       req.body;
 
-    //   console.log(req.body)
+    //   //console.log(req.body)
     itemCheck = await Components.findOne({ compPartNo: compPartNo });
 
     if (itemCheck) {

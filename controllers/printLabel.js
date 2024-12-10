@@ -26,7 +26,7 @@ const ZebraBrowserPrintWrapper = require('zebra-browser-print-wrapper');
 
 //             browserPrint.print(zpl);
 //         } else {
-//         console.log("Error/s", printerStatus.errors);
+//         //console.log("Error/s", printerStatus.errors);
 //         }
 
 //     } catch (error) {

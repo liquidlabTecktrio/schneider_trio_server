@@ -30,7 +30,7 @@ exports.generateComponentSerialNo = async (req, res) => {
         { returnNewDocument: true }
       )
       .then(async (compenetSerial) => {
-        console.log("generated");
+        //console.log("generated");
         if (!compenetSerial) {
           await componentSerialNo.findOneAndUpdate(
             { componentID: componentID },
@@ -142,7 +142,7 @@ exports.generatePartSerialNo = async (req, res) => {
       //   `
       // })
 
-  //  console.log()
+  //  //console.log()
       
       // return utils.commonResponse(res, 200, "Part serial number generated", {
       //   hubID: hubID,

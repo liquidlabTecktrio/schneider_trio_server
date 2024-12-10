@@ -82,7 +82,7 @@ exports.createNewOrderFromHub = async (req, res) => {
     let data = req.body
 
     let switchBoards = data.switchBoards
-    // console.log('cr list', data.switchBoards)
+    // //console.log('cr list', data.switchBoards)
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
@@ -91,18 +91,18 @@ exports.createNewOrderFromHub = async (req, res) => {
 
     // switchBoards.map((swt, key)=>{
     //   swt.components.map((cr,key)=>{
-    //     console.log(cr)
+    //     //console.log(cr)
 
     //   })
 
     // })
     // order data contain list of cr s and the parts in it
-    // console.log(order_data)
-    // console.log(hub_id)
-    // console.log(spoke_id)
-    // console.log(project_name)
+    // //console.log(order_data)
+    // //console.log(hub_id)
+    // //console.log(spoke_id)
+    // //console.log(project_name)
 
-    // console.log(data)
+    // //console.log(data)
     //   const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
     //   const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
     //   BOM_data = [];
@@ -121,7 +121,7 @@ exports.createNewOrderFromHub = async (req, res) => {
     // switchboards = [];
 
     // order_data.forEach((sb) => {
-    //   console.log('sb', sb)
+    //   //console.log('sb', sb)
     //   sb_data = {
     //     switchBoard: sb.referenceNumber,
     //     components: [],
@@ -130,7 +130,7 @@ exports.createNewOrderFromHub = async (req, res) => {
     //   sb.parts.forEach((cr) => {
     //     // if (element.SwitchBoard == sb) {
     //     //   if (element.Reference != "") {
-    //     // console.log('element',element)
+    //     // //console.log('element',element)
 
     //     sb_data.components.push(cr);
 
@@ -141,7 +141,7 @@ exports.createNewOrderFromHub = async (req, res) => {
     //   // switchborad_data.push('sb_data',sb_data);
     // });
 
-    // console.log(switchborad_data)
+    // //console.log(switchborad_data)
 
 
 
@@ -162,9 +162,9 @@ exports.createNewOrderFromHub = async (req, res) => {
       status: "open",
       switchBoardData: switchBoards,
     }
-    console.log("creating new project...")
+    //console.log("creating new project...")
     await Projects.create(newProjectData);
-    console.log("project creation completed")
+    //console.log("project creation completed")
 
     utils.commonResponse(res, 200, "success", {});
 
@@ -633,7 +633,7 @@ exports.shipProject = async (req, res) => {
     });
     
     // List of parts
-    // console.log("projectComponents: ", projectComponentWithQuantityAdded);
+    // //console.log("projectComponents: ", projectComponentWithQuantityAdded);
     
 
     // Step 2: Fetch Shipped Components from Boxes
@@ -655,8 +655,8 @@ exports.shipProject = async (req, res) => {
       },
     ]);
 
-    // console.log('boxComponents: ', boxComponents);
-    // console.log('projectComponents: ', projectComponents);
+    // //console.log('boxComponents: ', boxComponents);
+    // //console.log('projectComponents: ', projectComponents);
     
     // Step 3: Compare Required and Shipped Quantities
     const missingComponents = [];
@@ -702,7 +702,7 @@ exports.shipProject = async (req, res) => {
     // });
     
     // Log the missing components
-    console.log('Missing Components: ', missingComponents);
+    // //console.log('Missing Components: ', missingComponents);
     
 
     // Step 4: Respond Based on Missing Components
@@ -866,7 +866,7 @@ exports.getProjectDetailsWithParts = async (req, res) => {
   try {
     const projectId = req.body.projectId;
 
-    // console.log(await Project.findOne({_id: new mongoose.Types.ObjectId(projectId)}))
+    // //console.log(await Project.findOne({_id: new mongoose.Types.ObjectId(projectId)}))
 
     projectDetails = await Project.aggregate([
       {

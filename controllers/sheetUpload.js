@@ -33,7 +33,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     const sheetinfo = await sheet.loadInfo();
     const worksheet = sheet.sheetsByIndex[1];
     const rows = await worksheet.getRows();
-    // console.log(rows.toObject())
+    // //console.log(rows.toObject())
     // const _rowIndex = 1;
     data = [];
     await Bluebird.each(rows, async (rowData, _rowIndex) => {
@@ -49,7 +49,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
         });
       }
     });
-    // console.log(data[0])
+    // //console.log(data[0])
     compPartNos = await Component.aggregate([
       {
         $project: {
@@ -121,9 +121,9 @@ exports.createPOFromGoogleSheet = async (req, res) => {
     });
 
     const project = await Projects.findOne({ ProjectID: req.body.projectId });
-    // console.log("project: ", project);
+    // //console.log("project: ", project);
 
-    // console.log("project: ", project);
+    // //console.log("project: ", project);
     if (!project) {
       await Projects.create({
         ProjectName: shortid.generate(10),
@@ -139,7 +139,7 @@ exports.createPOFromGoogleSheet = async (req, res) => {
 
     utils.commonResponse(res, 200, "success", {});
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };
@@ -184,7 +184,7 @@ exports.createCR = async (req, res) => {
     //   // add this cr_reference number in part in parts collection
     //   // find the parts in parts with partnumber
     //   const ExistingPart = await Parts.findOne({ 'partNumber': partNumber })
-    //   // console.log(ExistingPart)
+    //   // //console.log(ExistingPart)
     //   if(!ExistingPart)return utils.commonResponse(res, 404, "Cr Id already added to part")
 
     //   if (ExistingPart) {
@@ -195,7 +195,7 @@ exports.createCR = async (req, res) => {
     //   }
 
     //   else {
-    //     // console.log("do not exist")
+    //     // //console.log("do not exist")
     //     return utils.commonResponse(res, 404, "Part Do Not exist, add part first")
     //   }
     // })
@@ -214,7 +214,7 @@ exports.createPart = (async (req, res) => {
     partDescription: req.body.partDescription,
     quantity: req.body.quantity
   }
-  // console.log(newPart)
+  // //console.log(newPart)
 
   const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
   if (ExistingPart) {
@@ -229,7 +229,7 @@ exports.createPart = (async (req, res) => {
 
 // async function getUniqueParts(partsList) {
 //   const partMap = new Map();
-//   console.log(partsList.length);
+//   //console.log(partsList.length);
 
 //   partsList.forEach((val) => {
 //     if (!partMap.has(val.partNumber)) {
@@ -261,13 +261,13 @@ exports.createPart = (async (req, res) => {
 //     }
 //   });
 
-//   console.log("partMap: ", partMap);
+//   //console.log("partMap: ", partMap);
 //   return partMap;
 // }
 
 async function getUniqueParts(partsList) {
   const partMap = new Map();
-  // console.log(partsList.length);
+  // //console.log(partsList.length);
 
   partsList.forEach((val) => {
     if (!partMap.has(val.partNumber)) {
@@ -298,13 +298,13 @@ async function getUniqueParts(partsList) {
     }
   });
 
-  // console.log("partMap: ", partMap);
+  // //console.log("partMap: ", partMap);
   return partMap;
 }
 
 async function updatePartsIDs(newItems, partNumber) {
-  // console.log("partNumber: ", partNumber);
-  // console.log("newItems: ", newItems);
+  // //console.log("partNumber: ", partNumber);
+  // //console.log("newItems: ", newItems);
   try {
     // Define the unique items to add
     // const newItems = [
@@ -318,12 +318,12 @@ async function updatePartsIDs(newItems, partNumber) {
       const existingItems = new Set(
         part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
       );
-      // console.log(" part.parentIds: ", part.parentIds);
-      // console.log("existingItems: ", existingItems);
+      // //console.log(" part.parentIds: ", part.parentIds);
+      // //console.log("existingItems: ", existingItems);
       const itemsToAdd = newItems.filter(
         (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
       );
-      // console.log("itemsToAdd: ", itemsToAdd);
+      // //console.log("itemsToAdd: ", itemsToAdd);
 
       // Only update if there are items to add
       if (itemsToAdd.length > 0) {
@@ -338,11 +338,11 @@ async function updatePartsIDs(newItems, partNumber) {
           updateDoc,
           { new: true }
         );
-        // console.log("updatedData: ", updatedData);
+        // //console.log("updatedData: ", updatedData);
       }
     }
   } catch (error) {
-    console.log("error: ", error);
+    //console.log("error: ", error);
   }
 }
 
@@ -431,14 +431,14 @@ exports.uploadBomGoogleSheet = async (req, res) => {
       })
       .filter((notUndefined) => notUndefined !== undefined);
 
-    // console.log("newDATA: ", newDATA);
+    // //console.log("newDATA: ", newDATA);
     var newCommReff = [];
     if (newCRNos.length > 0) {
       newCommReff = JSON.parse(
         JSON.stringify(await CommercialReference.create(newCRNos))
       );
 
-      // console.log("newCommReff: ", newCommReff);
+      // //console.log("newCommReff: ", newCommReff);
       const newProductList = productsList.map((product) => {
         const matchingItem = newCommReff.find(
           (item) => item.referenceNumber === product.crNumber
@@ -477,7 +477,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     }
 
     // const partMap = new Map();
-    // console.log(partsList.length);
+    // //console.log(partsList.length);
 
     // partsList.forEach((val) => {
     //   if (!partMap.has(val.partNumber)) {
@@ -551,7 +551,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
       uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
 
       // uniqueAlreadyParts.forEach(async (parts) => {
-      //   console.log("parts: ", parts);
+      //   //console.log("parts: ", parts);
       //   // const updateDoc = {
       //   //   $addToSet: {
       //   //     parentIds: {
@@ -578,7 +578,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 
     // await Parts.insertMany(parts);
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };
@@ -597,7 +597,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
     const rows = XLSX.utils.sheet_to_json(worksheet);
 
 
-    console.log("rows", rows)
+    //console.log("rows", rows)
 
     commercialReff = [];
     productsList = [];
@@ -670,14 +670,14 @@ exports.uploadCRFromAdmin = async (req, res) => {
       })
       .filter((notUndefined) => notUndefined !== undefined);
 
-    // console.log("newDATA: ", newDATA);
+    // //console.log("newDATA: ", newDATA);
     var newCommReff = [];
     if (newCRNos.length > 0) {
       newCommReff = JSON.parse(
         JSON.stringify(await CommercialReference.create(newCRNos))
       );
 
-      // console.log("newCommReff: ", newCommReff);
+      // //console.log("newCommReff: ", newCommReff);
       const newProductList = productsList.map((product) => {
         const matchingItem = newCommReff.find(
           (item) => item.referenceNumber === product.crNumber
@@ -767,7 +767,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
 
     utils.commonResponse(res, 200, "success", {});
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };
@@ -849,7 +849,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     };
 
     // Sending the response
-    // console.log("crpartlist",SwitchBoardWithCRWithParts, "partlist",FinalPartList)
+    // //console.log("crpartlist",SwitchBoardWithCRWithParts, "partlist",FinalPartList)
     utils.commonResponse(res, 200, "success", {
       Switchboards: SwitchBoardWithCRWithParts,
       PartList: FinalPartList,
@@ -890,7 +890,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
     const sheetinfo = await sheet.loadInfo();
     const worksheet = sheet.sheetsByIndex[sheetIndex];
     const rows = await worksheet.getRows();
-    // console.log(rows.toObject())
+    // //console.log(rows.toObject())
     // const _rowIndex = 1;
     data = [];
     await Bluebird.each(rows, async (rowData, _rowIndex) => {
@@ -911,7 +911,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
         });
       }
     });
-    // console.log(data[0])
+    // //console.log(data[0])
     comReffNos = await CommercialReference.aggregate([
       {
         $project: {
@@ -962,7 +962,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
       BOM_data.push(_rowData);
     });
 
-    // console.log(BOM_data)
+    // //console.log(BOM_data)
 
     // Get Switch board label
     switch_board = collect(
@@ -973,7 +973,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
 
 
 
-    console.log(switch_board)
+    //console.log(switch_board)
     switchborad_data = [];
     switch_board.forEach((sb) => {
       // creating a unit/switchboard
@@ -984,7 +984,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
       // Add Components to 
       BOM_data.forEach((element) => {
         if (element.SwitchBoard == sb) {
-          console.log(element.Reference)
+          //console.log(element.Reference)
           if (element.Reference != "") {
             sb_data.components.push(element);
           }
@@ -994,9 +994,9 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
     });
 
     const project = await Projects.findOne({ ProjectID: req.body.projectId });
-    // console.log("project: ", project);
+    // //console.log("project: ", project);
 
-    console.log("sb_date: ", switchborad_data);
+    //console.log("sb_date: ", switchborad_data);
     if (!project) {
       await Projects.create({
         ProjectName: shortid.generate(10),
@@ -1012,7 +1012,7 @@ exports.createPOFromGoogleSheetNew = async (req, res) => {
 
     utils.commonResponse(res, 200, "success", {});
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
 };

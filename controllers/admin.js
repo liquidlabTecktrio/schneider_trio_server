@@ -61,7 +61,7 @@ exports.adminSignUp = async (req, res) => {
         password: hashedPassword,
       };
       const AdminDb = await Admin.create(newAdmin);
-      console.log(AdminDb);
+      //console.log(AdminDb);
       res
         .status(201)
         .json({ AdminDb: AdminDb, message: "Admin created successfully" });
@@ -75,7 +75,7 @@ exports.adminSignUp = async (req, res) => {
 exports.getAllAdmin = async (req, res) => {
   try {
     const allAdmin = await Admin.find({});
-    console.log('allAdmin_____________: ', allAdmin);
+    //console.log('allAdmin_____________: ', allAdmin);
     res
       .status(200)
       .json({ allAdmin: allAdmin, message: "Admin fecthed successfully" });
@@ -86,7 +86,7 @@ exports.getAllAdmin = async (req, res) => {
 
 exports.deleteAdmin = async (req, res) => {
   try {
-    console.log(req.body);
+    //console.log(req.body);
     const { _id } = req.body;
     await Admin.deleteOne({ _id: _id });
     res
@@ -99,7 +99,7 @@ exports.deleteAdmin = async (req, res) => {
 
 exports.UpdateAdmin = async (req, res) => {
   try {
-    console.log(req.body);
+    //console.log(req.body);
     const { _id, username, password, level } = req.body;
     const updateObj = {
       username: username,

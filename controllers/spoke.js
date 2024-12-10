@@ -6,7 +6,7 @@ const utils = require("../controllers/utils");
 exports.createSpoke = async (req, res) => {
     try {
         const { spokeName, spokeShortName , spokeUserName, spokePassword } = req.body;
-        // console.log(spokeName, spokeShortName,"ee")
+        // //console.log(spokeName, spokeShortName,"ee")
         await Spoke.create({ spokeName, spokeShortName , spokeUserName, spokePassword}).then(async (result) => {
             const allSpokes = await Spoke.find();
             utils.commonResponse(res, 200, "spoke created successfully",allSpokes);
@@ -24,7 +24,7 @@ exports.createSpoke = async (req, res) => {
 exports.deleteSpoke = async (req, res) => {
     try {
         const { spokeName, spokeShortName , spokeUserName, spokePassword } = req.body;
-        // console.log(spokeName, spokeShortName,"ee")
+        // //console.log(spokeName, spokeShortName,"ee")
         await Spoke.deleteOne({ spokeName, spokeShortName , spokeUserName, spokePassword}).then(async (result) => {
             const allSpokes = await Spoke.find();
             utils.commonResponse(res, 200, "spoke deleted successfully",allSpokes);

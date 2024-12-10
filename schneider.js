@@ -39,7 +39,7 @@ app.use("/", express.static(__dirname + "/dist"));
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
 
-console.log("Database Connection started !!!");
+//console.log("Database Connection started !!!");
 
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -49,12 +49,12 @@ mongoose
   .then((connection) => {
     if (connection) {
       app.listen(process.env.PORT);
-      console.log("Database Connected !!!");
-      console.log(`admin server running on ${process.env.PORT} !!!`);
+      //console.log("Database Connected !!!");
+      //console.log(`admin server running on ${process.env.PORT} !!!`);
     } else {
-      console.log("Error while connecting to the database");
+      //console.log("Error while connecting to the database");
     }
   })
   .catch((err) => {
-    console.log("Caught database connection error:", err);
+    //console.log("Caught database connection error:", err);
   });

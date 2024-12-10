@@ -8,7 +8,7 @@ exports.createPanel = async (req, res) => {
         const { panelName, panelShortName, panelPartNo, panelSize } =
             req.body;
 
-        //   console.log(req.body)
+        //   //console.log(req.body)
         panelCheck = await Panels.findOne({ panelPartNo: panelPartNo });
 
         if (panelCheck) {
@@ -70,7 +70,7 @@ exports.addBOMToPanelTypes = async(req,res)=>{
         utils.commonResponse(res, 200, "Panel BOM added",panelType )
 
     }catch (error) {
-        console.log(error)
+        //console.log(error)
         utils.commonResponse(res, 500, "Unexpected server error", error.toString())
     }
 }

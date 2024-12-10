@@ -32,16 +32,16 @@ app.post('/print', (req, res) => {
   const client = new net.Socket();
   client.connect(printerPort, printerIp, () => {
     client.write(zplCommand); // Send ZPL command to the printer
-    console.log('ZPL command sent:', zplCommand);
+    //console.log('ZPL command sent:', zplCommand);
   });
 
   client.on('data', (data) => {
-    console.log('Received from printer:', data.toString());
+    //console.log('Received from printer:', data.toString());
     client.destroy(); // Close connection after printing
   });
 
   client.on('close', () => {
-    console.log('Connection closed');
+    //console.log('Connection closed');
     res.json({ success: true, message: 'Print request sent' }); // Send response back to the frontend
   });
 
@@ -53,5 +53,5 @@ app.post('/print', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+  //console.log(`Server listening at http://localhost:${port}`);
 });

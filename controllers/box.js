@@ -843,12 +843,12 @@ exports.getBoxDetails = async (req, res) => {
       },
     ]);
 
-    console.log("box: ", box);
+    //console.log("box: ", box);
     if (!box) {
       return utils.commonResponse(res, 404, "Box not found");
     } else {
     }
-    console.log(box);
+    //console.log(box);
     utils.commonResponse(res, 200, "Box fetched successfully", box[0]);
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
@@ -910,6 +910,9 @@ exports.updateBoxStatus = async (req, res) => {
     utils.commonResponse(res, 500, "Internal server error.");
   }
 };
+
+
+
 
 async function checkPartExistInThisProjectsCollection(res, partNumber, projectID){
   try{
@@ -1014,7 +1017,7 @@ exports.addPartsToBox = async (req, res) => {
       _id: new mongoose.Types.ObjectId(partID),
     });
 
-    console.log(part.partNumber)
+    //console.log(part.partNumber)
     const findComponentExist = await checkPartExistInThisProjectsCollection(
       res,
       part.partNumber,
@@ -1024,7 +1027,7 @@ exports.addPartsToBox = async (req, res) => {
         // If no match is found, return false manually
 
     // const isComponentExist = 
-    console.log(findComponentExist)
+    //console.log(findComponentExist)
 
     if (findComponentExist.length == 0 ) {
         return utils.commonResponse(

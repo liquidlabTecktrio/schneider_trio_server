@@ -16,7 +16,8 @@ exports.createHubs = async (req, res) => {
 
         });
 
-    } catch (error) {
+    } 
+    catch (error) {
         utils.commonResponse(res, 500, "unexpected server error",error.toString());
     }
 }
@@ -54,7 +55,7 @@ exports.getAllHubs = async (req, res) => {
 exports.LoginToHubs = async (req, res) => {
     try {
         const { hubUsername, hubPassword } = req.body;
-        console.log(hubUsername);
+        //console.log(hubUsername);
 
         // Find the hub by username and password
         const hub = await Hubs.findOne({ hubUsername: hubUsername, hubPassword: hubPassword });
