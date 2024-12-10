@@ -1085,8 +1085,8 @@ exports.addPartsToBox = async (req, res) => {
     const partIDObject = new mongoose.Types.ObjectId(partID);
 
 
-    let projectBoxes = []
-    projectBoxes = await Boxes.find({
+
+    let projectBoxes = await Boxes.find({
       projectId: projectID
     })
 
@@ -1101,7 +1101,9 @@ exports.addPartsToBox = async (req, res) => {
       );
 
       if (existingPart) {
-        ispartExistInAnyBox = existingPart; // Update the flag with the found part
+        ispartExistInAnyBox = projectBoxes[i].components.find(
+          (comp) => comp.componentID && comp.componentID.equals(partIDObject)
+        ); // Update the flag with the found part
         break; // Exit the loop
       }
     }
@@ -1119,10 +1121,8 @@ exports.addPartsToBox = async (req, res) => {
         );
       }
       // Add the serial number and update the quantity
-      projectBoxes[i].components.find(
-        (comp) => comp.componentID && comp.componentID.equals(partIDObject)).componentSerialNo.push(partSerialNumber);
-        projectBoxes[i].components.find(
-          (comp) => comp.componentID && comp.componentID.equals(partIDObject)).quantity = ispartExistInAnyBox.componentSerialNo.length;
+      ispartExistInAnyBox.componentSerialNo.push(partSerialNumber);
+      ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
     } 
     
     else {
