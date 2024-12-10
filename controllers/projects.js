@@ -627,7 +627,7 @@ exports.shipProject = async (req, res) => {
           reference: part.parts.reference,
           partNumber: part.parts.partNumber,
           qnty: part.parts.quantity,
-          partDescription: part.parts.description,
+          partDescription: part.parts.partDescription,
         });
       }
     });
