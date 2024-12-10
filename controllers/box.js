@@ -1089,7 +1089,7 @@ exports.addPartsToBox = async (req, res) => {
     })
 
     ispartExistInAnyBox = false
-    projectBoxes.forEach((box, key)=>{
+    projectBoxes.map((box, key)=>{
       const existingPart = box.components.find(
         (comp) => comp.componentID && comp.componentID.equals(partIDObject)
       );
