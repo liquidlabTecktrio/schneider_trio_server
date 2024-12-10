@@ -121,7 +121,7 @@ exports.removeBoxFromProject = async (req, res) => {
         serialNo,
       });
       // If box exists, proceed to remove it
-    await Boxes.deleteOne({ _id: existingBox._id });
+      await Boxes.deleteOne({ _id: existingBox._id });
       return utils.commonResponse(res, 404, "Box Deleted from project");
     }
   } catch (error) {
@@ -914,9 +914,9 @@ exports.updateBoxStatus = async (req, res) => {
 
 
 
-async function checkPartExistInThisProjectsCollection(res, partNumber, projectID){
-  try{
- 
+async function checkPartExistInThisProjectsCollection(res, partNumber, projectID) {
+  try {
+
     const findComponentExist = await Project.aggregate([
       {
         $match: {
@@ -935,7 +935,7 @@ async function checkPartExistInThisProjectsCollection(res, partNumber, projectID
       {
         $match: {
           // "switchBoardData.components.Reference": "BQT97814", // Match the Reference (crNumber)
-          "switchBoardData.components.parts.partNumber":partNumber // Match the partNumber
+          "switchBoardData.components.parts.partNumber": partNumber // Match the partNumber
         }
       },
       {
@@ -948,7 +948,7 @@ async function checkPartExistInThisProjectsCollection(res, partNumber, projectID
     ]);
     return findComponentExist
   }
-  catch(error){
+  catch (error) {
     return []
   }
 
@@ -1024,18 +1024,18 @@ exports.addPartsToBox = async (req, res) => {
       projectID
     );
 
-        // If no match is found, return false manually
+    // If no match is found, return false manually
 
     // const isComponentExist = 
     //console.log(findComponentExist)
 
-    if (findComponentExist.length == 0 ) {
-        return utils.commonResponse(
-          res,
-          201,
-          "This Part/item not listed in this project, please check..."
-        );
-      
+    if (findComponentExist.length == 0) {
+      return utils.commonResponse(
+        res,
+        201,
+        "This Part/item not listed in this project, please check..."
+      );
+
     }
 
     const box = await Boxes.findOne({
@@ -1099,13 +1099,13 @@ exports.addPartsToBox = async (req, res) => {
       const existingPart = projectBoxes[i].components.find(
         (comp) => comp.componentID && comp.componentID.equals(partIDObject)
       );
-    
+
       if (existingPart) {
         ispartExistInAnyBox = existingPart; // Update the flag with the found part
         break; // Exit the loop
       }
     }
-    
+
     // Handle if part exists
     if (ispartExistInAnyBox) {
       // Check for duplicate serial number
@@ -1116,13 +1116,18 @@ exports.addPartsToBox = async (req, res) => {
           "Serial number already exists for this Part in the box"
         );
       }
-    
-    
-
       // Add the serial number and update the quantity
       ispartExistInAnyBox.componentSerialNo.push(partSerialNumber);
       ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
-    } else {
+      box.components.push({
+        componentID: partID,
+        componentName: partNumber.partNumber,
+        componentSerialNo:ispartExistInAnyBox.componentSerialNo,
+        quantity: 1,
+      });
+    } 
+    
+    else {
       // If the part does not exist, add it as a new component
       box.components.push({
         componentID: partID,
