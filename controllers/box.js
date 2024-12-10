@@ -1118,7 +1118,7 @@ exports.addPartsToBox = async (req, res) => {
       // if (box.components.componentSerialNo.includes(partSerialNumber)) {
       //   console.log("Duplicate serial number found")
 
-      partExistingBoxs.forEach((existingBox, key)=>{
+      partExistingBoxs.map((existingBox, key)=>{
         console.log(existingBox)
         // existingBox.components.map((component,key)=>{
         //   component.componentSerialNo.map((serial_no,key)=>{
