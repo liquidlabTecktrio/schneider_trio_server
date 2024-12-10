@@ -1092,7 +1092,7 @@ exports.addPartsToBox = async (req, res) => {
 
     ispartExistInAnyBox = false
 
-   for(i = 0; i < projectBoxes.length();i++){
+   for(i = 0; i < projectBoxes.length;i++){
       const existingPart = box.components.find(
         (comp) => comp.componentID && comp.componentID.equals(partIDObject)
       );
