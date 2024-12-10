@@ -1117,10 +1117,12 @@ exports.addPartsToBox = async (req, res) => {
           400,
           "Serial number already exists for this Part in the box"
         );
-      }
+      }else{
+        console.log("Part serialNumber pushing to box")
       // Add the serial number and update the quantity
       ispartExistInAnyBox.componentSerialNo.push(partSerialNumber);
       ispartExistInAnyBox.quantity = ispartExistInAnyBox.componentSerialNo.length;
+      }
     } 
     
     else {
