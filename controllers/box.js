@@ -1090,6 +1090,9 @@ exports.addPartsToBox = async (req, res) => {
       projectId: projectID
     })
 
+    console.log(projectBoxes,
+      "projectboxes")
+
     ispartExistInAnyBox = false
 
    for(i = 0; i < projectBoxes.length;i++){
@@ -1098,6 +1101,7 @@ exports.addPartsToBox = async (req, res) => {
       );
       if(existingPart){
         ispartExistInAnyBox = existingPart
+        console.log("ispartExistInAnyBox",ispartExistInAnyBox)
         break;
       }
     }
