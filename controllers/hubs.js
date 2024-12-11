@@ -27,9 +27,9 @@ exports.deleteHub = async (req, res) => {
     try {
         // Attempt to delete the hub
 
-        const { hubID} = req.body;
+        let { hubID} = req.body;
         hubID = new mongoose.Types.ObjectId(hubID)
-        const result = await Hubs.deleteOne({ '_id':  hubID});
+        let result = await Hubs.deleteOne({ '_id':  hubID});
         
         if (result.deletedCount > 0) {
             // Fetch all remaining hubs after deletion

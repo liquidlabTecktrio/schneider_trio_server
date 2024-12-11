@@ -23,9 +23,9 @@ exports.createSpoke = async (req, res) => {
 
 exports.deleteSpoke = async (req, res) => {
     try {
-        const { spokeID} = req.body;
+        let { spokeID} = req.body;
         spokeID = new mongoose.Types.ObjectId(spokeID)
-        const result = await Spoke.deleteOne({ '_id':  spokeID});
+        let result = await Spoke.deleteOne({ '_id':  spokeID});
         // //console.log(spokeName, spokeShortName,"ee")
         // await Spoke.deleteOne({ spokeName, spokeShortName , spokeUserName, spokePassword}).then(async (result) => {
             // const allSpokes = await Spoke.find();
