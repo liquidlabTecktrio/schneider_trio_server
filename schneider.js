@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require('path')
 
 const webRoutes = require("./routes/web");
 const adminRoutes = require("./routes/admin");
@@ -33,10 +34,9 @@ app.all("/*", setupCORS);
 
 // const frontend = express.Router(); 
 // Use the static middlewares within the router
-// frontend.use("/", express.static(__dirname + "dist"));
+// app.use("/", express.static(__dirname + "adminpage"));
 // frontend.use("/hub", express.static(__dirname + "/adminFrontEnd"));
 
-app.use("/", express.static(__dirname + "/dist"));
 // app.use("/*", express.static(__dirname + "/dist"));
 
 // app api's
@@ -44,6 +44,15 @@ app.use("/", express.static(__dirname + "/dist"));
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
 
+// Serve static files from the 'dist' folder under the '/ad' route
+app.use('/ad', express.static(path.join(__dirname, 'dist')));
+
+// Catch-all handler for SPA routing (React Router support)
+app.get('/ad/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// app.use("/ad/*", express.static(__dirname + "/dist1/index.html"));
 //console.log("Database Connection started !!!");
 
 mongoose
