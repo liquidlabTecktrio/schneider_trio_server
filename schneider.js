@@ -32,12 +32,11 @@ function setupCORS(req, res, next) {
 app.all("/*", setupCORS);
 
 // const frontend = express.Router(); 
-
 // Use the static middlewares within the router
 // frontend.use("/", express.static(__dirname + "dist"));
 // frontend.use("/hub", express.static(__dirname + "/adminFrontEnd"));
 
-app.use("/", express.static(__dirname + "/adminpage"));
+app.use("/", express.static(__dirname + "/dist"));
 // app.use("/*", express.static(__dirname + "/dist"));
 
 // app api's
