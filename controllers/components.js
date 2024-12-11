@@ -5,6 +5,7 @@ const Box = require("../Models/box");
 const Parts = require("../Models/Parts");
 
 const mongoose = require("mongoose");
+const CommercialReference = require("../Models/CommercialReference");
 exports.createComponent = async (req, res) => {
   try {
     const { componentName, compShortName, compPartNo, compDescription } =
@@ -66,6 +67,22 @@ exports.getAllComponents = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
+exports.getAllCommertialReferences = async (req, res) => {
+  try {
+    const allComponents = await CommercialReference.find();
+    utils.commonResponse(
+      res,
+      200,
+      "All components fetched successfully",
+      allComponents
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
 
 exports.getAllParts = async (req, res) => {
   try {

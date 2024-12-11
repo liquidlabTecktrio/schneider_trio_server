@@ -50,6 +50,7 @@ router.post("/deleteSpoke", spokeController.deleteSpoke);
 router.get("/getAllHubs", spokeController.getAllSpokes);
 router.get("/getAllSpokes", spokeController.getAllSpokes);
 router.get("/getAllComponents", componentController.getAllComponents);
+router.get("/getAllCommertialReferences", componentController.getAllCommertialReferences);
 router.get("/getAllParts", componentController.getAllParts);
 router.post("/createPanel", panelController.createPanel);
 router.get("/getAllPanels", panelController.getAllPanels);
