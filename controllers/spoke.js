@@ -23,16 +23,18 @@ exports.createSpoke = async (req, res) => {
 
 exports.deleteSpoke = async (req, res) => {
     try {
-        const { spokeName, spokeShortName , spokeUserName, spokePassword } = req.body;
+        const { spokeID} = req.body;
+        spokeID = mongoose.Types.ObjectId(spokeID)
+        const result = await Spoke.deleteOne({ '_id':  spokeID});
         // //console.log(spokeName, spokeShortName,"ee")
-        await Spoke.deleteOne({ spokeName, spokeShortName , spokeUserName, spokePassword}).then(async (result) => {
-            const allSpokes = await Spoke.find();
-            utils.commonResponse(res, 200, "spoke deleted successfully",allSpokes);
+        // await Spoke.deleteOne({ spokeName, spokeShortName , spokeUserName, spokePassword}).then(async (result) => {
+            // const allSpokes = await Spoke.find();
+        utils.commonResponse(res, 200, "spoke deleted successfully");
 
-        }).catch((err) => {
-            utils.commonResponse(res, 401,"unexpected server error", err.toString());
+        // }).catch((err) => {
+        //     utils.commonResponse(res, 401,"unexpected server error", err.toString());
 
-        });
+        // });
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error",error.toString());
