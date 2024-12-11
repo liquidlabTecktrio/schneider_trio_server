@@ -1,6 +1,6 @@
 const Spoke = require("../Models/Spoke");
 const utils = require("../controllers/utils");
-
+const { default: mongoose } = require("mongoose");
 
 
 exports.createSpoke = async (req, res) => {
