@@ -24,6 +24,10 @@ exports.createSpoke = async (req, res) => {
 exports.deleteSpoke = async (req, res) => {
     try {
         let { spokeID} = req.body;
+        if(!spokeID){
+
+            return utils.commonResponse(res, 400, "Missing spokeID");
+        }
         spokeID = new mongoose.Types.ObjectId(spokeID)
         let result = await Spoke.deleteOne({ '_id':  spokeID});
         // //console.log(spokeName, spokeShortName,"ee")

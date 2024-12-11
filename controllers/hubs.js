@@ -28,8 +28,11 @@ exports.deleteHub = async (req, res) => {
         // Attempt to delete the hub
 
         let { hubID} = req.body;
+        if(!hubID){
+            return utils.commonResponse(res, 400, "Missing hubID");
+        }
         hubID = new mongoose.Types.ObjectId(hubID)
-        let result = await Hubs.deleteOne({ '_id':  hubID});
+        let result = await Hubs.deleteOne({ _id:  hubID});
         
         if (result.deletedCount > 0) {
             // Fetch all remaining hubs after deletion
