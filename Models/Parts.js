@@ -31,6 +31,7 @@ const Parts = new Schema({
   },
   isCritical: {
     type: Boolean,
+    
   },
   parentIds: [parentIdsObj],
 });
