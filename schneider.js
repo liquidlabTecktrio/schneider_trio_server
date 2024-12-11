@@ -43,18 +43,19 @@ app.all("/*", setupCORS);
 // app.use("/v1/api", apiRoutes);
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
-
 // Serve static files from the 'dist' folder under the '/ad' route
-app.use('/ad', express.static(path.join(__dirname, 'dist')));
-
+app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
 // Catch-all handler for SPA routing (React Router support)
-app.get('/ad/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.get('/hubpage/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'hubpage', 'index.html'));
+});// Serve static files from the 'dist' folder under the '/ad' route
+app.use('/adminpage', express.static(path.join(__dirname, 'adminpage')));
+// Catch-all handler for SPA routing (React Router support)
+app.get('/adminpage/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'adminpage', 'index.html'));
 });
-
 // app.use("/ad/*", express.static(__dirname + "/dist1/index.html"));
 //console.log("Database Connection started !!!");
-
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
