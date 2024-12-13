@@ -152,6 +152,10 @@ exports.createCR = async (req, res) => {
     productNumber: req.body.productNumber,
     partNumbers: req.body.partNumbers
   }
+
+  let part_array = []
+
+
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
   if (ExistingCR) return utils.commonResponse(res, 409, "ReferenceNumber exist")
 
@@ -164,6 +168,8 @@ exports.createCR = async (req, res) => {
       if (!existingPart) {
         return utils.commonResponse(res, 404, "Part does not exist, add part first");
       }
+
+      part_array.push(existingPart)
 
       // Check if the CR number is already in the part's parentIds
       const alreadyLinked = existingPart.parentIds.some(
@@ -200,7 +206,13 @@ exports.createCR = async (req, res) => {
     //   }
     // })
 
-    CommercialReference.create(newCR).then((data) => {
+    CommercialReference.create({
+      referenceNumber: newCR.referenceNumber,
+      description: newCR.description,
+      productId: newCR.productNumber,
+      parts: part_array,
+      quantity:0}
+    ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
     })
     // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
