@@ -7,6 +7,7 @@ const hubController = require("../controllers/hubs");
 const spokeController = require("../controllers/spoke");
 const panelController = require("../controllers/panels");
 const sheetController = require("../controllers/sheetUpload");
+const printerController = require("../controllers/printerController");
 
 const multer = require('multer');
 
@@ -59,6 +60,12 @@ router.post("/addBOMToPanelTypes", panelController.addBOMToPanelTypes);
 router.get("/getAllPanelTypes", panelController.getAllPanelTypes);
 router.post("/uploadSheet", sheetController.createPOFromGoogleSheet);
 router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
+
+
+router.post("/GETPrinterIp", printerController.GETPrinterIp);
+router.post("/updatePrinter", printerController.updatePrinter);
+router.post("/createPrinter", printerController.createPrinter);
+
 
 router.post("/uploadCR", sheetController.uploadBomGoogleSheet);
 router.post("/uploadCRFromAdmin", upload.single("file"), sheetController.uploadCRFromAdmin);
