@@ -43,6 +43,7 @@ app.all("/*", setupCORS);
 // app.use("/v1/api", apiRoutes);
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
+app.use("/", express.static(path.join(__dirname, 'landingpage')));
 // Serve static files from the 'dist' folder under the '/ad' route
 app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
 // Catch-all handler for SPA routing (React Router support)
