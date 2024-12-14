@@ -56,7 +56,7 @@ app.get('/adminpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'adminpage', 'index.html'));
 });
 // app.use("/ad/*", express.static(__dirname + "/dist1/index.html"));
-//console.log("Database Connection started !!!");
+console.log("Database Connection started !!!");
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -65,12 +65,12 @@ mongoose
   .then((connection) => {
     if (connection) {
       app.listen(process.env.PORT);
-      //console.log("Database Connected !!!");
-      //console.log(`admin server running on ${process.env.PORT} !!!`);
+      console.log("Database Connected !!!");
+      console.log(`admin server running on ${process.env.PORT} !!!`);
     } else {
-      //console.log("Error while connecting to the database");
+      console.log("Error while connecting to the database");
     }
   })
   .catch((err) => {
-    //console.log("Caught database connection error:", err);
+    console.log("Caught database connection error:", err);
   });

@@ -1,6 +1,8 @@
 const { default: mongoose } = require("mongoose")
 const Printer = require("../Models/Printer")
 
+const utils = require("../controllers/utils");
+
 exports.createPrinter = async (req, res) => {
     let data = req.body
     // //console.log('cr list', data.switchBoards)
