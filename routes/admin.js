@@ -62,7 +62,7 @@ router.post("/uploadSheet", sheetController.createPOFromGoogleSheet);
 router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
 
 
-router.post("/GETPrinterIp", printerController.GETPrinterIp);
+router.get("/GETPrinter", printerController.GETPrinter);
 router.post("/updatePrinter", printerController.updatePrinter);
 router.post("/createPrinter", printerController.createPrinter);
 
