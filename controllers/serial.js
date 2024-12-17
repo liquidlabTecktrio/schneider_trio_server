@@ -92,11 +92,11 @@ exports.generatePartSerialNo = async (req, res) => {
       const hubEntry = partSerialRecord.hubSerialNo.find(
         (entry) => entry.hubId === hubIDasObject
       );
+      console.log(hubIDasObject,partID,hubEntry)
 
       if (hubEntry) {
         // Update existing hubSerialNo entry
 
-        console.log(hubIDasObject,partID,)
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
