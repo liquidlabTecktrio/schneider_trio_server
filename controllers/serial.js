@@ -116,6 +116,7 @@ exports.generatePartSerialNo = async (req, res) => {
                 serialNo: qnty,
                 serialNos: serialNumbers,
               },
+              partID:partID,
             },
           }
         );
@@ -132,6 +133,7 @@ exports.generatePartSerialNo = async (req, res) => {
               serialNo: qnty,
               serialNos: serialNumbers,
             },
+            partID:partID,
           },
         },
         { upsert: true }
