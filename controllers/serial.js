@@ -60,6 +60,8 @@ exports.generateComponentSerialNo = async (req, res) => {
 };
 
 exports.generatePartSerialNo = async (req, res) => {
+
+  console.log('generate',req.body)
   try {
     const { hubID, partID, partNumber, qnty } = req.body;
 
@@ -79,29 +81,48 @@ exports.generatePartSerialNo = async (req, res) => {
     // Determine search criteria based on availability of partID or partNumber
     const searchCriteria = partID ? { partId: partID } : { partNumber: partNumber };
 
-    // Check if the hubSerialNo entry with the specified hubID exists
-    const partSerialRecord = await partSerialNo.findOne({
-      ...searchCriteria,
-      "hubSerialNo.hubId": hubID,
-    });
+    // Find the partSerialNo document based on search criteria
+    const partSerialRecord = await partSerialNo.findOne(searchCriteria);
 
     if (partSerialRecord) {
-      // If the entry exists, update the serial number and serial numbers array
-      await partSerialNo.updateOne(
-        {
-          ...searchCriteria,
-          "hubSerialNo.hubId": hubID,
-        },
-        {
-          $inc: { "hubSerialNo.$.serialNo": qnty },
-          $push: { "hubSerialNo.$.serialNos": { $each: serialNumbers } },
-        }
+      // Check if hubSerialNo array contains the specified hubID
+      const hubEntry = partSerialRecord.hubSerialNo.find(
+        (entry) => entry.hubId === hubID
       );
+
+      if (hubEntry) {
+        // Update existing hubSerialNo entry
+        await partSerialNo.updateOne(
+          {
+            ...searchCriteria,
+            "hubSerialNo.hubId": hubID,
+          },
+          {
+            $inc: { "hubSerialNo.$.serialNo": qnty },
+            $push: { "hubSerialNo.$.serialNos": { $each: serialNumbers } },
+          }
+        );
+      } else {
+        // Add a new hubSerialNo entry if hubID doesn't exist
+        await partSerialNo.updateOne(
+          searchCriteria,
+          {
+            $push: {
+              hubSerialNo: {
+                hubId: hubID,
+                serialNo: qnty,
+                serialNos: serialNumbers,
+              },
+            },
+          }
+        );
+      }
     } else {
-      // If the entry does not exist, create a new hubSerialNo entry with hubId
+      // If no document exists, create a new one with upsert
       await partSerialNo.updateOne(
         searchCriteria,
         {
+          $setOnInsert: searchCriteria,
           $push: {
             hubSerialNo: {
               hubId: hubID,
@@ -119,47 +140,21 @@ exports.generatePartSerialNo = async (req, res) => {
       ? await parts.findById(partID)
       : await parts.findOne({ partNumber: partNumber });
 
-      return utils.commonResponse(res, 200, "Part serial number generated", {
-        hubID: hubID,
-        partID: part._id,
-        partNumber: part.partNumber,
-        partDescription: part
-          ? `${part.partNumber} - ${part.partDescription}`
-          : "",
-        qnty: qnty,
-        serialNos: serialNumbers,
-      });
-      
-      // sending the ZPL file 
-      // let ZPL_Serial_array = ``
-      // const ZPL_serial = serialNumbers.map((number,key)=>{
-      //   return ZPL_Serial_array + `
-      //   ^XA
-      //   ^FO50,5
-      //   ^BQN,2,4
-      //   ^FDMA,${number}^FS
-      //   ^XZ
-      //   `
-      // })
-
-  //  //console.log()
-      
-      // return utils.commonResponse(res, 200, "Part serial number generated", {
-      //   hubID: hubID,
-      //   partID: part._id,
-      //   partNumber: part.partNumber,
-      //   partDescription: part
-      //     ? `${part.partNumber} - ${part.partDescription}`
-      //     : "",
-      //   qnty: qnty,
-      //   ZPL: ZPL_Serial_array,
-      // });
+    return utils.commonResponse(res, 200, "Part serial number generated", {
+      hubID: hubID,
+      partID: part ? part._id : null,
+      partNumber: part ? part.partNumber : partNumber,
+      partDescription: part
+        ? `${part.partNumber} - ${part.partDescription}`
+        : "",
+      qnty: qnty,
+      serialNos: serialNumbers,
+    });
   } catch (error) {
-    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+    console.error("Error generating part serial number:", error);
+    return utils.commonResponse(res, 500, "Internal Server Error", error);
   }
 };
-
-
 
 exports.generatePanelSerialNo = async (req, res) => {
   try {
