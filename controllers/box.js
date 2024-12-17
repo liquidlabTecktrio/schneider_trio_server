@@ -1008,7 +1008,7 @@ async function checkPartExistInTheProject(res, partID, projectID) {
 exports.addPartsToBox = async (req, res) => {
   try {
 
-    console.log('addpart',res.body)
+    console.log('addpart',req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
