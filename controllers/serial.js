@@ -95,6 +95,8 @@ exports.generatePartSerialNo = async (req, res) => {
 
       if (hubEntry) {
         // Update existing hubSerialNo entry
+
+        console.log(hubIDasObject,partID,)
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
