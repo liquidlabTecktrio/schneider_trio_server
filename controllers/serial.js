@@ -79,7 +79,7 @@ exports.generatePartSerialNo = async (req, res) => {
       shortid.generate(6)
     );
 
-    hubID = new mongoose.Types.ObjectId(hubID)
+    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
     // Determine search criteria based on availability of partID or partNumber
     const searchCriteria = partID ? { partId: partID } : { partNumber: partNumber };
@@ -90,7 +90,7 @@ exports.generatePartSerialNo = async (req, res) => {
     if (partSerialRecord) {
       // Check if hubSerialNo array contains the specified hubID
       const hubEntry = partSerialRecord.hubSerialNo.find(
-        (entry) => entry.hubId === hubID
+        (entry) => entry.hubId === hubIDasObject
       );
 
       if (hubEntry) {
@@ -98,7 +98,7 @@ exports.generatePartSerialNo = async (req, res) => {
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
-            "hubSerialNo.hubId": hubID,
+            "hubSerialNo.hubId": hubIDasObject,
           },
           {
             $inc: { "hubSerialNo.$.serialNo": qnty },
@@ -112,7 +112,7 @@ exports.generatePartSerialNo = async (req, res) => {
           {
             $push: {
               hubSerialNo: {
-                hubId: hubID,
+                hubId: hubIDasObject,
                 serialNo: qnty,
                 serialNos: serialNumbers,
               },
@@ -128,7 +128,7 @@ exports.generatePartSerialNo = async (req, res) => {
           $setOnInsert: searchCriteria,
           $push: {
             hubSerialNo: {
-              hubId: hubID,
+              hubId: hubIDasObject,
               serialNo: qnty,
               serialNos: serialNumbers,
             },
@@ -144,7 +144,7 @@ exports.generatePartSerialNo = async (req, res) => {
       : await parts.findOne({ partNumber: partNumber });
 
     return utils.commonResponse(res, 200, "Part serial number generated", {
-      hubID: hubID,
+      hubID: hubIDasObject,
       partID: part ? part._id : null,
       partNumber: part ? part.partNumber : partNumber,
       partDescription: part
