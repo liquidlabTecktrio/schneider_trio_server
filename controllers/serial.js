@@ -6,6 +6,7 @@ const Components = require("../Models/Components");
 const Panels = require("../Models/Panels");
 const utils = require("../controllers/utils");
 const shortid = require("shortid");
+const { default: mongoose } = require("mongoose");
 
 exports.generateComponentSerialNo = async (req, res) => {
   try {
@@ -77,6 +78,8 @@ exports.generatePartSerialNo = async (req, res) => {
     const serialNumbers = Array.from({ length: qnty }, () =>
       shortid.generate(6)
     );
+
+    hubID = new mongoose.Types.ObjectId(hubID)
 
     // Determine search criteria based on availability of partID or partNumber
     const searchCriteria = partID ? { partId: partID } : { partNumber: partNumber };
