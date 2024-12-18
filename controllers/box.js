@@ -1011,6 +1011,8 @@ exports.addPartsToBox = async (req, res) => {
     console.log('addpart',req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
+    let currentpart = Parts.findById(partID)
+
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
@@ -1026,7 +1028,7 @@ exports.addPartsToBox = async (req, res) => {
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
 
     const isSerialValid = await PartsSerialNo.exists({
-      partId: partID,
+      partNumber: currentpart.partNumber,
       hubSerialNo: {
         $elemMatch: { hubId: hubID, serialNos: partSerialNumber },
       },
