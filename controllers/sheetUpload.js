@@ -683,9 +683,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
             crNumber: newCR.referenceNumber,
           });
           await currentpart.save();
-        } else {
-          return utils.commonResponse(res, 409, "CR ID already added to part");
-        }
+        } 
 
         newCR.parts.push(part);
         await newCR.save(); // Save after adding parts
