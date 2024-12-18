@@ -211,7 +211,8 @@ exports.createCR = async (req, res) => {
       description: newCR.description,
       productId: newCR.productNumber,
       parts: part_array,
-      quantity:0}
+      quantity: 0
+    }
     ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
     })
@@ -597,190 +598,107 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 
 exports.uploadCRFromAdmin = async (req, res) => {
   try {
-    // GETTING THE ORDER CR FILE AND ORGANIZING FOR PREVIEW
+    // Check if file is uploaded
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
 
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[1];
+
+    // Select the first sheet (adjust index if needed)
+    const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(worksheet);
 
+    // Fetch existing Commercial References
+    // const existingCRMap = new Map(
+    //   ExistingCRList.map((cr) => [cr.referenceNumber, cr])
+    // );
 
-    //console.log("rows", rows)
+    let newCRs = [];
+    // let skippedRows = [];
+    let newCR
+    let NeedSkip
 
-    commercialReff = [];
-    productsList = [];
-    partsList = [];
+    // Process rows
+    await Bluebird.each(rows, async (_rowData) => {
 
-    cr = {};
-    product = {};
-    part = {};
+      if (_rowData.Level === "0") {
+        const cr = {
+          referenceNumber: _rowData.Number,
+          description: _rowData.EnglishDescription,
+          quantity: 0,
+          parts: [],
+        };
 
-    parentIdsList = [];
+        const ExistingCRList = await CommercialReference.findOne({ referenceNumber: cr.referenceNumber });
 
-    await Bluebird.each(rows, async (_rowData, _rowIndex) => {
-      // _rowData = rowData.toObject();
 
-      if (_rowData.Level == "0") {
-        cr = {};
-        cr.referenceNumber = _rowData.Number;
-        cr.description = _rowData.EnglishDescription;
+        if (!ExistingCRList) {
+          // Create a new CR and cache it in the map
+          newCR = await CommercialReference.create(cr);
+          NeedSkip = false
+          // existingCRMap.set(_rowData.Number, newCR);
+          newCRs.push(newCR.referenceNumber);
+        }
+        else {
+          NeedSkip = true
+        }
+      } else if (_rowData.Level === "1" && !NeedSkip) {
 
-        cr.parts = [];
-      }
-      // if (_rowData.Level == "1") {
-      //   product = {};
-      //   product.productNumber = _rowData.Number;
-      //   product.productDescription = _rowData.EnglishDescription;
-      //   product.crNumber = cr.referenceNumber;
-      //   product.quantity = _rowData.Quantity;
 
-      //   cr.productNumber = _rowData.Number;
-      //   productsList.push(product);
-      // }
-      if (_rowData.Level == "1") {
-        part = {};
+        const part = {
+          partNumber: _rowData.Number,
+          partDescription: _rowData.EnglishDescription,
+          quantity: Number(_rowData.Quantity),
+        };
 
-        part.partNumber = _rowData.Number;
-        part.partDescription = _rowData.EnglishDescription;
-        part.quantity = _rowData.Quantity;
-        part.videoUrl = _rowData.videoUrl;
-        part.isCritical = _rowData.Criticality == "MINOR" ? false : true;
-        part.productNumber = _rowData.ParentNumber;
-        part.crNumber = cr.referenceNumber;
+        // creating part in parts and adding CR in the parent 
+        const existingPart = await Parts.findOne({ partNumber:_rowData.Number });
 
-        cr.parts.push(part);
-        partsList.push(part);
-      }
+        let currentpart 
+        if (!existingPart) {
+          // if do not exist create a new part
+          let newpart = await Parts.create(part)
+          currentpart = newpart
 
-      // if there is no cr exist within the commercialReff array it will add the current cr to it
-      if (
-        !commercialReff.some((e) => e.referenceNumber == cr.referenceNumber)
-      ) {
-        commercialReff.push(cr);
+          // return utils.commonResponse(res, 404, "Part does not exist, add part first");
+        }
+        else{
+          currentpart = existingPart
+        }
+
+
+        // part_array.push(currentpart)
+
+        // Check if the CR number is already in the part's parentIds
+        const alreadyLinked = currentpart.parentIds.some(
+          (parent) => parent.crNumber === newCR.referenceNumber
+        );
+
+        if (!alreadyLinked) {
+          currentpart.parentIds.push({
+            productNumber: "",
+            crNumber: newCR.referenceNumber,
+          });
+          await currentpart.save();
+        } else {
+          return utils.commonResponse(res, 409, "CR ID already added to part");
+        }
+
+        newCR.parts.push(part);
+        await newCR.save(); // Save after adding parts
       }
     });
 
-    comReffNos = await CommercialReference.aggregate([
-      {
-        $project: {
-          referenceNumber: 1,
-        },
-      },
-    ]);
-
-    existingCRNos = collect(comReffNos).pluck("referenceNumber");
-
-    newCRNos = commercialReff
-      .map((_data) => {
-        if (!existingCRNos.items.includes(_data.referenceNumber)) {
-          return _data;
-        }
-      })
-      .filter((notUndefined) => notUndefined !== undefined);
-
-    // //console.log("newDATA: ", newDATA);
-    var newCommReff = [];
-    if (newCRNos.length > 0) {
-      newCommReff = JSON.parse(
-        JSON.stringify(await CommercialReference.create(newCRNos))
-      );
-
-      // //console.log("newCommReff: ", newCommReff);
-      const newProductList = productsList.map((product) => {
-        const matchingItem = newCommReff.find(
-          (item) => item.referenceNumber === product.crNumber
-        );
-        return {
-          ...product,
-          crId: matchingItem
-            ? new mongoose.Types.ObjectId(matchingItem._id)
-            : null,
-        };
-      });
-
-      productsList = newProductList;
-    }
-
-    getProductNumber = await Products.aggregate([
-      {
-        $project: {
-          productNumber: 1,
-        },
-      },
-    ]);
-    existingProductNos = collect(getProductNumber).pluck("productNumber");
-    newProductsNos = productsList
-      .map((_data) => {
-        if (!existingProductNos.items.includes(_data.productNumber)) {
-          return _data;
-        }
-      })
-      .filter((notUndefined) => notUndefined !== undefined);
-    var newProductListFromResponse;
-    if (newProductsNos.length > 0) {
-      newProductListFromResponse = JSON.parse(
-        JSON.stringify(await Products.create(newProductsNos))
-      );
-    }
-
-
-    const uniqueParts = await getUniqueParts(partsList);
-
-    const partsListnew = Array.from(uniqueParts.values());
-
-    partsNumbersRes = await Parts.aggregate([
-      {
-        $project: {
-          partNumber: 1,
-        },
-      },
-    ]);
-
-    existingPartNos = collect(partsNumbersRes).pluck("partNumber");
-    alreadyCreatedParts = [];
-    newPartsNos = partsListnew
-      .map((_data) => {
-        if (!existingPartNos.items.includes(_data.partNumber)) {
-          return _data;
-        } else {
-          alreadyCreatedParts.push(_data);
-        }
-      })
-      .filter((notUndefined) => notUndefined !== undefined);
-
-    if (newPartsNos.length > 0) {
-      // await Parts.create(partsListnew);
-      _newParts = JSON.parse(JSON.stringify(await Parts.create(newPartsNos)));
-
-      newPartsSerialNOs = _newParts.map((newComponent) => {
-        return {
-          hubSerialNo: [],
-          partId: newComponent._id,
-          partNumber: newComponent.partNumber,
-        };
-      });
-      await PartsSerialNo.create(newPartsSerialNOs);
-    }
-
-    if (alreadyCreatedParts.length > 0) {
-      uniqueAlreadyParts = await getUniqueParts(alreadyCreatedParts);
-      uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
-
-      await Promise.all(
-        uniqueAlreadyParts.map((parts) =>
-          updatePartsIDs(parts.parentIds ?? [], parts.partNumber)
-        )
-      );
-    }
-
-    utils.commonResponse(res, 200, "success", {});
+    return utils.commonResponse(res, 200, "Upload successful", {
+      "created new parts": newCRs,
+      // "skipped rows": skippedRows,
+    });
   } catch (error) {
-    //console.log(error);
-    utils.commonResponse(res, 500, "server error", error.toString());
+    console.error("Error in uploadCRFromAdmin:", error);
+    return utils.commonResponse(res, 500, "Server error", error.toString());
   }
 };
 
