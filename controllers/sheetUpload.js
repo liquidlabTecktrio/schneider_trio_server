@@ -645,7 +645,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
         else {
           NeedSkip = true
         }
-      } else if (_rowData.Level === "1" && !NeedSkip) {
+      } else if (Number(_rowData.Level) >= 1 && !NeedSkip) {
 
 
         const part = {
