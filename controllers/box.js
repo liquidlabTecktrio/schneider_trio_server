@@ -1015,7 +1015,7 @@ exports.addPartsToBox = async (req, res) => {
     let currentpartNumber = new mongoose.Types.ObjectId(currentpart.partNumber)
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
-    console.log(currentpartNumber, hubIDasObject ,serialNos)
+    console.log(currentpartNumber, hubIDasObject ,partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
