@@ -1012,8 +1012,8 @@ exports.addPartsToBox = async (req, res) => {
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
 
-    let currentpart = Parts.findOne({_id:new mongoose.Types.ObjectId(partID)})
-    console.log(currentpart,"current part")
+    let currentpart = await Parts.findOne({_id:new mongoose.Types.ObjectId(partID)})
+    console.log(currentpart.partNumber,"current part")
     let currentpartNumber = currentpart.partNumber
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
