@@ -1013,6 +1013,9 @@ exports.addPartsToBox = async (req, res) => {
 
     let currentpart = Parts.findById(partID)
     let currentpartNumbber = new mongoose.Types.ObjectId(currentpart.partNumber)
+    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
+
+    console.log(currentpartNumbber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
@@ -1031,7 +1034,7 @@ exports.addPartsToBox = async (req, res) => {
     const isSerialValid = await PartsSerialNo.exists({
       partNumber: currentpartNumbber,
       hubSerialNo: {
-        $elemMatch: { hubId: hubID, serialNos: partSerialNumber },
+        $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
       },
     });
     if (!isSerialValid) {
