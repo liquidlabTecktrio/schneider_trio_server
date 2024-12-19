@@ -60,11 +60,28 @@ exports.generateComponentSerialNo = async (req, res) => {
   }
 };
 
+
+function calculatePackets(requiredQuantity, maxPerPacket) {
+  const packets = [];
+  let remainingQuantity = requiredQuantity;
+
+  while (remainingQuantity > 0) {
+      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
+      packets.push(quantityInPacket);
+      remainingQuantity -= quantityInPacket;
+  }
+
+  return packets;
+}
+
+
 exports.generatePartSerialNo = async (req, res) => {
 
-  console.log('generate',req.body)
+  console.log('generate', req.body)
   try {
     const { hubID, partID, partNumber, qnty } = req.body;
+
+
 
     if (!qnty || typeof qnty !== "number") {
       return utils.commonResponse(
@@ -74,10 +91,40 @@ exports.generatePartSerialNo = async (req, res) => {
       );
     }
 
-    // Generate serial numbers based on quantity
-    const serialNumbers = Array.from({ length: qnty }, () =>
+    let cpart = await parts.findOne({partNumber})
+    let serialNumbers 
+    let PiecePerPacket = []
+    let grouped = false
+
+    console.log(cpart)
+    if (cpart.grouped) {
+
+      // Example usage
+      const requiredQuantity = cpart.quantity;
+      const maxPerPacket = cpart.PiecePerPacket;
+
+      // const requiredQuantity = 100;
+      // const maxPerPacket = 50;
+      
+      const packets = calculatePackets(requiredQuantity, maxPerPacket);
+      // console.log(`Total packets needed: ${packets.length}`);
+      // console.log(`Quantity in each packet: ${packets}`);
+
+      PiecePerPacket = packets
+      grouped = true
+
+      serialNumbers = Array.from({ length: packets.length }, () =>
       shortid.generate(6)
     );
+
+    }
+    else {
+      // Generate serial numbers based on quantity
+      serialNumbers = Array.from({ length: qnty }, () =>
+        shortid.generate(6)
+      );
+    }
+
 
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
@@ -92,7 +139,7 @@ exports.generatePartSerialNo = async (req, res) => {
       const hubEntry = partSerialRecord.hubSerialNo.find(
         (entry) => entry.hubId === hubIDasObject
       );
-      console.log(hubIDasObject,partID,hubEntry)
+      console.log(hubIDasObject, partID, hubEntry)
 
       if (hubEntry) {
         // Update existing hubSerialNo entry
@@ -153,7 +200,9 @@ exports.generatePartSerialNo = async (req, res) => {
         ? `${part.partNumber} - ${part.partDescription}`
         : "",
       qnty: qnty,
+      grouped:grouped,
       serialNos: serialNumbers,
+      PiecePerPacket:PiecePerPacket,
     });
   } catch (error) {
     console.error("Error generating part serial number:", error);

@@ -225,7 +225,9 @@ exports.createPart = (async (req, res) => {
   let newPart = {
     partNumber: req.body.partNumber,
     partDescription: req.body.partDescription,
-    quantity: req.body.quantity
+    quantity: req.body.quantity,
+    grouped:req.body.grouped,
+    PiecePerPacket:req.body.PiecePerPacket
   }
   // //console.log(newPart)
 
@@ -652,6 +654,8 @@ exports.uploadCRFromAdmin = async (req, res) => {
           partNumber: _rowData.Number,
           partDescription: _rowData.EnglishDescription,
           quantity: Number(_rowData.Quantity),
+          grouped:_rowData.grouped,
+          PiecePerPacket:_rowData.PiecePerPacket
         };
 
         // creating part in parts and adding CR in the parent 
