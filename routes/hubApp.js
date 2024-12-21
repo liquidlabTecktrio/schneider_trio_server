@@ -89,6 +89,9 @@ router.post("/updateBoxStatus", BoxSerialNoController.updateBoxStatus);
 router.post(
   "/getAllPartsInAllBoxes",
   BoxSerialNoController.getAllPartsInAllBoxes
+);router.post(
+  "/getAllPartsInProject",
+  ProjectController.getAllPartsInProject
 );
 
 //

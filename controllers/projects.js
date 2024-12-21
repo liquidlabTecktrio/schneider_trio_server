@@ -729,6 +729,53 @@ exports.shipProject = async (req, res) => {
 };
 
 
+exports.getAllPartsInProject = async (req, res)=> {
+
+  let {projectId} = req.body
+  // console.log(projectId)
+  let project = await Projects.findById(projectId)
+
+  let switchBoards = project.switchBoardData
+
+  // console.log(switchBoards)
+
+  let partList = []
+  for(let switchBoard in switchBoards){
+      for(let component in switchBoards[switchBoard].components){
+        for(let part in switchBoards[switchBoard].components[component].parts){
+          // console.log(switchBoards[switchBoard].components[component].parts[part])
+          partList.push(switchBoards[switchBoard].components[component].parts[part])
+        }
+      }
+  }
+
+  let finalPartList = [];
+
+  for (let part of partList) {
+      let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
+  
+      if (existingPart) {
+          // If part exists in finalPartList, increment its quantity
+          existingPart.quantity += part.quantity;
+          
+      } else {
+          // If part doesn't exist, add it to finalPartList
+          finalPartList.push(part); // Create a copy to avoid reference issues
+      }
+  }
+  
+  
+
+
+  utils.commonResponse(
+    res,
+    200,
+    "Project details fetched successfully",
+    finalPartList
+  );
+
+}
+
 // exports.shipProject = async (req, res) => {
 //   try {
 //     projectId = req.body.projectId;
