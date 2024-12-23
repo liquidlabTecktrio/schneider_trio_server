@@ -12,10 +12,18 @@ const PartsSchema = new Schema({
   quantity: {
     type: Number,
   },
+  grouped: {
+    type: Boolean,
+  },
+  PiecePerPacket: {
+    type: Number
+  },
 
   isCritical: {
     type: Boolean,
-  }
+  },
+
+
 })
 
 const componentSchema = new Schema({

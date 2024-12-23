@@ -87,72 +87,13 @@ exports.createNewOrderFromHub = async (req, res) => {
     let spoke_id = data.spoke_id
     let project_name = data.project_name
 
-
-
-    // switchBoards.map((swt, key)=>{
-    //   swt.components.map((cr,key)=>{
-    //     //console.log(cr)
-
-    //   })
-
-    // })
-    // order data contain list of cr s and the parts in it
-    // //console.log(order_data)
-    // //console.log(hub_id)
-    // //console.log(spoke_id)
-    // //console.log(project_name)
-
-    // //console.log(data)
-    //   const BOMPerSB = sheet.sheetsByIndex[sheetIndex];
-    //   const BOMPerSB_Rows = await BOMPerSB.getRows({ options: { offset: 1 } });
-    //   BOM_data = [];
-    //   await Bluebird.each(BOMPerSB_Rows, async (rowData, _rowIndex) => {
-    //     _rowData = rowData.toObject();
-
-    //     BOM_data.push(_rowData);23
-    //   });
-
-    //   switch_board = collect(
-    //     BOM_data.filter((BOM_row) => {
-    //       return BOM_row.Enclosure == "Common Total";
-    //     })
-    //   ).pluck("SwitchBoard").items;
-
-    // switchboards = [];
-
-    // order_data.forEach((sb) => {
-    //   //console.log('sb', sb)
-    //   sb_data = {
-    //     switchBoard: sb.referenceNumber,
-    //     components: [],
-    //   };
-
-    //   sb.parts.forEach((cr) => {
-    //     // if (element.SwitchBoard == sb) {
-    //     //   if (element.Reference != "") {
-    //     // //console.log('element',element)
-
-    //     sb_data.components.push(cr);
-
-        
-    //     //   }
-    //     // }
-    //   });
-    //   // switchborad_data.push('sb_data',sb_data);
-    // });
-
-    // //console.log(switchborad_data)
-
-
-
-    // await Projects.create({
-    //   ProjectName: project_name,
-    //   // // ProjectID: req.body.projectId,
-    //   createdBy: spoke_id,
-    //   createdTo: hub_id,
-    //   status: "open",
-    //   switchBoardData: switchborad_data,
-    // });
+    // console.log(swtich)
+    for (let s of switchBoards){
+      console.log(s.components)
+      for(let c of s.components){
+        console.log(c.parts)
+      }
+    }
 
     let newProjectData = {
       ProjectName: project_name,
@@ -531,48 +472,7 @@ exports.shipProject = async (req, res) => {
   try {
     const { projectId } = req.body;
 
-    // Step 1: Retrieve Project Components and Calculate Required Quantities
-    // const projectComponents = await Project.aggregate([
-    //   { $match: { _id: new mongoose.Types.ObjectId(projectId) } },
-    //   { $project: { "switchBoardData.components": 1 } },
-    //   { $unwind: "$switchBoardData" },
-    //   { $unwind: "$switchBoardData.components" },
-    //   {
-    //     $lookup: {
-    //       from: "parts",
-    //       localField: "switchBoardData.components.Reference",
-    //       foreignField: "parentIds.crNumber",
-    //       as: "partDetails",
-    //     },
-    //   },
-    //   { $unwind: "$partDetails" },
-    //   {
-    //     $project: {
-    //       reference: "$switchBoardData.components.Reference",
-    //       requiredQuantity: {
-    //         $multiply: ["$switchBoardData.components.Quantity", "$partDetails.quantity"],
-    //       },
-    //       partNumber: "$partDetails.partNumber",
-    //       partDescription: "$partDetails.partDescription",
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: { reference: "$reference", partNumber: "$partNumber", partDescription: "$partDescription" },
-    //       totalRequiredQuantity: { $sum: "$requiredQuantity" },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       reference: "$_id.reference",
-    //       partNumber: "$_id.partNumber",
-    //       partDescription: "$_id.partDescription",
-    //       totalRequiredQuantity: 1,
-    //     },
-    //   },
-    // ]);
-
+   
     const projectComponents = await Project.aggregate([
       {
         $match: {
@@ -600,13 +500,6 @@ exports.shipProject = async (req, res) => {
             _id: 0
           }
       },
-      // {
-      //   $project: {
-      //     isComponentExist: {
-      //       $literal: true
-      //     } // If a match is found, return true
-      //   }
-      // }
     ])
 
 
@@ -732,28 +625,25 @@ exports.shipProject = async (req, res) => {
 exports.getAllPartsInProject = async (req, res)=> {
 
   let {projectId} = req.body
-  // console.log(projectId)
   let project = await Projects.findById(projectId)
 
   let switchBoards = project.switchBoardData
 
-  // console.log(switchBoards)
-
   let partList = []
-  for(let switchBoard in switchBoards){
-      for(let component in switchBoards[switchBoard].components){
-        for(let part in switchBoards[switchBoard].components[component].parts){
-          // console.log(switchBoards[switchBoard].components[component].parts[part])
-          partList.push(switchBoards[switchBoard].components[component].parts[part])
+  for (let switchBoard of switchBoards) {
+    for (let component of switchBoard.components) {
+        for (let part of component.parts) {
+            partList.push(part);
         }
-      }
-  }
+    }
+}
 
-  let finalPartList = [];
+  // let finalPartList = [];
 
   for (let part of partList) {
       let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
   
+       
       if (existingPart) {
           // If part exists in finalPartList, increment its quantity
           existingPart.quantity += part.quantity;
@@ -775,139 +665,6 @@ exports.getAllPartsInProject = async (req, res)=> {
   );
 
 }
-
-// exports.shipProject = async (req, res) => {
-//   try {
-//     projectId = req.body.projectId;
-
-//     projectComponents = await Project.aggregate([
-//       {
-//         $match: {
-//           _id: new mongoose.Types.ObjectId(projectId),
-//         },
-//       },
-//       {
-//         $project: {
-//           "switchBoardData.components": 1,
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$switchBoardData",
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$switchBoardData.components",
-//         },
-//       },
-//       {
-//         $project: {
-//           components: "$switchBoardData.components",
-//         },
-//       },
-//       {
-//         $project: {
-//           reference: "$components.Reference",
-//           components: 1,
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$reference",
-//           qnty: {
-//             $sum: "$components.Quantity",
-//           },
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 0,
-//           reference: "$_id",
-//           qnty: 1,
-//         },
-//       },
-//     ]);
-
-//     BoxComponenets = await Boxes.aggregate([
-//       {
-//         $match: {
-//           projectId: new mongoose.Types.ObjectId(projectId),
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 0,
-//           components: 1,
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$components",
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$components.componentName",
-//           qnty: {
-//             $sum: "$components.quantity",
-//           },
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 0,
-//           reference: "$_id",
-//           qnty: 1,
-//         },
-//       },
-//     ]);
-
-//     missingComponents = [];
-//     projectComponents
-//       .map((projectComponent) => {
-//         BoxComponenets.map((boxComponent) => {
-//           if (projectComponent.reference === boxComponent.reference) {
-//             if (projectComponent.qnty != boxComponent.qnty) {
-//               missingComponents.push({
-//                 reference: projectComponent.reference,
-//                 qnty: projectComponent.qnty - boxComponent.qnty,
-//               });
-//             }
-//           }
-//         }).filter((notUndefined) => notUndefined !== undefined);
-//         if (
-//           !BoxComponenets.some(
-//             (boxitem) => boxitem.reference == projectComponent.reference
-//           )
-//         )
-//           missingComponents.push(projectComponent);
-//       })
-//       .filter((notUndefined) => notUndefined !== undefined);
-
-//     if (missingComponents.length > 0) {
-//       utils.commonResponse(
-//         res,
-//         201,
-//         "The project cannot be shipped as the following items are not shipped",
-//         missingComponents
-//       );
-//     } else {
-//       await Project.updateOne(
-//         { _id: new mongoose.Types.ObjectId(projectId) },
-//         { $set: { status: "shipped" } }
-//       );
-
-//       utils.commonResponse(
-//         res,
-//         200,
-//         "The project has been shipped successfully"
-//       );
-//     }
-//   } catch (error) {
-//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
-//   }
-// };
 
 exports.getProjectDetailsWithParts = async (req, res) => {
   try {
