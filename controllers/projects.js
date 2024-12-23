@@ -636,7 +636,24 @@ exports.getAllPartsInProject = async (req, res)=> {
       // finalPartList
     );
   }
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)){
+    return utils.commonResponse(
+      res,
+      404,
+      "Project ID does not exist"
+    );
+  }
+  
   let project = await Projects.findById(projectId)
+
+  if (project == undefined) {
+    return utils.commonResponse(
+      res,
+      404,
+      "Project ID does not exist"
+    );
+  }
 
   let switchBoards = project.switchBoardData
 
