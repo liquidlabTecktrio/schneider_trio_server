@@ -624,7 +624,18 @@ exports.shipProject = async (req, res) => {
 
 exports.getAllPartsInProject = async (req, res)=> {
 
+ 
+
   let {projectId} = req.body
+
+  if (!projectId){
+    return utils.commonResponse(
+      res,
+      404,
+      "Required projectId",
+      // finalPartList
+    );
+  }
   let project = await Projects.findById(projectId)
 
   let switchBoards = project.switchBoardData
@@ -638,7 +649,7 @@ exports.getAllPartsInProject = async (req, res)=> {
     }
 }
 
-  // let finalPartList = [];
+  let finalPartList = [];
 
   for (let part of partList) {
       let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
