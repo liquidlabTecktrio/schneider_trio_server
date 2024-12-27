@@ -25,6 +25,9 @@ const Hub = new Schema(
       required: true,
       default:true
     },
+    logo_ZPL:{
+      type:String,
+    },
   },
   {
     timestamps: true,

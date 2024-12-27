@@ -43,16 +43,22 @@ const upload = multer({ storage: storage });
 
 router.post("/adminLogin", adminController.adminLogin);
 router.post("/createComponent", componentController.createComponent);
+
+
 router.post("/createHub", hubController.createHubs);
 router.post("/deleteHub", hubController.deleteHub);
 router.get("/getAllHubs", hubController.getAllHubs);
+router.get("/getAllHubs", spokeController.getAllSpokes);
+
 router.post("/createSpoke", spokeController.createSpoke);
 router.post("/deleteSpoke", spokeController.deleteSpoke);
-router.get("/getAllHubs", spokeController.getAllSpokes);
 router.get("/getAllSpokes", spokeController.getAllSpokes);
+
 router.get("/getAllComponents", componentController.getAllComponents);
 router.get("/getAllCommertialReferences", componentController.getAllCommertialReferences);
 router.get("/getAllParts", componentController.getAllParts);
+
+
 router.post("/createPanel", panelController.createPanel);
 router.get("/getAllPanels", panelController.getAllPanels);
 router.post("/createPanelType", panelController.createPanelType);

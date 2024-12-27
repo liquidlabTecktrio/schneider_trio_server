@@ -1,25 +1,30 @@
 const { default: mongoose } = require("mongoose");
 const Hubs = require("../Models/Hubs");
 const utils = require("../controllers/utils");
+const axios = require("axios")
+const fs = require("fs")
 
 
 
 exports.createHubs = async (req, res) => {
     try {
-        const { hubName, hubShortName , hubUsername, hubPassword} = req.body;
-       
-        await Hubs.create({ hubName, hubShortName, hubUsername, hubPassword }).then(async (result) => {
+
+     
+
+        const { hubName, hubShortName, hubUsername, hubPassword , logo_ZPL } = req.body;
+
+        await Hubs.create({ hubName, hubShortName, hubUsername, hubPassword, logo_ZPL}).then(async (result) => {
             const allHubs = await Hubs.find();
-            utils.commonResponse(res, 200, "hub created successfully",allHubs);
+            utils.commonResponse(res, 200, "hub created successfully", allHubs);
 
         }).catch((err) => {
-            utils.commonResponse(res, 401,"unexpected server error", err.toString());
+            utils.commonResponse(res, 401, "unexpected server error", err.toString());
 
         });
 
-    } 
+    }
     catch (error) {
-        utils.commonResponse(res, 500, "unexpected server error",error.toString());
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
     }
 }
 
@@ -27,13 +32,13 @@ exports.deleteHub = async (req, res) => {
     try {
         // Attempt to delete the hub
 
-        let { hubID} = req.body;
-        if(!hubID){
+        let { hubID } = req.body;
+        if (!hubID) {
             return utils.commonResponse(res, 400, "Missing hubID");
         }
         hubID = new mongoose.Types.ObjectId(hubID)
-        let result = await Hubs.deleteOne({ _id:  hubID});
-        
+        let result = await Hubs.deleteOne({ _id: hubID });
+
         if (result.deletedCount > 0) {
             // Fetch all remaining hubs after deletion
             // const allHubs = await Hubs.find();
@@ -45,16 +50,16 @@ exports.deleteHub = async (req, res) => {
         // Handle unexpected errors
         utils.commonResponse(res, 500, "Unexpected server error", err.toString());
     }
-    
+
 }
 
 exports.getAllHubs = async (req, res) => {
     try {
         const allHubs = await Hubs.find();
-        utils.commonResponse(res, 200, "All hubs fetched successfully",allHubs);
+        utils.commonResponse(res, 200, "All hubs fetched successfully", allHubs);
 
     } catch (error) {
-        utils.commonResponse(res, 500, "unexpected server error",error.toString());
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
 
     }
 }
