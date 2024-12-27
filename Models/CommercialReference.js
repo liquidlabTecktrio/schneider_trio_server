@@ -53,6 +53,10 @@ const CommercialReference = new Schema(
     isCritical: {
       type: Boolean,
     },
+    isActive:{
+      type:Boolean,
+      default:true
+    }
   },
   {
     timestamps: true,

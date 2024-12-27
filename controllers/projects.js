@@ -623,9 +623,6 @@ exports.shipProject = async (req, res) => {
 
 
 exports.getAllPartsInProject = async (req, res)=> {
-
- 
-
   let {projectId} = req.body
 
   if (!projectId){

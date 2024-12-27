@@ -220,6 +220,30 @@ exports.createCR = async (req, res) => {
   }
 }
 
+
+exports.deleteCR = async (req, res) => {
+
+
+
+  let {referenceNumber} = req.body
+  const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
+  if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
+
+  if (CR) {
+    // Iterate through the partNumbers sequentially
+    
+  
+    await CommercialReference.updateOne({ 'referenceNumber': referenceNumber},{
+      isActive:false
+    }
+    ).then((data) => {
+      return utils.commonResponse(res, 200, "success", {})
+    })
+    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
+  }
+}
+
+
 exports.createPart = (async (req, res) => {
 
   let newPart = {
@@ -242,43 +266,6 @@ exports.createPart = (async (req, res) => {
   }
 })
 
-// async function getUniqueParts(partsList) {
-//   const partMap = new Map();
-//   //console.log(partsList.length);
-
-//   partsList.forEach((val) => {
-//     if (!partMap.has(val.partNumber)) {
-//       // Add new entry in map with initialized parentIds
-//       partMap.set(val.partNumber, {
-//         ...val,
-//         parentIds: [
-//           {
-//             productNumber: val.productNumber,
-//             crNumber: val.crNumber,
-//           },
-//         ],
-//       });
-//     } else {
-//       // Update existing part's parentIds if unique
-//       const existingPart = partMap.get(val.partNumber);
-//       const parentExists = existingPart.parentIds.some(
-//         (parent) =>
-//           parent.productNumber === val.productNumber &&
-//           parent.crNumber === val.crNumber
-//       );
-
-//       if (!parentExists) {
-//         existingPart.parentIds.push({
-//           productNumber: val.productNumber,
-//           crNumber: val.crNumber,
-//         });
-//       }
-//     }
-//   });
-
-//   //console.log("partMap: ", partMap);
-//   return partMap;
-// }
 
 async function getUniqueParts(partsList) {
   const partMap = new Map();

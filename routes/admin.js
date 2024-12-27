@@ -73,6 +73,7 @@ router.post("/uploadCRFromAdmin", upload.single("file"), sheetController.uploadC
 
 router.post("/createCR", sheetController.createCR);
 router.post("/createPart", sheetController.createPart);
+router.post("/deleteCR", sheetController.deleteCR);
 
 
 // router.post("/updatePartsIDs", sheetController.updatePartsIDs);
