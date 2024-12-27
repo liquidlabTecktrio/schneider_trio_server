@@ -224,7 +224,6 @@ exports.createCR = async (req, res) => {
 exports.deleteCR = async (req, res) => {
 
 
-
   let {referenceNumber} = req.body
   const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
@@ -242,6 +241,32 @@ exports.deleteCR = async (req, res) => {
     // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
 }
+
+exports.recoverCR = async (req, res) => {
+
+
+  let {referenceNumber} = req.body
+  const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
+  if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
+
+  if (CR) {
+    // Iterate through the partNumbers sequentially
+    
+  
+    await CommercialReference.updateOne({ 'referenceNumber': referenceNumber},{
+      isActive:true
+    }
+    ).then((data) => {
+      return utils.commonResponse(res, 200, "success", {})
+    })
+    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
+  }
+}
+
+
+
+
+
 
 
 exports.createPart = (async (req, res) => {
