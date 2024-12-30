@@ -10,9 +10,6 @@ const hubs = require("../controllers/hubs");
 const fs = require("fs");
 const path = require("path");
 
-// AUTHENTICATION 
-router.post("/hubregister", hubs.createHubs);
-router.post("/hublogin", hubs.LoginToHubs);
 // router.post("/printlabel", printLabel.printLabelUsingIP);
 
 const multer = require('multer');
@@ -42,6 +39,12 @@ if (!fs.existsSync('uploads')) {
 
 // Create a multer instance with storage configuration
 const upload = multer({ storage: storage });
+
+
+// AUTHENTICATION 
+router.post("/hubregister", hubs.createHubs);
+router.post("/hublogin", hubs.LoginToHubs);
+
 
 router.post(
   "/generateComponentSerialNo",
