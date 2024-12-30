@@ -233,7 +233,7 @@ exports.deleteCR = async (req, res) => {
     // Iterate through the partNumbers sequentially
     
   
-    await CommercialReference.updateOne({ 'referenceNumber': referenceNumber},{
+    await CommercialReference.update({ 'referenceNumber': referenceNumber},{
       isActive:false
     }
     ).then((data) => {
