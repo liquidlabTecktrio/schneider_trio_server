@@ -159,7 +159,7 @@ exports.createCR = async (req, res) => {
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
   if (ExistingCR) ExistingCR.isActive = false;ExistingCR.save()
 
-  if (!ExistingCR) {
+  // if (!ExistingCR) {
     // Iterate through the partNumbers sequentially
     for (const partNumber of newCR.partNumbers) {
       // Check if the part exists
@@ -218,7 +218,7 @@ exports.createCR = async (req, res) => {
     })
     // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
-}
+// }
 
 
 exports.deleteCR = async (req, res) => {
