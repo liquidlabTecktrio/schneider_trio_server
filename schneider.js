@@ -31,20 +31,10 @@ function setupCORS(req, res, next) {
 }
 
 app.all("/*", setupCORS);
-
-// const frontend = express.Router(); 
-// Use the static middlewares within the router
-// app.use("/", express.static(__dirname + "adminpage"));
-// frontend.use("/hub", express.static(__dirname + "/adminFrontEnd"));
-
-// app.use("/*", express.static(__dirname + "/dist"));
-
 // app api's
-// app.use("/v1/api", apiRoutes);
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
-// Serve static files from the 'dist' folder under the '/ad' route
 app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
 // Catch-all handler for SPA routing (React Router support)
 app.get('/hubpage/*', (req, res) => {
@@ -55,7 +45,8 @@ app.use('/adminpage', express.static(path.join(__dirname, 'adminpage')));
 app.get('/adminpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'adminpage', 'index.html'));
 });
-// app.use("/ad/*", express.static(__dirname + "/dist1/index.html"));
+
+
 console.log("Database Connection started !!!");
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -65,8 +56,11 @@ mongoose
   .then((connection) => {
     if (connection) {
       app.listen(process.env.PORT);
+      console.log("\n*********************************************");
       console.log("Database Connected !!!");
-      console.log(`admin server running on ${process.env.PORT} !!!`);
+      console.log(`Server Is running on Port ${process.env.PORT} !!!`);
+      console.log("*********************************************");
+
     } else {
       console.log("Error while connecting to the database");
     }

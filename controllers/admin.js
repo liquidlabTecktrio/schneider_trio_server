@@ -1,7 +1,29 @@
 const Admin = require("../Models/Admins");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
+
+const generateToken = async (admin_id) => {
+  const token = await jwt.sign({ admin_id: admin_id }, process.env.JWT_SECRET, {
+    expiresIn: "2h",
+  });
+
+  return token;
+};
+
+const validateUserInput = async (username, password) => {
+  if (
+    username == null ||
+    password == null ||
+    username == "" ||
+    password == "" ||
+    username == undefined ||
+    password == undefined
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 exports.adminLogin = async (req, res, next) => {
   const username = req.body.username;
@@ -49,7 +71,7 @@ exports.adminSignUp = async (req, res) => {
   try {
     let { username, level, password } = req.body;
     const admin = await Admin.findOne({ username: username });
-    
+
 
     if (!admin) {
       level = parseInt(level.value);
@@ -72,10 +94,10 @@ exports.adminSignUp = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 exports.getAllAdmin = async (req, res) => {
   try {
     const allAdmin = await Admin.find({});
-    //console.log('allAdmin_____________: ', allAdmin);
     res
       .status(200)
       .json({ allAdmin: allAdmin, message: "Admin fecthed successfully" });
@@ -86,7 +108,6 @@ exports.getAllAdmin = async (req, res) => {
 
 exports.deleteAdmin = async (req, res) => {
   try {
-    //console.log(req.body);
     const { _id } = req.body;
     await Admin.deleteOne({ _id: _id });
     res
@@ -99,7 +120,6 @@ exports.deleteAdmin = async (req, res) => {
 
 exports.UpdateAdmin = async (req, res) => {
   try {
-    //console.log(req.body);
     const { _id, username, password, level } = req.body;
     const updateObj = {
       username: username,
@@ -119,25 +139,3 @@ exports.UpdateAdmin = async (req, res) => {
   }
 };
 
-const generateToken = async (admin_id) => {
-  const token = await jwt.sign({ admin_id: admin_id }, process.env.JWT_SECRET, {
-    expiresIn: "2h",
-  });
-
-  return token;
-};
-
-const validateUserInput = async (username, password) => {
-  if (
-    username == null ||
-    password == null ||
-    username == "" ||
-    password == "" ||
-    username == undefined ||
-    password == undefined
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-};

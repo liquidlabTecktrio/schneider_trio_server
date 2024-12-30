@@ -18,8 +18,67 @@ const mongoose = require("mongoose");
 const promise = require("bluebird/js/release/promise");
 
 
+async function getUniqueParts(partsList) {
+  const partMap = new Map();
+  partsList.forEach((val) => {
+    if (!partMap.has(val.partNumber)) {
+      partMap.set(val.partNumber, {
+        ...val,
+        parentIds: val.parentIds || [
+          {
+            productNumber: val.productNumber,
+            crNumber: val.crNumber,
+          },
+        ],
+      });
+    } else {
+      const existingPart = partMap.get(val.partNumber);
+      const parentExists = existingPart.parentIds.some(
+        (parent) =>
+          parent.productNumber === val.productNumber &&
+          parent.crNumber === val.crNumber
+      );
+      if (!parentExists) {
+        existingPart.parentIds.push({
+          productNumber: val.productNumber,
+          crNumber: val.crNumber,
+        });
+      }
+    }
+  });
+  return partMap;
+}
+
+async function updatePartsIDs(newItems, partNumber) {
+  try {
+    const part = await Parts.findOne({ partNumber: partNumber });
+    if (part) {
+      const existingItems = new Set(
+        part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
+      );
+      const itemsToAdd = newItems.filter(
+        (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
+      );
+      if (itemsToAdd.length > 0) {
+        const updateDoc = {
+          $addToSet: {
+            parentIds: { $each: itemsToAdd },
+          },
+        };
+        const updatedData = await Parts.findOneAndUpdate(
+          { partNumber: partNumber },
+          updateDoc,
+          { new: true }
+        );
+      }
+    }
+  } catch (error) {
+    console.log("error: ", error);
+  }
+}
 
 exports.createPOFromGoogleSheet = async (req, res) => {
+  // THIS FUNCTION WILL CREATE ORDER / PROJECT FROM THE GOOGLE SHEET
   try {
     const serviceAccountAuth = new JWT({
       email: service_account.client_email,
@@ -144,38 +203,26 @@ exports.createPOFromGoogleSheet = async (req, res) => {
   }
 };
 
-
 exports.createCR = async (req, res) => {
+  // THIS FUNCTION WILL HELP TO CREATE CR WITH PARTS 
   let newCR = {
     referenceNumber: req.body.referenceNumber,
     description: req.body.description,
     productNumber: req.body.productNumber,
     partNumbers: req.body.partNumbers
   }
-
   let part_array = []
-
-
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
   if (ExistingCR) ExistingCR.isActive = false;ExistingCR.save()
-
-  // if (!ExistingCR) {
-    // Iterate through the partNumbers sequentially
     for (const partNumber of newCR.partNumbers) {
-      // Check if the part exists
       const existingPart = await Parts.findOne({ partNumber });
-
       if (!existingPart) {
         return utils.commonResponse(res, 404, "Part does not exist, add part first");
       }
-
       part_array.push(existingPart)
-
-      // Check if the CR number is already in the part's parentIds
       const alreadyLinked = existingPart.parentIds.some(
         (parent) => parent.crNumber === newCR.referenceNumber
       );
-
       if (!alreadyLinked) {
         existingPart.parentIds.push({
           productNumber: "",
@@ -183,30 +230,7 @@ exports.createCR = async (req, res) => {
         });
         await existingPart.save();
       } 
-      // else {
-      //   return utils.commonResponse(res, 409, "CR ID already added to part");
-      // }
     }
-    // newCR.partNumbers.foreach(async (partNumber, key) => {
-    //   // add this cr_reference number in part in parts collection
-    //   // find the parts in parts with partnumber
-    //   const ExistingPart = await Parts.findOne({ 'partNumber': partNumber })
-    //   // //console.log(ExistingPart)
-    //   if(!ExistingPart)return utils.commonResponse(res, 404, "Cr Id already added to part")
-
-    //   if (ExistingPart) {
-    //     if (!ExistingPart.parentIds.some((parent) => parent.crNumber == newCR.referenceNumber)) {
-    //       ExistingPart.parentIds.push({ productNumber: "", crNumber: newCR.referenceNumber })
-    //       await ExistingPart.save();
-    //     }
-    //   }
-
-    //   else {
-    //     // //console.log("do not exist")
-    //     return utils.commonResponse(res, 404, "Part Do Not exist, add part first")
-    //   }
-    // })
-
     CommercialReference.create({
       referenceNumber: newCR.referenceNumber,
       description: newCR.description,
@@ -217,62 +241,40 @@ exports.createCR = async (req, res) => {
     ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
     })
-    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
-// }
-
 
 exports.deleteCR = async (req, res) => {
-
-
+  // THIS FUNCTION WILL DELETE CR FROM 
   let {referenceNumber} = req.body
   const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
-
   if (CR) {
-    // Iterate through the partNumbers sequentially
-    
-  
     await CommercialReference.updateMany({ 'referenceNumber': referenceNumber},{
       isActive:false
     }
     ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
     })
-    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
 }
 
 exports.recoverCR = async (req, res) => {
-
-
+  // THIS FUCNTION WILL HELP TO CHANGE THE STATUS OF CR FROM ISACTIVE FALSE TO TRUE, 
   let {_id} = req.body
-
   const CR = await CommercialReference.findOne({_id:new mongoose.Types.ObjectId(_id)})
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
-
   if (CR) {
-    // Iterate through the partNumbers sequentially
-    
-  
     await CommercialReference.updateOne({_id:new mongoose.Types.ObjectId(_id)},{
       isActive:true
     }
     ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
     })
-    // utils.commonResponse(res, 404, "some Part Do Not exist, add part first")
   }
 }
 
-
-
-
-
-
-
 exports.createPart = (async (req, res) => {
-
+  // THIS FUNCTION WILL CREATE NEW PART IN THE SYSTEM
   let newPart = {
     partNumber: req.body.partNumber,
     partDescription: req.body.partDescription,
@@ -280,8 +282,6 @@ exports.createPart = (async (req, res) => {
     grouped:req.body.grouped,
     PiecePerPacket:req.body.PiecePerPacket
   }
-  // //console.log(newPart)
-
   const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
   if (ExistingPart) {
     return utils.commonResponse(res, 409, "PartNumber Exist", ExistingPart)
@@ -293,89 +293,9 @@ exports.createPart = (async (req, res) => {
   }
 })
 
-
-async function getUniqueParts(partsList) {
-  const partMap = new Map();
-  // //console.log(partsList.length);
-
-  partsList.forEach((val) => {
-    if (!partMap.has(val.partNumber)) {
-      partMap.set(val.partNumber, {
-        ...val,
-        parentIds: val.parentIds || [
-          {
-            productNumber: val.productNumber,
-            crNumber: val.crNumber,
-          },
-        ],
-      });
-    } else {
-      // Update the existing part's parentIds if unique
-      const existingPart = partMap.get(val.partNumber);
-      const parentExists = existingPart.parentIds.some(
-        (parent) =>
-          parent.productNumber === val.productNumber &&
-          parent.crNumber === val.crNumber
-      );
-
-      if (!parentExists) {
-        existingPart.parentIds.push({
-          productNumber: val.productNumber,
-          crNumber: val.crNumber,
-        });
-      }
-    }
-  });
-
-  // //console.log("partMap: ", partMap);
-  return partMap;
-}
-
-async function updatePartsIDs(newItems, partNumber) {
-  // //console.log("partNumber: ", partNumber);
-  // //console.log("newItems: ", newItems);
-  try {
-    // Define the unique items to add
-    // const newItems = [
-    //   { productNumber: "NNZ97512", crNumber: "PFCP6H2WXD426" },
-    //   { productNumber: "TEST6", crNumber: "PFCP6H2WXD426" },
-    // ];
-
-    // Find the document
-    const part = await Parts.findOne({ partNumber: partNumber });
-    if (part) {
-      const existingItems = new Set(
-        part.parentIds.map((item) => `${item.productNumber}_${item.crNumber}`)
-      );
-      // //console.log(" part.parentIds: ", part.parentIds);
-      // //console.log("existingItems: ", existingItems);
-      const itemsToAdd = newItems.filter(
-        (item) => !existingItems.has(`${item.productNumber}_${item.crNumber}`)
-      );
-      // //console.log("itemsToAdd: ", itemsToAdd);
-
-      // Only update if there are items to add
-      if (itemsToAdd.length > 0) {
-        const updateDoc = {
-          $addToSet: {
-            parentIds: { $each: itemsToAdd },
-          },
-        };
-
-        const updatedData = await Parts.findOneAndUpdate(
-          { partNumber: partNumber },
-          updateDoc,
-          { new: true }
-        );
-        // //console.log("updatedData: ", updatedData);
-      }
-    }
-  } catch (error) {
-    //console.log("error: ", error);
-  }
-}
-
+// NOT IN USE
 exports.uploadBomGoogleSheet = async (req, res) => {
+  // THIS FUNCITON WILL CREATE BOM REFFERCE BASED ON THE CR LIST FROM GOOGLE EXCEL
   try {
     const serviceAccountAuth = new JWT({
       email: service_account.client_email,
@@ -389,25 +309,19 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     const sheetinfo = await sheet.loadInfo();
     const worksheet = sheet.sheetsByIndex[0];
     const rows = await worksheet.getRows();
-
     commercialReff = [];
     productsList = [];
     partsList = [];
-
     cr = {};
     product = {};
     part = {};
-
     parentIdsList = [];
-
     await Bluebird.each(rows, async (rowData, _rowIndex) => {
       _rowData = rowData.toObject();
-
       if (_rowData.Level == "0") {
         cr = {};
         cr.referenceNumber = _rowData.Number;
         cr.description = _rowData.EnglishDescription;
-
         cr.parts = [];
       }
       if (_rowData.Level == "1") {
@@ -416,13 +330,11 @@ exports.uploadBomGoogleSheet = async (req, res) => {
         product.productDescription = _rowData.EnglishDescription;
         product.crNumber = cr.referenceNumber;
         product.quantity = _rowData.Quantity;
-
         cr.productNumber = _rowData.Number;
         productsList.push(product);
       }
       if (_rowData.Level == "2") {
         part = {};
-
         part.partNumber = _rowData.Number;
         part.partDescription = _rowData.EnglishDescription;
         part.quantity = _rowData.Quantity;
@@ -430,7 +342,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
         part.isCritical = _rowData.Criticality == "MINOR" ? false : true;
         part.productNumber = _rowData.ParentNumber;
         part.crNumber = cr.referenceNumber;
-
         cr.parts.push(part);
         partsList.push(part);
       }
@@ -459,15 +370,11 @@ exports.uploadBomGoogleSheet = async (req, res) => {
         }
       })
       .filter((notUndefined) => notUndefined !== undefined);
-
-    // //console.log("newDATA: ", newDATA);
     var newCommReff = [];
     if (newCRNos.length > 0) {
       newCommReff = JSON.parse(
         JSON.stringify(await CommercialReference.create(newCRNos))
       );
-
-      // //console.log("newCommReff: ", newCommReff);
       const newProductList = productsList.map((product) => {
         const matchingItem = newCommReff.find(
           (item) => item.referenceNumber === product.crNumber
@@ -482,7 +389,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 
       productsList = newProductList;
     }
-
     getProductNumber = await Products.aggregate([
       {
         $project: {
@@ -505,38 +411,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
       );
     }
 
-    // const partMap = new Map();
-    // //console.log(partsList.length);
-
-    // partsList.forEach((val) => {
-    //   if (!partMap.has(val.partNumber)) {
-    //     // Add new entry in map with initialized parentIds
-    //     partMap.set(val.partNumber, {
-    //       ...val,
-    //       parentIds: [
-    //         {
-    //           productNumber: val.parentNumber,
-    //           crNumber: val.crNumber,
-    //         },
-    //       ],
-    //     });
-    //   } else {
-    //     // Update existing part's parentIds if unique
-    //     const existingPart = partMap.get(val.partNumber);
-    //     const parentExists = existingPart.parentIds.some(
-    //       (parent) =>
-    //         parent.productNumber === val.parentNumber &&
-    //         parent.crNumber === val.crNumber
-    //     );
-
-    //     if (!parentExists) {
-    //       existingPart.parentIds.push({
-    //         productNumber: val.parentNumber,
-    //         crNumber: val.crNumber,
-    //       });
-    //     }
-    //   }
-    // });
     const uniqueParts = await getUniqueParts(partsList);
 
     const partsListnew = Array.from(uniqueParts.values());
@@ -613,33 +487,21 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 };
 
 exports.uploadCRFromAdmin = async (req, res) => {
+  // THIS FUNCTION WILL HELP TO CREATE NEW BOM RECORDS FROM THE BOM FILE THAT IS UPLOADING FROM THE ADMIN SIDE
   try {
-    // Check if file is uploaded
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
-
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
-
-    // Select the first sheet (adjust index if needed)
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(worksheet);
-
-    // Fetch existing Commercial References
-    // const existingCRMap = new Map(
-    //   ExistingCRList.map((cr) => [cr.referenceNumber, cr])
-    // );
-
     let newCRs = [];
-    // let skippedRows = [];
     let newCR
     let NeedSkip
-
     // Process rows
     await Bluebird.each(rows, async (_rowData) => {
-
       if (_rowData.Level === "0") {
         const cr = {
           referenceNumber: _rowData.Number,
@@ -647,23 +509,19 @@ exports.uploadCRFromAdmin = async (req, res) => {
           quantity: 0,
           parts: [],
         };
-
         const ExistingCRList = await CommercialReference.findOne({ referenceNumber: cr.referenceNumber });
-
-
         if (!ExistingCRList) {
           // Create a new CR and cache it in the map
           newCR = await CommercialReference.create(cr);
           NeedSkip = false
-          // existingCRMap.set(_rowData.Number, newCR);
           newCRs.push(newCR.referenceNumber);
         }
         else {
-          NeedSkip = true
+          // NeedSkip = true
+          ExistingCRList.isActive = false
+          ExistingCRList.save()
         }
       } else if (Number(_rowData.Level) >= 1 && !NeedSkip) {
-
-
         const part = {
           partNumber: _rowData.Number,
           partDescription: _rowData.EnglishDescription,
@@ -671,30 +529,21 @@ exports.uploadCRFromAdmin = async (req, res) => {
           grouped:_rowData.grouped,
           PiecePerPacket:_rowData.PiecePerPacket
         };
-
         // creating part in parts and adding CR in the parent 
         const existingPart = await Parts.findOne({ partNumber:_rowData.Number });
-
         let currentpart 
         if (!existingPart) {
           // if do not exist create a new part
           let newpart = await Parts.create(part)
           currentpart = newpart
-
-          // return utils.commonResponse(res, 404, "Part does not exist, add part first");
         }
         else{
           currentpart = existingPart
         }
-
-
-        // part_array.push(currentpart)
-
         // Check if the CR number is already in the part's parentIds
         const alreadyLinked = currentpart.parentIds.some(
           (parent) => parent.crNumber === newCR.referenceNumber
         );
-
         if (!alreadyLinked) {
           currentpart.parentIds.push({
             productNumber: "",
@@ -702,15 +551,12 @@ exports.uploadCRFromAdmin = async (req, res) => {
           });
           await currentpart.save();
         } 
-
         newCR.parts.push(part);
         await newCR.save(); // Save after adding parts
       }
     });
-
     return utils.commonResponse(res, 200, "Upload successful", {
       "created new parts": newCRs,
-      // "skipped rows": skippedRows,
     });
   } catch (error) {
     console.error("Error in uploadCRFromAdmin:", error);
@@ -719,18 +565,16 @@ exports.uploadCRFromAdmin = async (req, res) => {
 };
 
 exports.uploadCRExcelFromHub = async (req, res) => {
+  // THIS FUNCTION WILL GENERATE A ORDER PREVIEW FOR THE UPDLOADED ORDER EXCEL SHEET FROM HUB
   try {
-    // Ensure a file is uploaded
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
-
     // Reading and processing the Excel file
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(worksheet);
-
     // Initializing variables
     const CrsListFromExcel = rows
       .filter(row => row.Reference) // Filter rows with a valid reference
@@ -746,7 +590,6 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         Quantity: row.Quantity,
         isCritical: row["Core / Non core"] !== "Non-Core"
       }));
-
     // Extract unique switchboards with "Common Total" enclosures
     const switchBoards = [...new Set(CrsListFromExcel
       .filter(cr => cr.Enclosure === "Common Total")
@@ -791,44 +634,24 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }
       return acc;
     }, []);
-
     // Project details (static for now, can be dynamic)
     const ProjectDetails = {
       project_name: "Project 1",
       project_description: "This is a test data"
     };
-
-    console.log(SwitchBoardWithCRWithParts, FinalPartList)
     // Sending the response
-    // //console.log("crpartlist",SwitchBoardWithCRWithParts, "partlist",FinalPartList)
     utils.commonResponse(res, 200, "success", {
       Switchboards: SwitchBoardWithCRWithParts,
       PartList: FinalPartList,
       ProjectDetails
     });
-
-    // Insert parts into the database if needed
-    // if (EntirePartList.length > 0) {
-    //   await Parts.insertMany(EntirePartList);
-    // }
   } catch (error) {
     console.error(error);
     utils.commonResponse(res, 500, "server error", error.toString());
   }
-
 }
 
-async function getAvailableCommonReffData(crNumberList) {
-  const crData = await CommercialReference.aggregate([
-    {
-      $match: {
-        referenceNumber: { $in: crNumberList },
-      },
-    },
-  ]);
-  return crData;
-}
-
+// NOT IN USE
 exports.createPOFromGoogleSheetNew = async (req, res) => {
   try {
     const serviceAccountAuth = new JWT({

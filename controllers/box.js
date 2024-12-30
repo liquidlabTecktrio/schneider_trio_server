@@ -11,7 +11,123 @@ const ComponentSerialNo = require("../Models/componentSerialNo.js");
 const Parts = require("../Models/Parts.js");
 const PartsSerialNo = require("../Models/PartsSerialNo.js");
 
+
+async function checkComponentQuntityExceeded(
+  totalQuantity,
+
+  reference,
+  projectId
+) {
+  var isExceedded = false;
+  const checkQuntity = await Project.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(projectId),
+      },
+    },
+    {
+      $unwind: "$switchBoardData",
+    },
+    {
+      $unwind: "$switchBoardData.components",
+    },
+    {
+      $match: {
+        "switchBoardData.components.Reference": reference,
+      },
+    },
+    {
+      $group: {
+        _id: new mongoose.Types.ObjectId(projectId),
+        totalQuantity: {
+          $sum: "$switchBoardData.components.Quantity",
+        },
+      },
+    },
+    {
+      $project: {
+        isQuantityExceeded: {
+          $lte: ["$totalQuantity", totalQuantity],
+        },
+      },
+    },
+  ]);
+
+  if (checkQuntity.length > 0) {
+    return (isExceedded = checkQuntity[0].isQuantityExceeded ?? false);
+  } else {
+    return isExceedded;
+  }
+}
+
+async function checkComponentExitInTheProject(res, componentID, projectID) {
+  try {
+    const findComponentExist = await Component.aggregate([
+      {
+        $match: {
+          // '_id': new ObjectId('6716323a8693a807bcb8106e')
+          _id: new mongoose.Types.ObjectId(componentID),
+        },
+      },
+      {
+        $lookup: {
+          from: "projects",
+          localField: "componentName",
+          foreignField: "switchBoardData.components.Reference",
+          as: "projects",
+          pipeline: [
+            {
+              $match: {
+                // '_id': new ObjectId('6716323f8693a807bcb81d9f')
+                _id: new mongoose.Types.ObjectId(projectID),
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          isComponentExist: {
+            $cond: {
+              if: {
+                $gt: [
+                  {
+                    $size: "$projects",
+                  },
+                  0,
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          isComponentExist: 1,
+        },
+      },
+    ]);
+    return findComponentExist;
+  } catch (error) {
+    utils.commonResponse(res, 500, error.toString());
+  }
+}
+
 exports.generateBoxSerialNo = async (req, res) => {
+
+  // THIS FUNCTION WILL GENERATE SERIAL NUMBERS FOR BOXES 
+  // REQUEST WITH
+  // HUBID AND QUANTITY AS ( hubID, qnty )
+  // RESPONSE
+  // LIST OF BOX SERIAL NUMBERS
+
   try {
     const { hubID, qnty } = req.body;
 
@@ -57,6 +173,13 @@ exports.generateBoxSerialNo = async (req, res) => {
 };
 
 exports.addBoxToProject = async (req, res) => {
+
+  // THIS FUNCTION WILL ADD A BOX TO A PROJECT
+  // REQUEST MUST CONTAIN
+  // projectID and serialNo
+  // RESPONSE
+  // OBJECT WITH BOX DATA
+
   try {
     const { projectID, serialNo } = req.body;
     if (!projectID || !serialNo) {
@@ -106,7 +229,15 @@ exports.addBoxToProject = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
 exports.removeBoxFromProject = async (req, res) => {
+
+  // THE FUNCTION CAN BE USED TO REMOVE BOX FROM A PROJECT
+  // REQUEST MUST CONTAIN 
+  // projectId, serialNo\
+  // RESPONSE 
+  // MESSAGE SAYING "BOX DELETED FROM PROJECT SUCCESSFULLY"
+
   try {
     const { projectID, serialNo } = req.body;
     if (!projectID || !serialNo) {
@@ -122,7 +253,7 @@ exports.removeBoxFromProject = async (req, res) => {
       });
       // If box exists, proceed to remove it
       await Boxes.deleteOne({ _id: existingBox._id });
-      return utils.commonResponse(res, 404, "Box Deleted from project");
+      return utils.commonResponse(res, 404, "Box Deleted from project successfully");
     }
   } catch (error) {
     console.error("Error in addBoxToProject:", error);
@@ -130,138 +261,7 @@ exports.removeBoxFromProject = async (req, res) => {
   }
 };
 
-exports.addComponentsToBox1 = async (req, res) => {
-  try {
-    const {
-      hubID,
-      componentID,
-      boxSerialNo,
-      projectID,
-      componentSerialNumber,
-    } = req.body;
-
-    if (
-      !hubID ||
-      !componentID ||
-      !boxSerialNo ||
-      !projectID ||
-      !componentSerialNumber
-    ) {
-      return utils.commonResponse(res, 400, "Invalid input parameters");
-    }
-
-    const box = await Boxes.findOne({ serialNo: boxSerialNo });
-    if (!box) {
-      return utils.commonResponse(res, 404, "Box serial number not found");
-    }
-
-    const component = await ComponentSerialNo.findOne({
-      componentID: componentID,
-    });
-    if (!component) {
-      return utils.commonResponse(res, 404, "Component ID not found");
-    }
-
-    const hub = await Hub.findById(hubID);
-    if (!hub) {
-      return utils.commonResponse(res, 404, "Hub ID not found");
-    }
-
-    const componentSerialEntry = await ComponentSerialNo.findOne({
-      componentID: componentID,
-      "hubSerialNo.hubID": hubID,
-      "hubSerialNo.serialNos": componentSerialNumber,
-    });
-
-    if (!componentSerialEntry) {
-      return utils.commonResponse(
-        res,
-        404,
-        "Component Serial Number not found for the provided Component ID and Hub ID"
-      );
-    }
-    const existingComponent = box.components.find(
-      (comp) => comp.componentID && comp.componentID.equals(componentID)
-    );
-
-    if (existingComponent) {
-      if (existingComponent.componentSerialNo.includes(componentSerialNumber)) {
-        return utils.commonResponse(
-          res,
-          400,
-          "Serial number already exists for this component in the box"
-        );
-      }
-      existingComponent.componentSerialNo.push(componentSerialNumber);
-      existingComponent.quantity = existingComponent.componentSerialNo.length;
-    } else {
-      box.components.push({
-        componentID,
-        componentName: component.componentName,
-        componentSerialNo: [componentSerialNumber],
-        quantity: 1,
-      });
-    }
-    box.quantity += 1;
-    await box.save();
-
-    utils.commonResponse(res, 200, "Component added to box successfully", {
-      boxid: box._id,
-      totalComponents: box.quantity,
-    });
-  } catch (error) {
-    console.error("Error in addComponentsToBox:", error);
-    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
-  }
-};
-async function checkComponentQuntityExceeded(
-  totalQuantity,
-
-  reference,
-  projectId
-) {
-  var isExceedded = false;
-  const checkQuntity = await Project.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(projectId),
-      },
-    },
-    {
-      $unwind: "$switchBoardData",
-    },
-    {
-      $unwind: "$switchBoardData.components",
-    },
-    {
-      $match: {
-        "switchBoardData.components.Reference": reference,
-      },
-    },
-    {
-      $group: {
-        _id: new mongoose.Types.ObjectId(projectId),
-        totalQuantity: {
-          $sum: "$switchBoardData.components.Quantity",
-        },
-      },
-    },
-    {
-      $project: {
-        isQuantityExceeded: {
-          $lte: ["$totalQuantity", totalQuantity],
-        },
-      },
-    },
-  ]);
-
-  if (checkQuntity.length > 0) {
-    return (isExceedded = checkQuntity[0].isQuantityExceeded ?? false);
-  } else {
-    return isExceedded;
-  }
-}
-
+// NO IN USE
 exports.addComponentsToBox = async (req, res) => {
   try {
     const {
@@ -423,201 +423,13 @@ exports.addComponentsToBox = async (req, res) => {
   }
 };
 
-async function checkComponentExitInTheProject(res, componentID, projectID) {
-  try {
-    const findComponentExist = await Component.aggregate([
-      {
-        $match: {
-          // '_id': new ObjectId('6716323a8693a807bcb8106e')
-          _id: new mongoose.Types.ObjectId(componentID),
-        },
-      },
-      {
-        $lookup: {
-          from: "projects",
-          localField: "componentName",
-          foreignField: "switchBoardData.components.Reference",
-          as: "projects",
-          pipeline: [
-            {
-              $match: {
-                // '_id': new ObjectId('6716323f8693a807bcb81d9f')
-                _id: new mongoose.Types.ObjectId(projectID),
-              },
-            },
-            {
-              $project: {
-                _id: 1,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          isComponentExist: {
-            $cond: {
-              if: {
-                $gt: [
-                  {
-                    $size: "$projects",
-                  },
-                  0,
-                ],
-              },
-              then: true,
-              else: false,
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          isComponentExist: 1,
-        },
-      },
-    ]);
-    return findComponentExist;
-  } catch (error) {
-    utils.commonResponse(res, 500, error.toString());
-  }
-}
-
 exports.getBoxDetails = async (req, res) => {
+  // THE FUNCTION IS TO RESPOND WITH THE BOX DETAILS CONTAINING THE PARTS INSIDE IT , PROJECT DETAILS AND SO ON
   try {
     const { _id, serialNo } = req.body;
 
-    // const box = await Boxes.aggregate([
-    //   {
-    //     // $match: {
-    //     //   _id: new mongoose.Types.ObjectId(_id),
-
-    //     // },
-    //     $match: {
-    //       $expr: {
-    //         $cond: {
-    //           if: { $eq: ["$_id", new mongoose.Types.ObjectId(_id)] },
-    //           then: { $eq: ["$_id", new mongoose.Types.ObjectId(_id)] },
-    //           else: { $eq: ["$serialNo", serialNo] },
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $unwind: "$components",
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "components",
-    //       localField: "components.componentID",
-    //       foreignField: "_id",
-    //       as: "componentDetails",
-    //     },
-    //   },
-    //   {
-    //     $unwind: "$componentDetails",
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 1,
-    //       status: 1,
-    //       quantity: 1,
-    //       serialNo: 1,
-    //       projectId: 1,
-    //       "components.componentID": "$components.componentID",
-    //       "components.serial": "$components.serial",
-    //       "components.componentName": "$componentDetails.componentName",
-    //       "components.quantity": "$components.quantity",
-    //       "components._id": "$components._id",
-    //       "components.compDescription": "$componentDetails.compDescription",
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: {
-    //         projectId: "$_id",
-    //         componentName: "$components.componentName",
-    //       },
-    //       status: {
-    //         $first: "$status",
-    //       },
-    //       serialNo: {
-    //         $first: "$serialNo",
-    //       },
-    //       quantity: {
-    //         $first: "$quantity",
-    //       },
-    //       totalQuantity: {
-    //         $sum: "$components.quantity",
-    //       },
-    //       projectId: {
-    //         $first: "$projectId",
-    //       },
-    //       component: {
-    //         $first: {
-    //           componentID: "$components.componentID",
-    //           serial: "$components.serial",
-    //           componentName: "$components.componentName",
-    //           compDescription: "$components.compDescription",
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: "$_id.projectId",
-    //       status: {
-    //         $first: "$status",
-    //       },
-    //       serialNo: {
-    //         $first: "$serialNo",
-    //       },
-    //       quantity: {
-    //         $first: "$quantity",
-    //       },
-    //       projectId: {
-    //         $first: "$projectId",
-    //       },
-    //       components: {
-    //         $push: {
-    //           componentID: "$component.componentID",
-    //           serial: "$component.serial",
-    //           componentName: "$component.componentName",
-    //           compDescription: "$component.compDescription",
-    //           quantity: "$totalQuantity",
-    //         },
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "projects",
-    //       localField: "projectId",
-    //       foreignField: "_id",
-    //       as: "projectName",
-    //       pipeline: [
-    //         {
-    //           $project: {
-    //             ProjectName: 1,
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   },
-    //   {
-    //     $addFields: {
-    //       projectName: {
-    //         $arrayElemAt: ["$projectName.ProjectName", 0],
-    //       },
-    //     },
-    //   },
-    // ]);
     const box = await Boxes.aggregate([
       {
-        // $match: {
-        //   _id: new mongoose.Types.ObjectId(_id),
-
-        // },
         $match: {
           $expr: {
             $cond: {
@@ -631,111 +443,7 @@ exports.getBoxDetails = async (req, res) => {
       {
         $unwind: "$components",
       },
-      // {
-      //   $lookup: {
-      //     from: "components",
-      //     localField: "components.componentID",
-      //     foreignField: "_id",
-      //     as: "componentDetails",
-      //   },
-      // },
-      // {
-      //   $unwind: "$componentDetails",
-      // },
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     status: 1,
-      //     quantity: 1,
-      //     serialNo: 1,
-      //     projectId: 1,
-      //     "components.componentID": "$components.componentID",
-      //     "components.serial": "$components.serial",
-      //     "components.componentName": "$componentDetails.componentName",
-      //     "components.quantity": "$components.quantity",
-      //     "components._id": "$components._id",
-      //     "components.compDescription": "$componentDetails.compDescription",
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: {
-      //       projectId: "$_id",
-      //       componentName: "$components.componentName",
-      //     },
-      //     status: {
-      //       $first: "$status",
-      //     },
-      //     serialNo: {
-      //       $first: "$serialNo",
-      //     },
-      //     quantity: {
-      //       $first: "$quantity",
-      //     },
-      //     totalQuantity: {
-      //       $sum: "$components.quantity",
-      //     },
-      //     projectId: {
-      //       $first: "$projectId",
-      //     },
-      //     component: {
-      //       $first: {
-      //         componentID: "$components.componentID",
-      //         serial: "$components.serial",
-      //         componentName: "$components.componentName",
-      //         compDescription: "$components.compDescription",
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: "$_id.projectId",
-      //     status: {
-      //       $first: "$status",
-      //     },
-      //     serialNo: {
-      //       $first: "$serialNo",
-      //     },
-      //     quantity: {
-      //       $first: "$quantity",
-      //     },
-      //     projectId: {
-      //       $first: "$projectId",
-      //     },
-      //     components: {
-      //       $push: {
-      //         componentID: "$component.componentID",
-      //         serial: "$component.serial",
-      //         componentName: "$component.componentName",
-      //         compDescription: "$component.compDescription",
-      //         quantity: "$totalQuantity",
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   $lookup: {
-      //     from: "projects",
-      //     localField: "projectId",
-      //     foreignField: "_id",
-      //     as: "projectName",
-      //     pipeline: [
-      //       {
-      //         $project: {
-      //           ProjectName: 1,
-      //         },
-      //       },
-      //     ],
-      //   },
-      // },
-      // {
-      //   $addFields: {
-      //     projectName: {
-      //       $arrayElemAt: ["$projectName.ProjectName", 0],
-      //     },
-      //   },
-      // },
+    
       {
         $lookup: {
           from: "parts",
@@ -855,28 +563,6 @@ exports.getBoxDetails = async (req, res) => {
   }
 };
 
-// Customers.findOneAndUpdate(
-//   {
-//     _id: mongoose.Types.ObjectId(customerID),
-//     cart: {
-//       $elemMatch: {
-//         itemID: mongoose.Types.ObjectId(itemID),
-//         flavour: flavour,
-//         packageWeight: packageWeight,
-//       },
-//     },
-//   },
-//   {
-//     $inc: {
-//       "cart.$.qnty": qnty,
-//       "cart.$.freebiePoints":
-//         (existingProductIncartPoints.freebiePoints /
-//           existingProductIncartPoints.qnty) *
-//         qnty,
-//     },
-//        }
-//       )
-
 exports.updateBoxStatus = async (req, res) => {
   try {
     const { _id, status } = req.body;
@@ -911,113 +597,19 @@ exports.updateBoxStatus = async (req, res) => {
   }
 };
 
-
-
-
-async function checkPartExistInThisProjectsCollection(res, partNumber, projectID) {
-  try {
-
-    const findComponentExist = await Project.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(projectID)
-        } // Match the project ID
-      },
-      {
-        $unwind: "$switchBoardData" // Unwind switchBoardData
-      },
-      {
-        $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
-      },
-      {
-        $unwind: "$switchBoardData.components.parts" // Unwind parts within components
-      },
-      {
-        $match: {
-          // "switchBoardData.components.Reference": "BQT97814", // Match the Reference (crNumber)
-          "switchBoardData.components.parts.partNumber": partNumber // Match the partNumber
-        }
-      },
-      {
-        $project: {
-          isComponentExist: {
-            $literal: true
-          } // If a match is found, return true
-        }
-      }
-    ]);
-    return findComponentExist
-  }
-  catch (error) {
-    return []
-  }
-
-}
-
-async function checkPartExistInTheProject(res, partID, projectID) {
-  try {
-    const findComponentExist = await Parts.aggregate([
-      {
-        $match: { _id: new mongoose.Types.ObjectId(partID) },
-      },
-      {
-        $unwind: "$parentIds", // Unwind parentIds to access each crNumber individually
-      },
-      {
-        $lookup: {
-          from: "projects",
-          let: { crNumber: "$parentIds.crNumber" }, // Reference crNumber from parentIds
-          pipeline: [
-            {
-              $match: {
-                _id: new mongoose.Types.ObjectId(projectID),
-              },
-            },
-            { $unwind: "$switchBoardData" },
-            { $unwind: "$switchBoardData.components" },
-            {
-              $match: {
-                "switchBoardData.components.Reference": "$$crNumber",
-              },
-            },
-            {
-              $project: { _id: 1 }, // Only project necessary fields
-            },
-          ],
-          as: "projects",
-        },
-      },
-      {
-        $addFields: {
-          isComponentExist: { $gt: [{ $size: "$projects" }, 0] },
-        },
-      },
-      {
-        $project: { isComponentExist: 1 },
-      },
-    ]);
-
-    const componentExists =
-      findComponentExist.length > 0 && findComponentExist[0].isComponentExist;
-    return componentExists;
-  } catch (error) {
-    utils.commonResponse(res, 500, error.toString());
-  }
-}
-
 exports.addPartsToBox = async (req, res) => {
   try {
 
-    console.log('addpart',req.body)
+    console.log('addpart', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
 
-    let currentpart = await Parts.findOne({_id:new mongoose.Types.ObjectId(partID)})
-    console.log(currentpart.partNumber,"current part")
+    let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
+    console.log(currentpart.partNumber, "current part")
     let currentpartNumber = currentpart.partNumber
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
-    console.log(currentpartNumber, hubIDasObject ,partSerialNumber)
+    console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");

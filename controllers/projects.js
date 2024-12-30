@@ -7,6 +7,7 @@ const Component = require("../Models/Components");
 const Projects = require("../Models/Projects");
 
 exports.getAllProjects = async (req, res) => {
+  // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
   try {
     const { _id } = req.body;
     const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
@@ -78,44 +79,35 @@ exports.getAllProjects = async (req, res) => {
 };
 
 exports.createNewOrderFromHub = async (req, res) => {
+  // THIS WILL CREATE A NEW PROJECT  IN THE TRACKING SYSTEM
   try {
     let data = req.body
-
     let switchBoards = data.switchBoards
-    // //console.log('cr list', data.switchBoards)
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
-
-    // console.log(swtich)
     for (let s of switchBoards){
       console.log(s.components)
       for(let c of s.components){
         console.log(c.parts)
       }
     }
-
     let newProjectData = {
       ProjectName: project_name,
-      // Description:
       createdBy: spoke_id,
       createdTo: hub_id,
       status: "open",
       switchBoardData: switchBoards,
     }
-    //console.log("creating new project...")
     await Projects.create(newProjectData);
-    //console.log("project creation completed")
-
     utils.commonResponse(res, 200, "success", {});
-
-
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
 
 exports.getOpenProjects = async (req, res) => {
+  // THIS FUNCTION WILL RETURN THE OPEN PROJECTS IN THE SYSTEM
   try {
     const { _id } = req.body;
     const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
@@ -184,6 +176,7 @@ exports.getOpenProjects = async (req, res) => {
 };
 
 exports.getProjectsDetails = async (req, res) => {
+  // THIS FUNCTION WILL GIVE THE DETAILS OF A SPECIFIC PROJECT INCLUDING THE ORDERED ITEMS AND ITS STATUS
   try {
     const { _id } = req.body;
 
@@ -251,16 +244,11 @@ exports.getProjectsDetails = async (req, res) => {
 exports.getComponentScanResult = async (req, res) => {
   try {
     const { componentID, serialNo } = req.body;
-
-    // Step 1: Retrieve component details
     const component = await Component.findById(componentID);
     if (!component) {
       return res.status(404).json({ message: "Component not found" });
     }
-
     const componentName = component.componentName;
-
-    // Step 2: Check component serial number validity
     const componentSerial = await ComponentSerial.findOne({
       componentID,
       "hubSerialNo.serialNos": serialNo,
@@ -339,14 +327,11 @@ exports.getComponentScanResult = async (req, res) => {
 
 exports.getincrementFixedQuantity = async (req, res) => {
   const { projectID, switchBoard, reference } = req.body;
-
-  // Validate input
   if (!projectID || !switchBoard || !reference) {
     return res
       .status(400)
       .json({ error: "project_id, switchBoard, and reference are required" });
   }
-
   try {
     const result = await Project.updateOne(
       {
@@ -379,9 +364,9 @@ exports.getincrementFixedQuantity = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-//spoke
 
 exports.getAllSpokeProjects = async (req, res) => {
+  // THIS FUNCTION WILL GIVE THE PROJECTS THAT ARE ASSIGNED BY A SPECIFIC SPOKE
   try {
     const { spokeId } = req.body;
 
@@ -401,7 +386,6 @@ exports.getAllSpokeProjects = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
-//spoke details
 
 exports.getSpokeProjectsDetails = async (req, res) => {
   try {
@@ -469,31 +453,26 @@ exports.getSpokeProjectsDetails = async (req, res) => {
 };
 
 exports.shipProject = async (req, res) => {
+  // THIS FUNCTION WILL CHANGE THE STATUS FOR THE PROJECT AS SHIPPED
   try {
     const { projectId } = req.body;
-
-   
     const projectComponents = await Project.aggregate([
       {
         $match: {
           _id: new mongoose.Types.ObjectId(projectId)
-        } // Match the project ID
+        } 
       },
       {
-        $unwind: "$switchBoardData" // Unwind switchBoardData
+        $unwind: "$switchBoardData" 
       },
       {
-        $unwind: "$switchBoardData.components" // Unwind components within switchBoardData
+        $unwind: "$switchBoardData.components" 
       },
       {
-        $unwind: "$switchBoardData.components.parts" // Unwind parts within components
+        $unwind: "$switchBoardData.components.parts" 
       },
       {
         $project:
-          /**
-           * specifications: The fields to
-           *   include or exclude.
-           */
           {
             parts:
               "$switchBoardData.components.parts",
@@ -621,16 +600,14 @@ exports.shipProject = async (req, res) => {
   }
 };
 
-
 exports.getAllPartsInProject = async (req, res)=> {
+  // THIS FUNCTION WILL REGURN THE PARTS INSIDE A SPECIFIC PROJECT
   let {projectId} = req.body
-
   if (!projectId){
     return utils.commonResponse(
       res,
       404,
       "Required projectId",
-      // finalPartList
     );
   }
 
@@ -694,9 +671,6 @@ exports.getAllPartsInProject = async (req, res)=> {
 exports.getProjectDetailsWithParts = async (req, res) => {
   try {
     const projectId = req.body.projectId;
-
-    // //console.log(await Project.findOne({_id: new mongoose.Types.ObjectId(projectId)}))
-
     projectDetails = await Project.aggregate([
       {
         $match: {
@@ -739,43 +713,12 @@ exports.getProjectDetailsWithParts = async (req, res) => {
       {
         $unwind: "$switchBoardData.components",
       },
-      // {
-      //   $lookup: {
-      //     from: "commercialreferences",
-      //     localField: "switchBoardData.components.Reference",
-      //     foreignField: "referenceNumber",
-      //     as: "commercialReferenceData",
-      //   },
-      // },
       {
         $project: {
           "switchBoardData.components.Reference": 0,
           "switchBoardData.components.Description": 0,
-          // "switchBoardData.components.parts": 1,
-          // "switchBoardData.components.Quantity": 0,
         },
       },
-      // {
-      //   $unwind: {
-      //     path: "$commercialReferenceData",
-      //     preserveNullAndEmptyArrays: true,
-      //   },
-      // },
-      // {
-      //   $addFields: {
-      //     "switchBoardData.components": {
-      //       $mergeObjects: [
-      //         "$switchBoardData.components",
-      //         {
-      //           referenceNumber: "$commercialReferenceData.referenceNumber",
-      //           description: "$commercialReferenceData.description",
-      //           parts: "$commercialReferenceData.parts",
-      //           productNumber: "$commercialReferenceData.productNumber",
-      //         },
-      //       ],
-      //     },
-      //   },
-      // },
       {
         $group: {
           _id: {

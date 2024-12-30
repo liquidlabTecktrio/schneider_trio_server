@@ -3,15 +3,14 @@ const componentSerialNo = require("../Models/componentSerialNo");
 const utils = require("../controllers/utils");
 const Box = require("../Models/box");
 const Parts = require("../Models/Parts");
-
 const mongoose = require("mongoose");
 const CommercialReference = require("../Models/CommercialReference");
+
+
 exports.createComponent = async (req, res) => {
   try {
     const { componentName, compShortName, compPartNo, compDescription } =
       req.body;
-
-    //   //console.log(req.body)
     itemCheck = await Components.findOne({ compPartNo: compPartNo });
 
     if (itemCheck) {
@@ -68,7 +67,6 @@ exports.getAllComponents = async (req, res) => {
   }
 };
 
-
 exports.getAllCommertialReferences = async (req, res) => {
   try {
     const allComponents = await CommercialReference.find();
@@ -83,7 +81,6 @@ exports.getAllCommertialReferences = async (req, res) => {
   }
 };
 
-
 exports.getAllParts = async (req, res) => {
   try {
     const allComponents = await Parts.find().select('-parentIds -quantity');
@@ -97,7 +94,6 @@ exports.getAllParts = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
-
 
 exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
   try {

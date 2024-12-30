@@ -8,12 +8,22 @@ const utils = require("../controllers/utils");
 const shortid = require("shortid");
 const { default: mongoose } = require("mongoose");
 
+function calculatePackets(requiredQuantity, maxPerPacket) {
+  const packets = [];
+  let remainingQuantity = requiredQuantity;
+  while (remainingQuantity > 0) {
+      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
+      packets.push(quantityInPacket);
+      remainingQuantity -= quantityInPacket;
+  }
+  return packets;
+}
+
 exports.generateComponentSerialNo = async (req, res) => {
+  // THIS WILL GENERATE PARTS SERIAL NUMBERS FOR A CERTAIN QUANTITY
   try {
     const { hubID, componentID, qnty } = req.body;
-
     const arr1 = new Array(qnty).fill(0).map((x) => shortid.generate(6));
-
     componentSerialNo
       .findOneAndUpdate(
         {
@@ -60,29 +70,10 @@ exports.generateComponentSerialNo = async (req, res) => {
   }
 };
 
-
-function calculatePackets(requiredQuantity, maxPerPacket) {
-  const packets = [];
-  let remainingQuantity = requiredQuantity;
-
-  while (remainingQuantity > 0) {
-      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
-      packets.push(quantityInPacket);
-      remainingQuantity -= quantityInPacket;
-  }
-
-  return packets;
-}
-
-
 exports.generatePartSerialNo = async (req, res) => {
-
-  console.log('generate', req.body)
+  // THIS FUNCTION WILL GENERATE SERIAL NUMBER FOR PARTS
   try {
     const { hubID, partID, partNumber, qnty } = req.body;
-
-
-
     if (!qnty || typeof qnty !== "number") {
       return utils.commonResponse(
         res,
@@ -90,60 +81,34 @@ exports.generatePartSerialNo = async (req, res) => {
         "Quantity (qnty) is required and must be a number"
       );
     }
-
     let cpart = await parts.findOne({partNumber})
     let serialNumbers 
     let PiecePerPacket = []
     let grouped = false
-
-    console.log(cpart)
     if (cpart.grouped) {
-
-      // Example usage
       const requiredQuantity = cpart.quantity;
       const maxPerPacket = cpart.PiecePerPacket;
-
-      // const requiredQuantity = 100;
-      // const maxPerPacket = 50;
-      
       const packets = calculatePackets(requiredQuantity, maxPerPacket);
-      // console.log(`Total packets needed: ${packets.length}`);
-      // console.log(`Quantity in each packet: ${packets}`);
-
       PiecePerPacket = packets
       grouped = true
-
       serialNumbers = Array.from({ length: packets.length }, () =>
       shortid.generate(6)
     );
-
     }
     else {
-      // Generate serial numbers based on quantity
       serialNumbers = Array.from({ length: qnty }, () =>
         shortid.generate(6)
       );
     }
-
-
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
-
-    // Determine search criteria based on availability of partID or partNumber
     const searchCriteria = partID ? { partId: partID } : { partNumber: partNumber };
-
-    // Find the partSerialNo document based on search criteria
     const partSerialRecord = await partSerialNo.findOne(searchCriteria);
-
     if (partSerialRecord) {
-      // Check if hubSerialNo array contains the specified hubID
       const hubEntry = partSerialRecord.hubSerialNo.find(
         (entry) => entry.hubId === hubIDasObject
       );
       console.log(hubIDasObject, partID, hubEntry)
-
       if (hubEntry) {
-        // Update existing hubSerialNo entry
-
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
@@ -155,7 +120,6 @@ exports.generatePartSerialNo = async (req, res) => {
           }
         );
       } else {
-        // Add a new hubSerialNo entry if hubID doesn't exist
         await partSerialNo.updateOne(
           searchCriteria,
           {
@@ -170,7 +134,6 @@ exports.generatePartSerialNo = async (req, res) => {
         );
       }
     } else {
-      // If no document exists, create a new one with upsert
       await partSerialNo.updateOne(
         searchCriteria,
         {
@@ -186,12 +149,9 @@ exports.generatePartSerialNo = async (req, res) => {
         { upsert: true }
       );
     }
-
-    // Fetch part details for response
     const part = partID
       ? await parts.findById(partID)
       : await parts.findOne({ partNumber: partNumber });
-
     return utils.commonResponse(res, 200, "Part serial number generated", {
       hubID: hubIDasObject,
       partID: part ? part._id : null,
@@ -213,9 +173,7 @@ exports.generatePartSerialNo = async (req, res) => {
 exports.generatePanelSerialNo = async (req, res) => {
   try {
     const { hubID, panelID, qnty } = req.body;
-
     const arr1 = new Array(qnty).fill(0).map((x) => shortid.generate(6));
-
     panelSerialNo
       .findOneAndUpdate(
         {
