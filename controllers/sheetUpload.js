@@ -248,7 +248,7 @@ exports.recoverCR = async (req, res) => {
 
   let {_id} = req.body
 
-  const CR = await CommercialReference.findOne({ '_id': mongoose.Types.ObjectId(_id)})
+  const CR = await CommercialReference.findOne({_id: mongoose.Types.ObjectId(_id)})
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
 
   if (CR) {
