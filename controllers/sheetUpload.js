@@ -255,7 +255,7 @@ exports.recoverCR = async (req, res) => {
     // Iterate through the partNumbers sequentially
     
   
-    await CommercialReference.updateOne({ 'referenceNumber': referenceNumber},{
+    await CommercialReference.updateOne({_id:new mongoose.Types.ObjectId(_id)},{
       isActive:true
     }
     ).then((data) => {
