@@ -182,9 +182,10 @@ exports.createCR = async (req, res) => {
           crNumber: newCR.referenceNumber,
         });
         await existingPart.save();
-      } else {
-        return utils.commonResponse(res, 409, "CR ID already added to part");
-      }
+      } 
+      // else {
+      //   return utils.commonResponse(res, 409, "CR ID already added to part");
+      // }
     }
     // newCR.partNumbers.foreach(async (partNumber, key) => {
     //   // add this cr_reference number in part in parts collection
