@@ -50,7 +50,7 @@ router.post("/deleteSpoke", spokeController.deleteSpoke);
 router.get("/getAllSpokes", spokeController.getAllSpokes);
 
 // router.get("/getAllComponents", componentController.getAllComponents);
-// router.get("/getAllCommertialReferences", componentController.getAllCommertialReferences);
+router.get("/getAllCommertialReferences", componentController.getAllCommertialReferences);
 
 // MANAGE PARTS
 router.post("/createPart", sheetController.createPart);
