@@ -157,7 +157,7 @@ exports.createCR = async (req, res) => {
 
 
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
-  if (ExistingCR) return utils.commonResponse(res, 409, "ReferenceNumber exist")
+  if (ExistingCR) ExistingCR.isActive = False;ExistingCR.save()
 
   if (!ExistingCR) {
     // Iterate through the partNumbers sequentially
