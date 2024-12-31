@@ -17,7 +17,7 @@ app.use(bodyParser.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors(["google.com", "domain"])); // Use cors middleware directly
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 function setupCORS(req, res, next) {

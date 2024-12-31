@@ -51,11 +51,12 @@ router.post(
   serialNoController.generateComponentSerialNo
 );
 
-// PREVIEW ROUTE
-router.post("/createNewOrderFromHub", ProjectController.createNewOrderFromHub);
+
 
 // ORDER RELATED REQUESTS
 router.post("/uploadCRExcelFromHub", upload.single("file"), sheetController.uploadCRExcelFromHub);
+router.post("/createNewOrderFromHub", ProjectController.createNewOrderFromHub);
+
 
 // SERIAL NUMBER REQUESTS
 router.post("/generatePartSerialNo", serialNoController.generatePartSerialNo);

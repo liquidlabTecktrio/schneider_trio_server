@@ -19,19 +19,6 @@ const options = {
                 description: "Production server",
             },
         ],
-        tags:[
-            {
-                name:"Authentication",
-                description:"This will handle the authentication api's"
-            }, {
-                name:"BOM Management",
-                description:"This will handle the BOM api's"
-            },
-            {
-                name:"default"
-            }
-
-        ]
     },
     apis: ["./swagger/*.js"], // Path to the API routes or documentation
 };
