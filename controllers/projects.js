@@ -33,6 +33,9 @@ exports.getAllProjects = async (req, res) => {
           createdBy: {
             $first: "$createdBy",
           },
+          createdBy: {
+            $first: "$createdTo",
+          },
           status: {
             $first: "$status",
           },
@@ -99,6 +102,7 @@ exports.createNewOrderFromHub = async (req, res) => {
       status: "open",
       switchBoardData: switchBoards,
     }
+    
     await Projects.create(newProjectData);
     utils.commonResponse(res, 200, "success", {});
   } catch (error) {
