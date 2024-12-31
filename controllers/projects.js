@@ -33,7 +33,7 @@ exports.getAllProjects = async (req, res) => {
           createdBy: {
             $first: "$createdBy",
           },
-          createdBy: {
+          createdTo: {
             $first: "$createdTo",
           },
           status: {
