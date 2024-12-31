@@ -5,6 +5,8 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require('path')
+const swaggerUi  = require('swagger-ui-express')
+const swaggerSpec  = require('./swaggerConfig')
 
 const webRoutes = require("./routes/web");
 const adminRoutes = require("./routes/admin");
@@ -15,6 +17,8 @@ app.use(bodyParser.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors(["google.com", "domain"])); // Use cors middleware directly
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 function setupCORS(req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
