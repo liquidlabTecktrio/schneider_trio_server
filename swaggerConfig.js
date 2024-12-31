@@ -10,6 +10,7 @@ const options = {
         },
         servers: [
             {
+                url: "https://sandbox.liquidlab.in",
                 url: "http://localhost:9090",
                 description: "Local development server",
             },
