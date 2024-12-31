@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/component/scanResult:
+ * /hub/componentScanResult:
  *   post:
  *     tags:
  *       - Parts
@@ -91,7 +91,7 @@
  */
 /**
  * @swagger
- * /api/part/create:
+ * /admin/createPart:
  *   post:
  *     tags:
  *       - Parts
@@ -176,7 +176,7 @@
  */
 /**
  * @swagger
- * /api/parts:
+ * /admin/getAllParts:
  *   get:
  *     tags:
  *       - Parts

@@ -255,6 +255,10 @@ exports.removeBoxFromProject = async (req, res) => {
       await Boxes.deleteOne({ _id: existingBox._id });
       return utils.commonResponse(res, 404, "Box Deleted from project successfully");
     }
+    else{
+      return utils.commonResponse(res, 404, "Box Serial Number Do Not Exist");
+
+    }
   } catch (error) {
     console.error("Error in addBoxToProject:", error);
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());

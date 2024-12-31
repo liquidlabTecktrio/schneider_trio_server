@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/admin/upload-cr:
+ * /admin/uploadCRFromAdmin:
  *   post:
  *     tags:
  *       - BOM Management
@@ -72,7 +72,7 @@
  */
 /**
  * @swagger
- * /api/admin/create-cr:
+ * /admin/createCR:
  *   post:
  *     tags:
  *       - BOM Management
@@ -156,7 +156,7 @@
  */
 /**
  * @swagger
- * /api/admin/delete-cr:
+ * /admin/deleteCR:
  *   post:
  *     tags:
  *       - BOM Management
@@ -219,7 +219,7 @@
  */
 /**
  * @swagger
- * /api/admin/recover-cr:
+ * /admin/recoverCR:
  *   post:
  *     tags:
  *       - BOM Management
@@ -281,3 +281,41 @@
  *                   example: "Error details"
  */
 
+/**
+ * @swagger
+ * /admin/getAllCommertialReferences:
+ *   get:
+ *     summary: "Retrieve all commercial references"
+ *     description: "This endpoint fetches all available commercial references from the database."
+ *     tags:
+ *       - BOM Management
+ *     responses:
+ *       200:
+ *         description: "All components fetched successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: "60d7259cdbd4e8f7c8b5c539"
+ *                   referenceName:
+ *                     type: string
+ *                     example: "Reference A"
+ *                   description:
+ *                     type: string
+ *                     example: "This is a sample commercial reference."
+ *       500:
+ *         description: "Unexpected server error"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unexpected server error"
+ */

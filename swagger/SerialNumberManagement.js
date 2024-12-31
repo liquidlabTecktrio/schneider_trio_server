@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/parts/generate-serial:
+ * /hub/generatePartSerialNo:
  *   post:
  *     tags:
  *       - Serial Number
@@ -85,7 +85,7 @@
  */
 /**
  * @swagger
- * /api/boxes/generate-serial:
+ * /hub/generateBoxSerialNo:
  *   post:
  *     tags:
  *       - Serial Number

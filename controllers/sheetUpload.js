@@ -213,7 +213,7 @@ exports.createCR = async (req, res) => {
   }
   let part_array = []
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
-  if (ExistingCR) ExistingCR.isActive = false;ExistingCR.save()
+  if (ExistingCR) ExistingCR.isActive = false;
     for (const partNumber of newCR.partNumbers) {
       const existingPart = await Parts.findOne({ partNumber });
       if (!existingPart) {
@@ -239,7 +239,7 @@ exports.createCR = async (req, res) => {
       quantity: 0
     }
     ).then((data) => {
-      return utils.commonResponse(res, 200, "success", {})
+      return utils.commonResponse(res, 200, "success")
     })
   }
 
@@ -253,7 +253,7 @@ exports.deleteCR = async (req, res) => {
       isActive:false
     }
     ).then((data) => {
-      return utils.commonResponse(res, 200, "success", {})
+      return utils.commonResponse(res, 200, "success")
     })
   }
 }

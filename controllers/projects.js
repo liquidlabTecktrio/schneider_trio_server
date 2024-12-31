@@ -9,8 +9,6 @@ const Projects = require("../Models/Projects");
 exports.getAllProjects = async (req, res) => {
   // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
   try {
-    const { _id } = req.body;
-    const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
     const projectIds = await Project.aggregate([
       {
         $unwind: {

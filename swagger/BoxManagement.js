@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/project/add-box:
+ * /hub/addBoxToProject:
  *   post:
  *     tags:
  *       - Box
@@ -100,7 +100,7 @@
  */
 /**
  * @swagger
- * /api/project/remove-box:
+ * /hub/removeBoxFromProject:
  *   post:
  *     tags:
  *       - Box
@@ -177,7 +177,7 @@
  */
 /**
  * @swagger
- * /api/project/add-components-to-box:
+ * /hub/addComponentsToBoxes:
  *   post:
  *     tags:
  *       - Box
@@ -281,7 +281,7 @@
  */
 /**
  * @swagger
- * /api/project/get-box-details:
+ * /hub/getBoxDetails:
  *   post:
  *     tags:
  *       - Box
@@ -389,7 +389,7 @@
 
 /**
  * @swagger
- * /api/box/updateStatus:
+ * /hub/updateBoxStatus:
  *   post:
  *     tags:
  *       - Box
@@ -467,7 +467,7 @@
  */
 /**
  * @swagger
- * /api/box/addPart:
+ * /hub/addPartsToBoxes:
  *   post:
  *     tags:
  *       - Box
@@ -565,7 +565,7 @@
  */
 /**
  * @swagger
- * /api/box/getAllParts:
+ * /hub/getAllPartsInAllBoxes:
  *   post:
  *     tags:
  *       - Box

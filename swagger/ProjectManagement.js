@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/project/ship:
+ * /hub/shipProject:
  *   post:
  *     tags:
  *       - Project
@@ -94,7 +94,7 @@
  */
 /**
  * @swagger
- * /api/hub/upload-cr-excel:
+ * /hub/uploadCRExcelFromHub:
  *   post:
  *     tags:
  *       - Project
@@ -225,7 +225,7 @@
  */
 /**
  * @swagger
- * /api/order/create:
+ * /hub/createNewOrderFromHub:
  *   post:
  *     tags:
  *       - Project
@@ -336,7 +336,7 @@
  */
 /**
  * @swagger
- * /api/projects/all:
+ * /hub/getAllProjects:
  *   post:
  *     tags:
  *       - Project
@@ -347,12 +347,6 @@
  *         name: body
  *         description: The project ID to fetch a specific project. If not provided, all projects are fetched.
  *         required: false
- *         schema:
- *           type: object
- *           properties:
- *             _id:
- *               type: string
- *               example: "60e6b4cfc0e3d759f8f11a9d"
  *     responses:
  *       200:
  *         description: Successfully fetched project(s).

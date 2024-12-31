@@ -40,23 +40,17 @@ if (!fs.existsSync('uploads')) {
 // Create a multer instance with storage configuration
 const upload = multer({ storage: storage });
 
-
 // AUTHENTICATION 
 router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
-
-
 router.post(
   "/generateComponentSerialNo",
   serialNoController.generateComponentSerialNo
 );
 
-
-
 // ORDER RELATED REQUESTS
 router.post("/uploadCRExcelFromHub", upload.single("file"), sheetController.uploadCRExcelFromHub);
 router.post("/createNewOrderFromHub", ProjectController.createNewOrderFromHub);
-
 
 // SERIAL NUMBER REQUESTS
 router.post("/generatePartSerialNo", serialNoController.generatePartSerialNo);
