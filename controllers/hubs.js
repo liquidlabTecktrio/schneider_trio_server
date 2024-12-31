@@ -1,6 +1,17 @@
 const { default: mongoose } = require("mongoose");
 const Hubs = require("../Models/Hubs");
 const utils = require("../controllers/utils");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const generateToken = async (hub_ID) => {
+    const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
+  
+    return token;
+  };
+
 
 exports.createHubs = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
@@ -56,7 +67,18 @@ exports.LoginToHubs = async (req, res) => {
         const { hubUsername, hubPassword } = req.body;
         const hub = await Hubs.findOne({ hubUsername: hubUsername, hubPassword: hubPassword });
         if (hub) {
-            utils.commonResponse(res, 200, "Login successfully", hub);
+            const token = await generateToken(hub._id);
+
+            let resdata = {
+                "hubName": hub.hubName,
+                "hubShortName": hub.hubShortName,
+                "hubUsername": hub.hubUsername,
+                "isHubActive": true,
+                "logo_ZPL": hub.logo_ZPL,
+                "token":token
+            }
+
+            utils.commonResponse(res, 200, "Login successfully", resdata);
         } else {
             utils.commonResponse(res, 401, "Invalid username or password");
         }

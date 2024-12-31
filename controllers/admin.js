@@ -29,6 +29,8 @@ exports.adminLogin = async (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
 
+  // console.log(username)
+
   const validation = await validateUserInput(username, password);
   if (validation) {
     return res.status(202).json({
@@ -68,13 +70,18 @@ exports.adminLogin = async (req, res, next) => {
 };
 
 exports.adminSignUp = async (req, res) => {
-  try {
-    let { username, level, password } = req.body;
+ 
+  try{
+    let username= req.body.username;
+    let level= req.body.level;
+    let password= req.body.password;
+    // console.log(body.username)
+
     const admin = await Admin.findOne({ username: username });
 
 
     if (!admin) {
-      level = parseInt(level.value);
+      level = parseInt(level);
       await bcrypt.hash(password, 10);
       const hashedPassword = await bcrypt.hash(password, 10);
       const newAdmin = {
@@ -82,17 +89,21 @@ exports.adminSignUp = async (req, res) => {
         level,
         password: hashedPassword,
       };
+      console.log(newAdmin);
+
       const AdminDb = await Admin.create(newAdmin);
-      //console.log(AdminDb);
       res
         .status(201)
         .json({ AdminDb: AdminDb, message: "Admin created successfully" });
     } else {
       res.status(200).json({ msg: "this user name is allredy existed" });
     }
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
   }
+  catch(error){
+    console.log(error)
+  }
+   
+
 };
 
 exports.getAllAdmin = async (req, res) => {

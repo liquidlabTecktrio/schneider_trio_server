@@ -334,3 +334,80 @@
  *                   type: string
  *                   example: "Unexpected server error"
  */
+/**
+ * @swagger
+ * /api/projects/all:
+ *   post:
+ *     tags:
+ *       - Project
+ *     summary: Fetch all available projects or a specific project based on ID.
+ *     description: This endpoint fetches all available projects in the tracking system. It also supports fetching a specific project by its ID if provided.
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: The project ID to fetch a specific project. If not provided, all projects are fetched.
+ *         required: false
+ *         schema:
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *               example: "60e6b4cfc0e3d759f8f11a9d"
+ *     responses:
+ *       200:
+ *         description: Successfully fetched project(s).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Project(s) fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60e6b4cfc0e3d759f8f11a9d"
+ *                       ProjectName:
+ *                         type: string
+ *                         example: "Project A"
+ *                       createdBy:
+ *                         type: string
+ *                         example: "60e6b4cfc0e3d759f8f11a9d"
+ *                       createdTo:
+ *                         type: string
+ *                         example: "2024-12-31"
+ *                       status:
+ *                         type: string
+ *                         example: "Active"
+ *                       totalComponents:
+ *                         type: integer
+ *                         example: 100
+ *                       spokeName:
+ *                         type: string
+ *                         example: "John Doe"
+ *       400:
+ *         description: Bad request, if required input is missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Bad request"
+ *       500:
+ *         description: Unexpected server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unexpected server error"
+ */

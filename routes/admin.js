@@ -37,6 +37,7 @@ const upload = multer({ storage: storage });
 
 // ADMIN ROUTES
 router.post("/adminLogin", adminController.adminLogin);
+router.post("/adminregister", adminController.adminSignUp);
 // router.post("/createComponent", componentController.createComponent);
 
 // MANAGE HUBS

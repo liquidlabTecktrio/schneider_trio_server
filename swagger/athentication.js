@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/admin/login:
+ * /admin/adminLogin:
  *   post:
  *     tags:
  *       - Authentication
@@ -79,7 +79,7 @@
  */
 /**
  * @swagger
- * /api/hubs/login:
+ * /hub/hublogin:
  *   post:
  *     tags:
  *       - Authentication
@@ -160,7 +160,7 @@
  */
 /**
  * @swagger
- * /api/hubs:
+ * /hub/hubregister:
  *   post:
  *     tags:
  *       - Authentication
@@ -254,4 +254,76 @@
  *                 data:
  *                   type: string
  *                   example: "Error details"
+ */
+/**
+ * @swagger
+ * /admin/adminregister:
+ *   post:
+ *     summary: "Create a new admin user"
+ *     description: "This API endpoint creates a new admin user by providing a username, level, and password."
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       description: "Admin details"
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "adminUser"
+ *               level:
+ *                 type: integer
+ *                 example: 1
+ *               password:
+ *                 type: string
+ *                 example: "adminPassword123"
+ *     responses:
+ *       201:
+ *         description: "Admin created successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 AdminDb:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60d7259cdbd4e8f7c8b5c539"
+ *                     username:
+ *                       type: string
+ *                       example: "adminUser"
+ *                     level:
+ *                       type: integer
+ *                       example: 1
+ *                     password:
+ *                       type: string
+ *                       example: "$2b$10$5Kq4TZf9....(hashed password)"
+ *                 message:
+ *                   type: string
+ *                   example: "Admin created successfully"
+ *       200:
+ *         description: "This username already exists"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                   example: "this user name is already existed"
+ *       500:
+ *         description: "Internal server error"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
