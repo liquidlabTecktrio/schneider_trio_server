@@ -18,16 +18,11 @@ const generateToken = async (hub_ID) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
         const { hubName, hubShortName, hubUsername, hubPassword , logo_ZPL } = req.body;
-        await Hubs.create({ hubName, hubShortName, logo_ZPL}).then(async (result) => {
-            // await HubUsers.create({ username:hubUsername, password:hubPassword, level:1, hub_id:result._id}).then(async(res)=>{
-            //     const allHubs = await Hubs.find();
-            //     // console.log(allHubs)
-            //     return utils.commonResponse(res, 200, "hub created successfully");
-            // })
-            return utils.commonResponse(res, 200, "hub created successfully");
-        }).catch((err) => {
-            return utils.commonResponse(res, 401, "unexpected server error", err.toString());
-        });
+        await Hubs.create({ hubName, hubShortName, logo_ZPL})
+        await HubUsers.create({ username:hubUsername, password:hubPassword, level:1, hub_id:result._id})
+        const allHubs = await Hubs.find();
+        return utils.commonResponse(res, 200, "hub created successfully",allHubs);
+            
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
