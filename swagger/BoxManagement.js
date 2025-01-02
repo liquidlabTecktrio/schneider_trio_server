@@ -650,7 +650,7 @@
  *     summary: Remove parts from boxes
  *     description: Removes a part with a specific serial number from a box if it exists.
  *     tags:
- *       - BoxManagement
+ *       - Box
  *     requestBody:
  *       required: true
  *       content:
