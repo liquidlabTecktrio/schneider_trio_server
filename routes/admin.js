@@ -10,6 +10,7 @@ const printerController = require("../controllers/printerController");
 const multer = require('multer');
 const fs = require("fs");
 const path = require("path");
+const verifyToken = require("../Middleware");
 
 // Set up the file storage configuration using multer
 const storage = multer.diskStorage({
@@ -41,21 +42,21 @@ router.post("/adminregister", adminController.adminSignUp);
 // router.post("/createComponent", componentController.createComponent);
 
 // MANAGE HUBS
-router.post("/createHub", hubController.createHubs);
-router.post("/deleteHub", hubController.deleteHub);
-router.get("/getAllHubs", hubController.getAllHubs);
+router.post("/createHub",verifyToken, hubController.createHubs);
+router.post("/deleteHub", verifyToken, hubController.deleteHub);
+router.get("/getAllHubs", verifyToken, hubController.getAllHubs);
 
 // MANAGE SPOKES
-router.post("/createSpoke", spokeController.createSpoke);
-router.post("/deleteSpoke", spokeController.deleteSpoke);
-router.get("/getAllSpokes", spokeController.getAllSpokes);
+router.post("/createSpoke",verifyToken, spokeController.createSpoke);
+router.post("/deleteSpoke",verifyToken, spokeController.deleteSpoke);
+router.get("/getAllSpokes",verifyToken, spokeController.getAllSpokes);
 
 // router.get("/getAllComponents", componentController.getAllComponents);
-router.get("/getAllCommertialReferences", componentController.getAllCommertialReferences);
+router.get("/getAllCommertialReferences",verifyToken, componentController.getAllCommertialReferences);
 
 // MANAGE PARTS
-router.post("/createPart", sheetController.createPart);
-router.get("/getAllParts", componentController.getAllParts);
+router.post("/createPart",verifyToken, sheetController.createPart);
+router.get("/getAllParts",verifyToken, componentController.getAllParts);
 
 // SWITCHBOARD
 // router.post("/createPanel", panelController.createPanel);
@@ -68,18 +69,18 @@ router.get("/getAllParts", componentController.getAllParts);
 // router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
 
 // PRINTER CONTROLS
-router.get("/GETPrinter", printerController.GETPrinter);
-router.post("/updatePrinter", printerController.updatePrinter);
-router.post("/createPrinter", printerController.createPrinter);
+router.get("/GETPrinter",verifyToken, printerController.GETPrinter);
+router.post("/updatePrinter",verifyToken, printerController.updatePrinter);
+router.post("/createPrinter",verifyToken, printerController.createPrinter);
 
 // BOM CONTROLS
-router.post("/uploadCR", sheetController.uploadBomGoogleSheet);
-router.post("/uploadCRFromAdmin", upload.single("file"), sheetController.uploadCRFromAdmin);
+router.post("/uploadCR", verifyToken,sheetController.uploadBomGoogleSheet);
+router.post("/uploadCRFromAdmin",verifyToken, upload.single("file"), sheetController.uploadCRFromAdmin);
 
 // MANAGE CR
-router.post("/createCR", sheetController.createCR);
-router.post("/deleteCR", sheetController.deleteCR);
-router.post("/recoverCR", sheetController.recoverCR);
+router.post("/createCR", verifyToken,sheetController.createCR);
+router.post("/deleteCR", verifyToken,sheetController.deleteCR);
+router.post("/recoverCR",verifyToken, sheetController.recoverCR);
 
 
 module.exports = router;
