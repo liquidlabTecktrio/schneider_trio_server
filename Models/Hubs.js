@@ -10,7 +10,7 @@ const HubUserSchema = new Schema(
       type: String,
       required: true,
     },
-    PhoneNumber:{
+    phonenumber:{
       type:String, 
       required: true,
     }

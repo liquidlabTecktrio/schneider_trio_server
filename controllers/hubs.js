@@ -42,6 +42,12 @@ exports.createHubUser = async (req, res) => {
             "All fields are required: username, password, phonenumber, hub_id"
             );
         }
+       let newUser  =  {
+        "username":username, 
+        "password":password,
+        "phonenumber":phonenumber,
+
+        }
         const result = await Hubs.findByIdAndUpdate(
             hub_id,
             {
