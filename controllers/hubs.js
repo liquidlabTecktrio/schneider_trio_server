@@ -22,7 +22,7 @@ const generateToken = async (hub_ID) => {
             await HubUsers.create({ username:hubUsername, password:hubPassword, level:1, hub_id:result._id}).then(async(res)=>{
                 const allHubs = await Hubs.find();
                 console.log(allHubs)
-                return utils.commonResponse(res, 200, "hub created successfully", allHubs);
+                return utils.commonResponse(res, 200, "hub created successfully");
             })
            
         }).catch((err) => {
