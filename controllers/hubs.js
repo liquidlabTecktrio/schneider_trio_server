@@ -3,6 +3,7 @@ const Hubs = require("../Models/Hubs");
 const utils = require("../controllers/utils");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const HubUsers = require("../Models/HubUsers");
 
 const generateToken = async (hub_ID) => {
     const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET, {
@@ -17,9 +18,12 @@ const generateToken = async (hub_ID) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
         const { hubName, hubShortName, hubUsername, hubPassword , logo_ZPL } = req.body;
-        await Hubs.create({ hubName, hubShortName, hubUsername, hubPassword, logo_ZPL}).then(async (result) => {
-            const allHubs = await Hubs.find();
-            utils.commonResponse(res, 200, "hub created successfully", allHubs);
+        await Hubs.create({ hubName, hubShortName, logo_ZPL}).then(async (result) => {
+            await HubUsers.create({ hubUsername, hubPassword, "level":1}).then(async(res)=>{
+                const allHubs = await Hubs.find();
+                utils.commonResponse(res, 200, "hub created successfully", allHubs);
+            })
+           
         }).catch((err) => {
             utils.commonResponse(res, 401, "unexpected server error", err.toString());
         });
@@ -46,15 +50,9 @@ exports.createHubUser = async (req, res) => {
         "username":username, 
         "password":password,
         "phonenumber":phonenumber,
-
+        "level":2,
         }
-        const result = await Hubs.findByIdAndUpdate(
-            hub_id,
-            {
-              $push: { HubUsers: newUser },
-            },
-            { new: true } // Returns the updated document
-          );
+        const result = await HubUsers.create(newUser)
        
         const allHubs = await Hubs.find();
         utils.commonResponse(res, 200, "hub user created successfully", allHubs);
@@ -129,7 +127,7 @@ exports.LoginToHubs = async (req, res) => {
     // THIS FUNCTION WILL HELP THE HUB TO GET THE AUTHENTICATION KEY FOR ENTERING THE PLATFORM
     try {
         const { hubUsername, hubPassword } = req.body;
-        const hub = await Hubs.findOne({ hubUsername: hubUsername, hubPassword: hubPassword });
+        const hub = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
         if (hub) {
             const token = await generateToken(hub._id);
 
@@ -140,6 +138,7 @@ exports.LoginToHubs = async (req, res) => {
                 "isHubActive": true,
                 "logo_ZPL": hub.logo_ZPL,
                 "token":token,
+                "level":hub.level,
                 "_id":hub._id,
             }
 
