@@ -22,7 +22,6 @@ const generateToken = async (hub_ID) => {
         await HubUsers.create({ username:hubUsername, password:hubPassword, level:1, hub_id:result._id})
         const allHubs = await Hubs.find();
         return utils.commonResponse(res, 200, "hub created successfully",allHubs);
-            
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
