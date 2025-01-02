@@ -132,7 +132,7 @@ exports.LoginToHubs = async (req, res) => {
                 "hubName": hub.hubName,
                 "hubShortName": hub.hubShortName,
                 "hubUsername": user.username,
-                "isHubActive": true,
+                "isHubActive": hub.isHubActive,
                 "logo_ZPL": hub.logo_ZPL,
                 "token":token,
                 "level":hub.level,
