@@ -32,8 +32,18 @@ const generateToken = async (hub_ID) => {
 exports.createHubUser = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
+        
         const { username, password, phonenumber, hub_id} = req.body;
-        let hub = Hubs.findById(hub_id)
+            // Validate required fields
+        if (!username || !password || !phonenumber || !hub_id) {
+            return utils.commonResponse(
+            res,
+            400,
+            "All fields are required: username, password, phonenumber, hub_id"
+            );
+        }
+        let hub = await Hubs.findById(hub_id)
+        console.log(hub)
         hub.HubUsers.push({username, password, phonenumber})
         await hub.save().then(async (result) => {
             const allHubs = await Hubs.find();
