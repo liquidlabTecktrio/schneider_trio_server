@@ -643,3 +643,90 @@
  *                   type: string
  *                   example: "Unexpected server error"
  */
+/**
+ * @swagger
+ * /remove-parts-from-boxes:
+ *   post:
+ *     summary: Remove parts from boxes
+ *     description: Removes a part with a specific serial number from a box if it exists.
+ *     tags:
+ *       - Parts Management
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - hubID
+ *               - partID
+ *               - boxSerialNo
+ *               - projectID
+ *               - partSerialNumber
+ *             properties:
+ *               hubID:
+ *                 type: string
+ *                 example: "64e7a8f8f0d1c123456789ab"
+ *               partID:
+ *                 type: string
+ *                 example: "64e7a8f8f0d1c123456789ac"
+ *               boxSerialNo:
+ *                 type: string
+ *                 example: "BOX12345"
+ *               projectID:
+ *                 type: string
+ *                 example: "64e7a8f8f0d1c123456789ad"
+ *               partSerialNumber:
+ *                 type: string
+ *                 example: "SN12345"
+ *     responses:
+ *       200:
+ *         description: Part removed from the box successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Part added to box successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     boxid:
+ *                       type: string
+ *                       example: "64e7a8f8f0d1c123456789ae"
+ *                     totalParts:
+ *                       type: integer
+ *                       example: 5
+ *       400:
+ *         description: Bad request due to invalid parameters or constraints
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid input parameters"
+ *       404:
+ *         description: Part, box, or hub not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Part ID not found"
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unexpected server error"
+ */
