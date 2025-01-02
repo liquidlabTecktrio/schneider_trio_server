@@ -51,6 +51,7 @@ exports.createHubUser = async (req, res) => {
         "password":password,
         "phonenumber":phonenumber,
         "level":2,
+        "hub_id":hub_id
         }
         const result = await HubUsers.create(newUser)
        
@@ -76,7 +77,7 @@ exports.getAllHubUser = async (req, res) => {
             "All fields are required: hub_id"
             );
         }
-        let hubUsers = await HubUsers.find()
+        let hubUsers = await HubUsers.find({hub_id})
         // console.log(hub)
         // hub.HubUsers.push({username, password, phonenumber})
         // await hub.save().then(async (result) => {

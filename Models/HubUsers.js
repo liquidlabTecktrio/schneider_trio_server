@@ -14,6 +14,10 @@ const HubUsers = new Schema(
     level: {
       type: Number,
       required: true,
+    },
+    hub_id:{
+        type:String,
+        required:true
     }
   },
   {
