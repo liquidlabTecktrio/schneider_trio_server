@@ -71,6 +71,7 @@ router.post("/shipProject",verifyToken, ProjectController.shipProject);
 router.post("/updateBoxStatus",verifyToken, BoxSerialNoController.updateBoxStatus);
 router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", ComponentController.getBoxDetailsBasedOnComponentScan);
 router.post("/addPartsToBoxes",verifyToken, BoxSerialNoController.addPartsToBox);
+router.post("/removePartsFromBoxes",verifyToken, BoxSerialNoController.removePartsFromBoxes);
 
 
 // PROJECT RELATED REQEUSTS

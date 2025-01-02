@@ -704,6 +704,116 @@ exports.addPartsToBox = async (req, res) => {
   }
 };
 
+exports.removePartsFromBoxes = async (req, res) => {
+  try {
+
+    console.log('remove part', req.body)
+    const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
+
+
+    let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
+    // console.log(currentpart.partNumber, "current part")
+    let currentpartNumber = currentpart.partNumber
+    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
+
+    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
+
+    if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
+      return utils.commonResponse(res, 400, "Invalid input parameters");
+    }
+
+    const [part, box, hub] = await Promise.all([
+      Parts.findById(partID),
+      Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
+      Hub.findById(hubID),
+    ]);
+
+    if (!part) return utils.commonResponse(res, 404, "Part ID not found");
+    if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
+    if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
+
+    const isSerialValid = await PartsSerialNo.exists({
+      partNumber: currentpartNumber,
+      hubSerialNo: {
+        $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
+      },
+    });
+    if (!isSerialValid) {
+      return utils.commonResponse(
+        res,
+        404,
+        "Part Serial Number not found for the provided Part ID and Hub ID"
+      );
+    }
+
+    const projectBoxes = await Boxes.find({ projectId: projectID });
+
+    // Check if the part exists in any project box
+    const existingPart = projectBoxes.flatMap(box => box.components).find(
+      comp => comp.componentID?.equals(partID) && comp.componentSerialNo.includes(partSerialNumber)
+    );
+
+    if (existingPart) {
+      return utils.commonResponse(
+        res,
+        400,
+        "Serial number already exists for this Part in the box"
+      );
+    }
+
+ // Check if the part exists in the box
+const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
+
+if (existingComponent) {
+  // Remove the serial number from the componentSerialNo array
+  const serialIndex = existingComponent.componentSerialNo.indexOf(partSerialNumber);
+  
+  if (serialIndex > -1) {
+    existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
+    existingComponent.quantity -= 1; // Decrease the quantity
+  }
+
+  // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
+  if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
+    box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
+  }
+}
+
+
+    // Check if the total quantity exceeds the allowed limit
+    const totalComponentsQuantity = await Boxes.aggregate([
+      { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
+      { $unwind: "$components" },
+      { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
+      { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
+    ]);
+
+    const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
+    const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
+    if (isExceed) {
+      return utils.commonResponse(
+        res,
+        201,
+        "The ordered quantity of this item has been added to the box."
+      );
+    }
+
+    // Save the box and respond
+    box.quantity += 1;
+    await box.save();
+
+    return utils.commonResponse(res, 200, "Part added to box successfully", {
+      boxid: box._id,
+      totalParts: box.quantity,
+    });
+  } catch (error) {
+    console.error("Error in addPartsToBox:", error);
+    return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+};
+
+
+
 exports.getAllPartsInAllBoxes = async (req, res) => {
   try {
     const projectId = req.body.projectId;
