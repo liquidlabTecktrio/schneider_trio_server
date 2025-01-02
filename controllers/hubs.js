@@ -19,7 +19,7 @@ const generateToken = async (hub_ID) => {
     try {
         const { hubName, hubShortName, hubUsername, hubPassword , logo_ZPL } = req.body;
         await Hubs.create({ hubName, hubShortName, logo_ZPL}).then(async (result) => {
-            await HubUsers.create({ hubUsername, hubPassword, "level":1}).then(async(res)=>{
+            await HubUsers.create({ username:hubUsername, password:hubPassword, level:1}).then(async(res)=>{
                 const allHubs = await Hubs.find();
                 utils.commonResponse(res, 200, "hub created successfully", allHubs);
             })
