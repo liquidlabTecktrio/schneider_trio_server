@@ -44,6 +44,7 @@ const upload = multer({ storage: storage });
 router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
 router.post("/createhubuser", hubs.createHubUser);
+router.post("/getallhubusers", hubs.getAllHubUser);
 router.post(
   "/generateComponentSerialNo",
   serialNoController.generateComponentSerialNo

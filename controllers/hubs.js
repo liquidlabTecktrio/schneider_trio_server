@@ -57,6 +57,34 @@ exports.createHubUser = async (req, res) => {
     }
 }
 
+exports.getAllHubUser = async (req, res) => {
+    // THIS FUNCTION WILL CREATE NEW HUB
+    try {
+        
+        const {hub_id} = req.body;
+            // Validate required fields
+        if (!hub_id) {
+            return utils.commonResponse(
+            res,
+            400,
+            "All fields are required: hub_id"
+            );
+        }
+        let hub = await Hubs.findById(hub_id)
+        // console.log(hub)
+        // hub.HubUsers.push({username, password, phonenumber})
+        // await hub.save().then(async (result) => {
+            // const allHubs = await Hubs.find();
+        utils.commonResponse(res, 200, "hub user created successfully", hub.HubUsers);
+        // }).catch((err) => {
+        //     utils.commonResponse(res, 401, "unexpected server error", err.toString());
+        // });
+    }
+    catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
+    }
+}
+
 exports.deleteHub = async (req, res) => {
     // THIS FUNCTION WILL DELETE EXISTNG HUB
     try {
