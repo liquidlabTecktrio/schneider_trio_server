@@ -75,7 +75,7 @@ exports.getAllHubUser = async (req, res) => {
         // hub.HubUsers.push({username, password, phonenumber})
         // await hub.save().then(async (result) => {
             // const allHubs = await Hubs.find();
-        utils.commonResponse(res, 200, "hub user created successfully", hub.HubUsers);
+        utils.commonResponse(res, 200, "hub users fetched successfully", hub.HubUsers);
         // }).catch((err) => {
         //     utils.commonResponse(res, 401, "unexpected server error", err.toString());
         // });
