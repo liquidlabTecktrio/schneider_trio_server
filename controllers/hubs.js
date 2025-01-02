@@ -153,28 +153,37 @@ exports.LoginToHubs = async (req, res) => {
     try {
         const { hubUsername, hubPassword } = req.body;
         const user = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
-        if(!user.isActive){
-           return utils.commonResponse(res, 200, "User Is not Active. Contact Hub Admin", resdata);
+        if(user){
+            if(!user.isActive){
+                return utils.commonResponse(res, 200, "User Is not Active. Contact Hub Admin", resdata);
+             }
+             const hub = await Hubs.findById(user.hub_id)
+             if (hub) {
+                 const token = await generateToken(hub._id);
+     
+                 let resdata = {
+                     "hubName": hub.hubName,
+                     "hubShortName": hub.hubShortName,
+                     "hubUsername": user.username,
+                     "isHubActive": hub.isHubActive,
+                     "logo_ZPL": hub.logo_ZPL,
+                     "token":token,
+                     "level":hub.level,
+                     "_id":hub._id,
+                 }
+     
+                 utils.commonResponse(res, 200, "Login successfully", resdata);
+             } else {
+                 utils.commonResponse(res, 401, "Something is Not Right");
+             }
         }
-        const hub = await Hubs.findById(user.hub_id)
-        if (hub) {
-            const token = await generateToken(hub._id);
-
-            let resdata = {
-                "hubName": hub.hubName,
-                "hubShortName": hub.hubShortName,
-                "hubUsername": user.username,
-                "isHubActive": hub.isHubActive,
-                "logo_ZPL": hub.logo_ZPL,
-                "token":token,
-                "level":hub.level,
-                "_id":hub._id,
-            }
-
-            utils.commonResponse(res, 200, "Login successfully", resdata);
-        } else {
-            utils.commonResponse(res, 401, "Invalid username or password");
+        else{
+      
+                utils.commonResponse(res, 401, "Invalid username or password");
+            
         }
+       
+
     } catch (error) {
         utils.commonResponse(res, 500, "Unexpected server error", error.toString());
     }
