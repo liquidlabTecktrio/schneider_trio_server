@@ -72,7 +72,7 @@ exports.getAllHubUser = async (req, res) => {
             "All fields are required: hub_id"
             );
         }
-        let hubUsers = await HubUsers.find({hub_id})
+        let hubUsers = await HubUsers.find({hub_id, level:2})
         // console.log(hub)
         // hub.HubUsers.push({username, password, phonenumber})
         // await hub.save().then(async (result) => {
