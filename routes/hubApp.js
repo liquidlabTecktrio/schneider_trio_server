@@ -45,6 +45,8 @@ router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
 router.post("/createhubuser",verifyToken, hubs.createHubUser);
 router.post("/getallhubusers",verifyToken, hubs.getAllHubUser);
+router.post("/activatehubhuser",verifyToken, hubs.activateHubUser);
+router.post("/deactivatehubhuser",verifyToken, hubs.deactivateHubUser);
 router.post(
   "/generateComponentSerialNo",verifyToken,
   serialNoController.generateComponentSerialNo

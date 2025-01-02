@@ -119,11 +119,43 @@ exports.getAllHubs = async (req, res) => {
     }
 }
 
+exports.activateHubUser = async (req, res) => {
+    // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
+    try {
+        const {user_id} = req.body
+        await HubUsers.updateOne({_id:user_id},{isActive:true});
+        let hubusers = await HubUsers.find()
+        utils.commonResponse(res, 200, "User Activated successfully", hubusers);
+
+    } catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
+
+    }
+}
+
+exports.deactivateHubUser = async (req, res) => {
+    // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
+    try {
+        const {user_id} = req.body
+        await HubUsers.updateOne({_id:user_id},{isActive:false});
+        let hubusers = await HubUsers.find()
+        utils.commonResponse(res, 200, "User Deactivated successfully", hubusers);
+
+    } catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
+
+    }
+}
+
+
 exports.LoginToHubs = async (req, res) => {
     // THIS FUNCTION WILL HELP THE HUB TO GET THE AUTHENTICATION KEY FOR ENTERING THE PLATFORM
     try {
         const { hubUsername, hubPassword } = req.body;
         const user = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
+        if(!user.isActive){
+           return utils.commonResponse(res, 200, "User Is not Active. Contact Hub Admin", resdata);
+        }
         const hub = await Hubs.findById(user.hub_id)
         if (hub) {
             const token = await generateToken(hub._id);
