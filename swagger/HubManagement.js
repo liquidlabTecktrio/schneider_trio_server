@@ -6,7 +6,7 @@
  *     summary: "Create a new hub user"
  *     description: "This endpoint creates a new user for a specified hub."
  *     tags:
- *       - Authentication
+ *       - HubManagement
  *     requestBody:
  *       required: true
  *       content:
