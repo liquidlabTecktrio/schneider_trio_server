@@ -9,10 +9,10 @@ const sheetController = require("../controllers/sheetUpload");
 const hubs = require("../controllers/hubs");
 const fs = require("fs");
 const path = require("path");
-const verifyToken = require("./Middleware");
 // router.post("/printlabel", printLabel.printLabelUsingIP);
 
 const multer = require('multer');
+const verifyToken = require("../Middleware");
 
 // Set up the file storage configuration using multer
 const storage = multer.diskStorage({
