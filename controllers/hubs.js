@@ -123,14 +123,15 @@ exports.LoginToHubs = async (req, res) => {
     // THIS FUNCTION WILL HELP THE HUB TO GET THE AUTHENTICATION KEY FOR ENTERING THE PLATFORM
     try {
         const { hubUsername, hubPassword } = req.body;
-        const hub = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
+        const user = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
+        const hub = await Hubs.findById(user.hub_id)
         if (hub) {
             const token = await generateToken(hub._id);
 
             let resdata = {
                 "hubName": hub.hubName,
                 "hubShortName": hub.hubShortName,
-                "hubUsername": hub.hubUsername,
+                "hubUsername": user.username,
                 "isHubActive": true,
                 "logo_ZPL": hub.logo_ZPL,
                 "token":token,
