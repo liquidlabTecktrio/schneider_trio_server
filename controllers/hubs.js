@@ -43,7 +43,7 @@ exports.createHubUser = async (req, res) => {
             );
         }
         const result = await Hubs.findByIdAndUpdate(
-            hubId,
+            hub_id,
             {
               $push: { HubUsers: newUser },
             },
