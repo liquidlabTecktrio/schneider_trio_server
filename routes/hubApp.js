@@ -46,45 +46,45 @@ router.post("/hublogin", hubs.LoginToHubs);
 router.post("/createhubuser",verifyToken, hubs.createHubUser);
 router.post("/getallhubusers",verifyToken, hubs.getAllHubUser);
 router.post(
-  "/generateComponentSerialNo",
+  "/generateComponentSerialNo",verifyToken,
   serialNoController.generateComponentSerialNo
 );
 
 
 // ORDER RELATED REQUESTS
-router.post("/uploadCRExcelFromHub", upload.single("file"), sheetController.uploadCRExcelFromHub);
-router.post("/createNewOrderFromHub", ProjectController.createNewOrderFromHub);
+router.post("/uploadCRExcelFromHub",verifyToken, upload.single("file"), sheetController.uploadCRExcelFromHub);
+router.post("/createNewOrderFromHub",verifyToken, ProjectController.createNewOrderFromHub);
 
 // SERIAL NUMBER REQUESTS
-router.post("/generatePartSerialNo", serialNoController.generatePartSerialNo);
-router.post("/generatePanelSerialNo", serialNoController.generatePanelSerialNo);
-router.post("/generateBoxSerialNo", BoxSerialNoController.generateBoxSerialNo);
+router.post("/generatePartSerialNo",verifyToken, serialNoController.generatePartSerialNo);
+router.post("/generatePanelSerialNo",verifyToken, serialNoController.generatePanelSerialNo);
+router.post("/generateBoxSerialNo",verifyToken, BoxSerialNoController.generateBoxSerialNo);
 
 // BOX RELATED REQUESTS
-router.post("/addBoxToProject", BoxSerialNoController.addBoxToProject);
-router.post("/removeBoxFromProject", BoxSerialNoController.removeBoxFromProject);
-router.post("/addComponentsToBoxes", BoxSerialNoController.addComponentsToBox);
-router.post("/getBoxDetails", BoxSerialNoController.getBoxDetails);
-router.post("/shipProject", ProjectController.shipProject);
-router.post("/updateBoxStatus", BoxSerialNoController.updateBoxStatus);
-router.post("/getAllPartsInAllBoxes", BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", ComponentController.getBoxDetailsBasedOnComponentScan);
-router.post("/addPartsToBoxes", BoxSerialNoController.addPartsToBox);
+router.post("/addBoxToProject",verifyToken, BoxSerialNoController.addBoxToProject);
+router.post("/removeBoxFromProject",verifyToken, BoxSerialNoController.removeBoxFromProject);
+router.post("/addComponentsToBoxes",verifyToken, BoxSerialNoController.addComponentsToBox);
+router.post("/getBoxDetails",verifyToken, BoxSerialNoController.getBoxDetails);
+router.post("/shipProject",verifyToken, ProjectController.shipProject);
+router.post("/updateBoxStatus",verifyToken, BoxSerialNoController.updateBoxStatus);
+router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", ComponentController.getBoxDetailsBasedOnComponentScan);
+router.post("/addPartsToBoxes",verifyToken, BoxSerialNoController.addPartsToBox);
 
 
 // PROJECT RELATED REQEUSTS
-router.post("/getAllProjects", ProjectController.getAllProjects);
-router.post("/getOpenProjects", ProjectController.getOpenProjects);
-router.post("/getProjectDetailsWithParts", ProjectController.getProjectDetailsWithParts);
-router.post("/getProjectsDetails", ProjectController.getProjectsDetails);
-router.post("/getAllPartsInProject", ProjectController.getAllPartsInProject);
+router.post("/getAllProjects",verifyToken, ProjectController.getAllProjects);
+router.post("/getOpenProjects",verifyToken, ProjectController.getOpenProjects);
+router.post("/getProjectDetailsWithParts",verifyToken, ProjectController.getProjectDetailsWithParts);
+router.post("/getProjectsDetails",verifyToken, ProjectController.getProjectsDetails);
+router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsInProject);
 
 // PARTS RELATED REQUESTS
-router.post("/componentScanResult", ProjectController.getComponentScanResult);
-router.post("/incrementFixedQuantity", ProjectController.getincrementFixedQuantity);
+router.post("/componentScanResult",verifyToken, ProjectController.getComponentScanResult);
+router.post("/incrementFixedQuantity",verifyToken, ProjectController.getincrementFixedQuantity);
 
 // SPOKE RELATED REQUESTS
-router.post("/getAllSpokeProjects", ProjectController.getAllSpokeProjects);
-router.post("/getSpokeProjectsDetails", ProjectController.getSpokeProjectsDetails);
+router.post("/getAllSpokeProjects",verifyToken, ProjectController.getAllSpokeProjects);
+router.post("/getSpokeProjectsDetails",verifyToken, ProjectController.getSpokeProjectsDetails);
 
 
 
