@@ -645,12 +645,12 @@
  */
 /**
  * @swagger
- * /remove-parts-from-boxes:
+ * /hub/removePartsFromBoxes:
  *   post:
  *     summary: Remove parts from boxes
  *     description: Removes a part with a specific serial number from a box if it exists.
  *     tags:
- *       - Parts Management
+ *       - BoxManagement
  *     requestBody:
  *       required: true
  *       content:
