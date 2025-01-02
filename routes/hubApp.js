@@ -9,7 +9,7 @@ const sheetController = require("../controllers/sheetUpload");
 const hubs = require("../controllers/hubs");
 const fs = require("fs");
 const path = require("path");
-
+const verifyToken = require("./Middleware");
 // router.post("/printlabel", printLabel.printLabelUsingIP);
 
 const multer = require('multer');
@@ -43,8 +43,8 @@ const upload = multer({ storage: storage });
 // AUTHENTICATION 
 router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
-router.post("/createhubuser", hubs.createHubUser);
-router.post("/getallhubusers", hubs.getAllHubUser);
+router.post("/createhubuser",verifyToken, hubs.createHubUser);
+router.post("/getallhubusers",verifyToken, hubs.getAllHubUser);
 router.post(
   "/generateComponentSerialNo",
   serialNoController.generateComponentSerialNo

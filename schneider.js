@@ -12,7 +12,7 @@ const webRoutes = require("./routes/web");
 const adminRoutes = require("./routes/admin");
 const hubRoutes = require("./routes/hubApp");
 const spokeRoutes = require("./routes/spokesApp");
-const verifyToken = require("./Middleware");
+
 
 app.use(bodyParser.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false }));
@@ -37,8 +37,11 @@ function setupCORS(req, res, next) {
 
 app.all("/*", setupCORS);
 // app api's
+
+app.use("/authentication", adminRoutes);
+
 app.use("/admin", adminRoutes);
-app.use("/hub",verifyToken, hubRoutes);
+app.use("/hub", hubRoutes);
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
 app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
 // Catch-all handler for SPA routing (React Router support)
