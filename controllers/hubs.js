@@ -131,7 +131,8 @@ exports.LoginToHubs = async (req, res) => {
                 "hubUsername": hub.hubUsername,
                 "isHubActive": true,
                 "logo_ZPL": hub.logo_ZPL,
-                "token":token
+                "token":token,
+                "_id":hub._id,
             }
 
             utils.commonResponse(res, 200, "Login successfully", resdata);
