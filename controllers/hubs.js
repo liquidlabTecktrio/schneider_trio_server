@@ -76,12 +76,12 @@ exports.getAllHubUser = async (req, res) => {
             "All fields are required: hub_id"
             );
         }
-        let hub = await Hubs.findById(hub_id)
+        let hubUsers = await HubUsers.find()
         // console.log(hub)
         // hub.HubUsers.push({username, password, phonenumber})
         // await hub.save().then(async (result) => {
             // const allHubs = await Hubs.find();
-        utils.commonResponse(res, 200, "hub users fetched successfully", hub.HubUsers);
+        utils.commonResponse(res, 200, "hub users fetched successfully", hubUsers);
         // }).catch((err) => {
         //     utils.commonResponse(res, 401, "unexpected server error", err.toString());
         // });
