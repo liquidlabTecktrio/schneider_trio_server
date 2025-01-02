@@ -24,7 +24,7 @@ const generateToken = async (hub_ID) => {
                 console.log(allHubs)
                 return utils.commonResponse(res, 200, "hub created successfully");
             })
-           
+            return utils.commonResponse(res, 200, "hub created successfully");
         }).catch((err) => {
             return utils.commonResponse(res, 401, "unexpected server error", err.toString());
         });
