@@ -38,8 +38,6 @@ function setupCORS(req, res, next) {
 app.all("/*", setupCORS);
 // app api's
 
-app.use("/authentication", adminRoutes);
-
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
