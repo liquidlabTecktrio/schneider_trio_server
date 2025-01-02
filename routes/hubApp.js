@@ -43,10 +43,12 @@ const upload = multer({ storage: storage });
 // AUTHENTICATION 
 router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
+router.post("/createhubuser", hubs.createHubUser);
 router.post(
   "/generateComponentSerialNo",
   serialNoController.generateComponentSerialNo
 );
+
 
 // ORDER RELATED REQUESTS
 router.post("/uploadCRExcelFromHub", upload.single("file"), sheetController.uploadCRExcelFromHub);
