@@ -775,7 +775,8 @@ if (existingPart) {
     box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
   }
 
-  await projectBoxes.updateOne({serialNo:boxSerialNo},{components:existingPart})
+  projectBoxes.components = existingPart
+  projectBoxes.save()
 }
 
 
