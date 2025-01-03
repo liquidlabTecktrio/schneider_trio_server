@@ -73,20 +73,16 @@ exports.adminSignUp = async (req, res) => {
  
   try{
     let username= req.body.username;
-    let level= req.body.level;
     let password= req.body.password;
-    // console.log(body.username)
 
     const admin = await Admin.findOne({ username: username });
 
 
     if (!admin) {
-      level = parseInt(level);
       await bcrypt.hash(password, 10);
       const hashedPassword = await bcrypt.hash(password, 10);
       const newAdmin = {
         username,
-        level,
         password: hashedPassword,
       };
       console.log(newAdmin);
@@ -101,6 +97,8 @@ exports.adminSignUp = async (req, res) => {
   }
   catch(error){
     console.log(error)
+    res.status(200).json({ msg: "Error at server" });
+
   }
    
 

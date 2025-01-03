@@ -9,70 +9,148 @@ const Projects = require("../Models/Projects");
 exports.getAllProjects = async (req, res) => {
   // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
   try {
-    const projectIds = await Project.aggregate([
-      {
-        $unwind: {
-          path: "$switchBoardData",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $unwind: {
-          path: "$switchBoardData.components",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          ProjectName: {
-            $first: "$ProjectName",
-          },
-          createdBy: {
-            $first: "$createdBy",
-          },
-          createdTo: {
-            $first: "$createdTo",
-          },
-          status: {
-            $first: "$status",
-          },
-          totalComponents: {
-            $sum: "$switchBoardData.components.Quantity",
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "spokes",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "spokeName",
-          pipeline: [
-            {
-              $project: {
-                spokeName: 1,
-                // Only include 'spokeName' field from 'spokes'
-                _id: 0, // Exclude '_id' from the result
-              },
-            },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          spokeName: {
-            $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
-          },
-        },
-      },
-    ]);
+    // const projectIds = await Project.aggregate([
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData.components",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: "$_id",
+    //       ProjectName: {
+    //         $first: "$ProjectName",
+    //       },
+    //       createdBy: {
+    //         $first: "$createdBy",
+    //       },
+    //       createdTo: {
+    //         $first: "$createdTo",
+    //       },
+    //       status: {
+    //         $first: "$status",
+    //       },
+    //       totalComponents: {
+    //         $sum: "$switchBoardData.components.Quantity",
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "spokes",
+    //       localField: "createdBy",
+    //       foreignField: "_id",
+    //       as: "spokeName",
+    //       pipeline: [
+    //         {
+    //           $project: {
+    //             spokeName: 1,
+    //             // Only include 'spokeName' field from 'spokes'
+    //             _id: 0, // Exclude '_id' from the result
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       spokeName: {
+    //         $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
+    //       },
+    //     },
+    //   },
+    // ]);
+
+    let projects = await Projects.find()
 
     utils.commonResponse(
       res,
       200,
       "Project(s) fetched successfully",
-      projectIds
+      projects
+    );
+  } catch (error) {
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+
+};
+exports.getAllProjectsInHub = async (req, res) => {
+  // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
+  try {
+    // const projectIds = await Project.aggregate([
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData.components",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: "$_id",
+    //       ProjectName: {
+    //         $first: "$ProjectName",
+    //       },
+    //       createdBy: {
+    //         $first: "$createdBy",
+    //       },
+    //       createdTo: {
+    //         $first: "$createdTo",
+    //       },
+    //       status: {
+    //         $first: "$status",
+    //       },
+    //       totalComponents: {
+    //         $sum: "$switchBoardData.components.Quantity",
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "spokes",
+    //       localField: "createdBy",
+    //       foreignField: "_id",
+    //       as: "spokeName",
+    //       pipeline: [
+    //         {
+    //           $project: {
+    //             spokeName: 1,
+    //             // Only include 'spokeName' field from 'spokes'
+    //             _id: 0, // Exclude '_id' from the result
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       spokeName: {
+    //         $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
+    //       },
+    //     },
+    //   },
+    // ]);
+
+    let {hub_id} = req.body
+    let projects = await Projects.find({createdTo:hub_id})
+
+    utils.commonResponse(
+      res,
+      200,
+      "Project(s) fetched successfully",
+      projects
     );
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());

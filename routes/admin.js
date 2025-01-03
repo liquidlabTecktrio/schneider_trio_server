@@ -4,6 +4,7 @@ const adminController = require("../controllers/admin");
 const componentController = require("../controllers/components");
 const hubController = require("../controllers/hubs");
 const spokeController = require("../controllers/spoke");
+const ProjectController = require("../controllers/projects");
 const panelController = require("../controllers/panels");
 const sheetController = require("../controllers/sheetUpload");
 const printerController = require("../controllers/printerController");
@@ -82,5 +83,7 @@ router.post("/createCR", verifyToken,sheetController.createCR);
 router.post("/deleteCR", verifyToken,sheetController.deleteCR);
 router.post("/recoverCR",verifyToken, sheetController.recoverCR);
 
+// MANAGE PROJECTS
+router.post("/getAllProjects", ProjectController.getAllProjects);
 
 module.exports = router;

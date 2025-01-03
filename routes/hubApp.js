@@ -75,7 +75,7 @@ router.post("/removePartsFromBoxes",verifyToken, BoxSerialNoController.removePar
 
 
 // PROJECT RELATED REQEUSTS
-router.post("/getAllProjects",verifyToken, ProjectController.getAllProjects);
+router.post("/getAllProjectsInHub",verifyToken, ProjectController.getAllProjectsInHub);
 router.post("/getOpenProjects",verifyToken, ProjectController.getOpenProjects);
 router.post("/getProjectDetailsWithParts",verifyToken, ProjectController.getProjectDetailsWithParts);
 router.post("/getProjectsDetails",verifyToken, ProjectController.getProjectsDetails);
