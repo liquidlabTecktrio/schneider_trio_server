@@ -772,8 +772,8 @@ exports.removePartsFromBoxes = async (req, res) => {
       // if (serialIndex > -1) {
       //   existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
       //   existingComponent.quantity -= 1; // Decrease the quantity
-        box.components = filteredList
-        
+      existingComponent.componentSerialNo = filteredList
+
       // }
 
       // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
