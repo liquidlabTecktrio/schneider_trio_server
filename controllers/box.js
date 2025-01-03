@@ -724,7 +724,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     const [part, box, hub] = await Promise.all([
       Parts.findById(partID),
-      Boxs.findOne({ serialNo: boxSerialNo, projectId: projectID }),
+      Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
       Hub.findById(hubID),
     ]);
 
