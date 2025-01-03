@@ -191,7 +191,7 @@ exports.getOpenProjects = async (req, res) => {
   try {
     const { _id } = req.body;
     const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
-    const projectIds = Projects.findById({createdTo:query})
+    const projectIds = Projects.find({createdTo:query})
     // const projectIds = await Project.aggregate([
     //   {
     //     $unwind: {
