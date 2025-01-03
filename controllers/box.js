@@ -713,8 +713,8 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
     // console.log(currentpart.partNumber, "current part")
-    let currentpartNumber = currentpart.partNumber
-    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
+    // let currentpartNumber = currentpart.partNumber
+    // let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
     // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
@@ -723,8 +723,8 @@ exports.removePartsFromBoxes = async (req, res) => {
     }
 
     const [part, box, hub] = await Promise.all([
-      Parts.findById(partID),
-      Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
+      eParts.findById(partID),
+      Boxs.findOne({ serialNo: boxSerialNo, projectId: projectID }),
       Hub.findById(hubID),
     ]);
 
@@ -756,8 +756,8 @@ exports.removePartsFromBoxes = async (req, res) => {
     if (existingPart) {
       return utils.commonResponse(
         res,
-        400,
-        "Serial number already exists for this Part in the box"
+        200,
+        "This part is exist in box"
       );
     }
 
@@ -780,29 +780,29 @@ if (existingComponent) {
 }
 
 
-    // Check if the total quantity exceeds the allowed limit
-    const totalComponentsQuantity = await Boxes.aggregate([
-      { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
-      { $unwind: "$components" },
-      { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
-      { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
-    ]);
+    // // Check if the total quantity exceeds the allowed limit
+    // const totalComponentsQuantity = await Boxes.aggregate([
+    //   { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
+    //   { $unwind: "$components" },
+    //   { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
+    //   { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
+    // ]);
 
-    const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
-    const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
-    if (isExceed) {
-      return utils.commonResponse(
-        res,
-        201,
-        "The ordered quantity of this item has been added to the box."
-      );
-    }
+    // const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
+    // const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
+    // if (isExceed) {
+    //   return utils.commonResponse(
+    //     res,
+    //     201,
+    //     "The ordered quantity of this item has been added to the box."
+    //   );
+    // }
 
     // Save the box and respond
     box.quantity += 1;
     await box.save();
 
-    return utils.commonResponse(res, 200, "Part added to box successfully", {
+    return utils.commonResponse(res, 200, "Part removed from the box successfully", {
       boxid: box._id,
       totalParts: box.quantity,
     });
