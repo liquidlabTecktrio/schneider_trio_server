@@ -43,7 +43,7 @@ router.post("/adminregister", adminController.adminSignUp);
 // router.post("/createComponent", componentController.createComponent);
 
 // MANAGE HUBS
-router.post("/createHub",verifyToken, hubController.createHubs);
+router.post("/createHub", hubController.createHubs);
 router.post("/deleteHub", verifyToken, hubController.deleteHub);
 router.get("/getAllHubs", verifyToken, hubController.getAllHubs);
 

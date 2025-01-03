@@ -17,6 +17,7 @@ const generateToken = async (hub_ID) => {
   exports.createHubs = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
+        console.log(req.body)
         const { hubName, hubShortName, hubUsername, hubPassword , logo_ZPL } = req.body;
         let result  = await Hubs.create({ hubName, hubShortName, logo_ZPL})
         await HubUsers.create({ username:hubUsername, password:hubPassword, level:1, hub_id:result._id})
