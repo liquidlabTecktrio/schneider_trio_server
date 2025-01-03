@@ -708,12 +708,12 @@ exports.removePartsFromBoxes = async (req, res) => {
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
 
-    let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
-    console.log(currentpart.partNumber, "current part")
-    let currentpartNumber = currentpart.partNumber
-    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
+    // let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
+    // console.log(currentpart?.partNumber, "current part")
+    // let currentpartNumber = currentpart.partNumber
+    // let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
-    console.log(currentpartNumber, hubIDasObject, partSerialNumber)
+    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
@@ -729,89 +729,55 @@ exports.removePartsFromBoxes = async (req, res) => {
     if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
 
-    const isSerialValid = await PartsSerialNo.exists({
-      partNumber: currentpartNumber,
-      hubSerialNo: {
-        $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
-      },
-    });
-    if (!isSerialValid) {
-      return utils.commonResponse(
-        res,
-        404,
-        "Part Serial Number not found for the provided Part ID and Hub ID"
-      );
-    }
-
-    // const projectBoxes = await Boxes.find({ projectId: projectID });
-
-    // Check if the part exists in any project box
-    // const existingPart = projectBoxes.flatMap(box => box.components).find(
-    //   comp => comp.componentID?.equals(part._id)
-    // );
-
-    // if (existingPart) {
+    // const isSerialValid = await PartsSerialNo.exists({
+    //   partNumber: currentpartNumber,
+    //   hubSerialNo: {
+    //     $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
+    //   },
+    // });
+    // if (!isSerialValid) {
     //   return utils.commonResponse(
     //     res,
-    //     200,
-    //     "This part is exist in box"
+    //     404,
+    //     "Part Serial Number not found for the provided Part ID and Hub ID"
     //   );
     // }
 
     // Check if the part exists in the box
-    const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
+    const existingComponent = box.components.find(comp => comp.componentID?.equals(partID))
 
-    console.log
+    console.log(existingComponent)
 
     if (existingComponent) {
       //   // Remove the serial number from the componentSerialNo array
-      const filteredList = existingComponent.componentSerialNo.filter((data)=>{
-          return data != partSerialNumber
+      const filteredList = existingComponent.componentSerialNo.filter((data) => {
+        return data != partSerialNumber
       });
 
       console.log(filteredList)
-
-      // if (serialIndex > -1) {
-      //   existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
       existingComponent.quantity -= 1; // Decrease the quantity
       existingComponent.componentSerialNo = filteredList
-
-      // }
-
       // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
-      // if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
-      //   box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
-      // }
+      if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
+        box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
+      }
+
+      box.quantity -= 1;
+      await box.save();
+
+      return utils.commonResponse(res, 200, "Part removed from the box successfully", {
+        boxid: box._id,
+        totalParts: box.quantity,
+      });
+    }
+
+    else{
+      return utils.commonResponse(res, 200, "Part do not exist Exist")
     }
 
 
 
-    // // Check if the total quantity exceeds the allowed limit
-    // const totalComponentsQuantity = await Boxes.aggregate([
-    //   { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
-    //   { $unwind: "$components" },
-    //   { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
-    //   { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
-    // ]);
 
-    // const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
-    // const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
-    // if (isExceed) {
-    //   return utils.commonResponse(
-    //     res,
-    //     201,
-    //     "The ordered quantity of this item has been added to the box."
-    //   );
-    // }
-
-    // Save the box and respond
-    box.quantity -= 1;
-    await box.save();
-
-    return utils.commonResponse(res, 200, "Part removed from the box successfully", {
-      boxid: box._id,
-      totalParts: box.quantity,
-    });
   } catch (error) {
     console.error("Error in addPartsToBox:", error);
     return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
