@@ -191,57 +191,58 @@ exports.getOpenProjects = async (req, res) => {
   try {
     const { _id } = req.body;
     const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
-    const projectIds = await Project.aggregate([
-      {
-        $unwind: {
-          path: "$switchBoardData",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $unwind: {
-          path: "$switchBoardData.components",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          ProjectName: { $first: "$ProjectName" },
-          createdBy: { $first: "$createdBy" },
-          status: { $first: "$status" },
-          totalComponents: { $sum: "$switchBoardData.components.Quantity" },
-        },
-      },
-      {
-        $match: {
-          status: "open", // Filter for projects where the status is "open"
-        },
-      },
-      {
-        $lookup: {
-          from: "spokes",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "spokeName",
-          pipeline: [
-            {
-              $project: {
-                spokeName: 1,
-                _id: 0, // Exclude '_id' from the result
-              },
-            },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          spokeName: {
-            $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
-          },
-        },
-      },
-    ]);
+    const projectIds = Projects.findById({createdTo:query})
+    // const projectIds = await Project.aggregate([
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$switchBoardData.components",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: "$_id",
+    //       ProjectName: { $first: "$ProjectName" },
+    //       createdBy: { $first: "$createdBy" },
+    //       status: { $first: "$status" },
+    //       totalComponents: { $sum: "$switchBoardData.components.Quantity" },
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       status: "open", // Filter for projects where the status is "open"
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "spokes",
+    //       localField: "createdBy",
+    //       foreignField: "_id",
+    //       as: "spokeName",
+    //       pipeline: [
+    //         {
+    //           $project: {
+    //             spokeName: 1,
+    //             _id: 0, // Exclude '_id' from the result
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       spokeName: {
+    //         $arrayElemAt: ["$spokeName.spokeName", 0], // Extract the first element from the array
+    //       },
+    //     },
+    //   },
+    // ]);
 
 
     utils.commonResponse(
