@@ -761,6 +761,8 @@ exports.removePartsFromBoxes = async (req, res) => {
     // Check if the part exists in the box
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
 
+    console.log
+
     if (existingComponent) {
       //   // Remove the serial number from the componentSerialNo array
       const filteredList = existingComponent.componentSerialNo.filter((data)=>{
@@ -771,7 +773,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
       // if (serialIndex > -1) {
       //   existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
-      //   existingComponent.quantity -= 1; // Decrease the quantity
+      existingComponent.quantity -= 1; // Decrease the quantity
       existingComponent.componentSerialNo = filteredList
 
       // }
