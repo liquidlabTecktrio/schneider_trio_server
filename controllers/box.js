@@ -763,7 +763,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     if (existingComponent) {
       //   // Remove the serial number from the componentSerialNo array
-      const filteredList = existingPart.componentSerialNo.filter((data)=>{
+      const filteredList = existingComponent.componentSerialNo.filter((data)=>{
           return data != partSerialNumber
       });
 
