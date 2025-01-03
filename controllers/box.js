@@ -718,7 +718,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
-    if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
+    if (!hubID || !partID || !boxSerialNo || !projectID ) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
 
