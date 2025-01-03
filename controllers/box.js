@@ -467,7 +467,7 @@ exports.getBoxDetails = async (req, res) => {
           serialNo: 1,
           projectId: 1,
           "components.componentID": "$components.componentID",
-          "components.serial": "$components.serial",
+          "components.componentSerialNo": "$components.componentSerialNo",
           "components.componentName": "$componentDetails.partNumber",
           "components.quantity": "$components.quantity",
           "components._id": "$components._id",
@@ -554,13 +554,10 @@ exports.getBoxDetails = async (req, res) => {
         },
       },
     ]);
-
-    //console.log("box: ", box);
     if (!box) {
       return utils.commonResponse(res, 404, "Box not found");
     } else {
     }
-    //console.log(box);
     utils.commonResponse(res, 200, "Box fetched successfully", box[0]);
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
