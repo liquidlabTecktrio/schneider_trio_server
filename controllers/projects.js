@@ -144,7 +144,7 @@ exports.getAllProjectsInHub = async (req, res) => {
     // ]);
 
     let {hub_id} = req.body
-    let projects = await Projects.find({createdTo:hub_id})
+    let projects = await Projects.find({createdTo:new mongoose.Types.ObjectId(hub_id)})
 
     utils.commonResponse(
       res,
@@ -189,9 +189,10 @@ exports.createNewOrderFromHub = async (req, res) => {
 exports.getOpenProjects = async (req, res) => {
   // THIS FUNCTION WILL RETURN THE OPEN PROJECTS IN THE SYSTEM
   try {
-    const { _id } = req.body;
-    const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
-    const projectIds = Projects.find({createdTo:query})
+    const { hub_id } = req.body;
+    // const query = _id ? { _id: new mongoose.Types.ObjectId(_id) } : {};
+
+    let projects = await Projects.find({createdTo:new mongoose.Types.ObjectId(hub_id)})
     // const projectIds = await Project.aggregate([
     //   {
     //     $unwind: {
@@ -249,7 +250,7 @@ exports.getOpenProjects = async (req, res) => {
       res,
       200,
       "Project(s) fetched successfully",
-      projectIds
+      projects
     );
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
