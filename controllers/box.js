@@ -750,7 +750,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     // Check if the part exists in any project box
     const existingPart = projectBoxes.flatMap(box => box.components).find(
-      comp => comp.componentID?.equals(partID) && comp.componentSerialNo.includes(partSerialNumber)
+      comp => comp.componentID?.equals(part._id)
     );
 
     if (existingPart) {
