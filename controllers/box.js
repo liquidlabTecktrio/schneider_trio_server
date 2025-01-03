@@ -498,7 +498,7 @@ exports.getBoxDetails = async (req, res) => {
           component: {
             $first: {
               componentID: "$components.componentID",
-              serial: "$components.serial",
+              componentSerialNo: "$components.componentSerialNo",
               componentName: "$components.componentName",
               compDescription: "$components.compDescription",
             },
