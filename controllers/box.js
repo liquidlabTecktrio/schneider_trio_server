@@ -763,15 +763,15 @@ exports.removePartsFromBoxes = async (req, res) => {
 
 if (existingPart) {
 //   // Remove the serial number from the componentSerialNo array
-  const serialIndex = existingComponent.componentSerialNo.indexOf(partSerialNumber);
+  const serialIndex = existingPart.componentSerialNo.indexOf(partSerialNumber);
   
   if (serialIndex > -1) {
-    existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
-    existingComponent.quantity -= 1; // Decrease the quantity
+    existingPart.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
+    existingPart.quantity -= 1; // Decrease the quantity
   }
 
   // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
-  if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
+  if (existingPart.quantity <= 0 || existingPart.componentSerialNo.length === 0) {
     box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
   }
 }
