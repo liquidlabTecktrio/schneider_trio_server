@@ -255,7 +255,7 @@ exports.removeBoxFromProject = async (req, res) => {
       await Boxes.deleteOne({ _id: existingBox._id });
       return utils.commonResponse(res, 404, "Box Deleted from project successfully");
     }
-    else{
+    else {
       return utils.commonResponse(res, 404, "Box Serial Number Do Not Exist");
 
     }
@@ -447,7 +447,7 @@ exports.getBoxDetails = async (req, res) => {
       {
         $unwind: "$components",
       },
-    
+
       {
         $lookup: {
           from: "parts",
@@ -715,7 +715,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
-    if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber ) {
+    if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
 
@@ -746,38 +746,25 @@ exports.removePartsFromBoxes = async (req, res) => {
     const projectBoxes = await Boxes.find({ projectId: projectID });
 
     // Check if the part exists in any project box
-    const existingPart = projectBoxes.flatMap(box => box.components).find(
+    const existingComponent = projectBoxes.flatMap(box => box.components).find(
       comp => comp.componentID?.equals(part._id)
     );
 
-    // if (existingPart) {
-    //   return utils.commonResponse(
-    //     res,
-    //     200,
-    //     "This part is exist in box"
-    //   );
-    // }
+    if (existingComponent) {
+      //   // Remove the serial number from the componentSerialNo array
+      const serialIndex = existingComponent.componentSerialNo.indexOf(partSerialNumber);
 
- // Check if the part exists in the box
-// const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
+      if (serialIndex > -1) {
+        existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
+        existingComponent.quantity -= 1; // Decrease the quantity
+      }
 
-if (existingPart) {
-//   // Remove the serial number from the componentSerialNo array
-  const serialIndex = existingPart.componentSerialNo.indexOf(partSerialNumber);
-  
-  if (serialIndex > -1) {
-    existingPart.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
-    existingPart.quantity -= 1; // Decrease the quantity
-  }
+      // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
+      if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
+        box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
+      }
 
-  // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
-  if (existingPart.quantity <= 0 || existingPart.componentSerialNo.length === 0) {
-    box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
-  }
-
-  projectBoxes.components = existingPart
-  projectBoxes.save()
-}
+    }
 
 
 
