@@ -523,7 +523,7 @@ exports.getBoxDetails = async (req, res) => {
           components: {
             $push: {
               componentID: "$component.componentID",
-              serial: "$component.serial",
+              componentSerialNo: "$component.componentSerialNo",
               componentName: "$component.componentName",
               compDescription: "$component.compDescription",
               quantity: "$totalQuantity",
@@ -711,14 +711,14 @@ exports.removePartsFromBoxes = async (req, res) => {
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
 
-    let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
+    // let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
     // console.log(currentpart.partNumber, "current part")
     // let currentpartNumber = currentpart.partNumber
     // let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
     // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
-    if (!hubID || !partID || !boxSerialNo || !projectID ) {
+    if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber ) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
 
@@ -753,19 +753,19 @@ exports.removePartsFromBoxes = async (req, res) => {
       comp => comp.componentID?.equals(part._id)
     );
 
-    if (existingPart) {
-      return utils.commonResponse(
-        res,
-        200,
-        "This part is exist in box"
-      );
-    }
+    // if (existingPart) {
+    //   return utils.commonResponse(
+    //     res,
+    //     200,
+    //     "This part is exist in box"
+    //   );
+    // }
 
  // Check if the part exists in the box
-const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
+// const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
 
-if (existingComponent) {
-  // Remove the serial number from the componentSerialNo array
+if (existingPart) {
+//   // Remove the serial number from the componentSerialNo array
   const serialIndex = existingComponent.componentSerialNo.indexOf(partSerialNumber);
   
   if (serialIndex > -1) {
