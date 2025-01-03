@@ -708,12 +708,12 @@ exports.removePartsFromBoxes = async (req, res) => {
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
 
 
-    // let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
-    // console.log(currentpart.partNumber, "current part")
-    // let currentpartNumber = currentpart.partNumber
-    // let hubIDasObject = new mongoose.Types.ObjectId(hubID)
+    let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
+    console.log(currentpart.partNumber, "current part")
+    let currentpartNumber = currentpart.partNumber
+    let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
-    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
+    console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber ) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
