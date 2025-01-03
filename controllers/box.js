@@ -729,19 +729,19 @@ exports.removePartsFromBoxes = async (req, res) => {
     if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
 
-    // const isSerialValid = await PartsSerialNo.exists({
-    //   partNumber: currentpartNumber,
-    //   hubSerialNo: {
-    //     $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
-    //   },
-    // });
-    // if (!isSerialValid) {
-    //   return utils.commonResponse(
-    //     res,
-    //     404,
-    //     "Part Serial Number not found for the provided Part ID and Hub ID"
-    //   );
-    // }
+    const isSerialValid = await PartsSerialNo.exists({
+      partNumber: currentpartNumber,
+      hubSerialNo: {
+        $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
+      },
+    });
+    if (!isSerialValid) {
+      return utils.commonResponse(
+        res,
+        404,
+        "Part Serial Number not found for the provided Part ID and Hub ID"
+      );
+    }
 
     const projectBoxes = await Boxes.find({ projectId: projectID });
 
@@ -796,7 +796,7 @@ if (existingPart) {
     // }
 
     // Save the box and respond
-    box.quantity += 1;
+    box.quantity -= 1;
     await box.save();
 
     return utils.commonResponse(res, 200, "Part removed from the box successfully", {
