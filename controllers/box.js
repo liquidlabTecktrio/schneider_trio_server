@@ -743,27 +743,42 @@ exports.removePartsFromBoxes = async (req, res) => {
       );
     }
 
-    const projectBoxes = await Boxes.find({ projectId: projectID });
+    // const projectBoxes = await Boxes.find({ projectId: projectID });
 
     // Check if the part exists in any project box
-    const existingComponent = projectBoxes.flatMap(box => box.components).find(
-      comp => comp.componentID?.equals(part._id)
-    );
+    // const existingPart = projectBoxes.flatMap(box => box.components).find(
+    //   comp => comp.componentID?.equals(part._id)
+    // );
+
+    // if (existingPart) {
+    //   return utils.commonResponse(
+    //     res,
+    //     200,
+    //     "This part is exist in box"
+    //   );
+    // }
+
+    // Check if the part exists in the box
+    const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
 
     if (existingComponent) {
       //   // Remove the serial number from the componentSerialNo array
-      const serialIndex = existingComponent.componentSerialNo.indexOf(partSerialNumber);
+      const filteredList = existingPart.componentSerialNo.filter((data)=>{
+          return data != partSerialNumber
+      });
 
-      if (serialIndex > -1) {
-        existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
-        existingComponent.quantity -= 1; // Decrease the quantity
-      }
+      console.log(filteredList)
+
+      // if (serialIndex > -1) {
+      //   existingComponent.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
+      //   existingComponent.quantity -= 1; // Decrease the quantity
+      //   // box.components = existingComponent
+      // }
 
       // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
-      if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
-        box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
-      }
-
+      // if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
+      //   box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
+      // }
     }
 
 
