@@ -768,14 +768,16 @@ if (existingPart) {
   if (serialIndex > -1) {
     existingPart.componentSerialNo.splice(serialIndex, 1); // Remove the serial number
     existingPart.quantity -= 1; // Decrease the quantity
-    existingPart.save()
   }
 
   // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
   if (existingPart.quantity <= 0 || existingPart.componentSerialNo.length === 0) {
     box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
   }
+
+  await projectBoxes.updateOne({serialNo:boxSerialNo},{components:existingPart})
 }
+
 
 
     // // Check if the total quantity exceeds the allowed limit
