@@ -47,6 +47,8 @@ router.post("/createhubuser",verifyToken, hubs.createHubUser);
 router.post("/getallhubusers",verifyToken, hubs.getAllHubUser);
 router.post("/activatehubhuser",verifyToken, hubs.activateHubUser);
 router.post("/deactivatehubhuser",verifyToken, hubs.deactivateHubUser);
+router.post("/deletehubuser",verifyToken, hubs.deletehubuser);
+router.post("/updatehubuser",verifyToken, hubs.updatehubuser);
 router.post(
   "/generateComponentSerialNo",verifyToken,
   serialNoController.generateComponentSerialNo

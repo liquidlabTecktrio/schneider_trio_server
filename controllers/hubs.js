@@ -170,6 +170,36 @@ exports.deactivateHubUser = async (req, res) => {
     }
 }
 
+exports.deletehubuser = async (req, res) => {
+    // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
+    try {
+        const { user_id } = req.body
+        await HubUsers.deleteOne({ _id: user_id });
+        let hubusers = await HubUsers.find()
+        utils.commonResponse(res, 200, "User Deleted successfully", hubusers);
+
+    } catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
+
+    }
+}
+
+exports.updatehubuser = async (req, res) => {
+    // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
+    try {
+        const { user_id , password} = req.body
+        await HubUsers.updateOne({ _id: user_id }, { password: password });
+        let hubusers = await HubUsers.find()
+        utils.commonResponse(res, 200, "User Deactivated successfully", hubusers);
+
+    } catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error", error.toString());
+
+    }
+}
+
+
+
 
 exports.LoginToHubs = async (req, res) => {
     // THIS FUNCTION WILL HELP THE HUB TO GET THE AUTHENTICATION KEY FOR ENTERING THE PLATFORM
