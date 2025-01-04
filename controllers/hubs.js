@@ -154,7 +154,7 @@ exports.LoginToHubs = async (req, res) => {
         const user = await HubUsers.findOne({ username: hubUsername, password: hubPassword });
         if(user){
             if(!user.isActive){
-                return utils.commonResponse(res, 200, "User Is not Active. Contact Hub Admin", resdata);
+                return utils.commonResponse(res, 200, "User Is not Active. Contact Hub Admin");
              }
              const hub = await Hubs.findById(user.hub_id)
              if (hub) {
