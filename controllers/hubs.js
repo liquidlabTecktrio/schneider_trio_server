@@ -6,9 +6,7 @@ const jwt = require("jsonwebtoken");
 const HubUsers = require("../Models/HubUsers");
 
 const generateToken = async (hub_ID) => {
-    const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
+    const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET);
   
     return token;
   };
