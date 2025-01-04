@@ -45,6 +45,7 @@ router.post("/adminregister", adminController.adminSignUp);
 // MANAGE HUBS
 router.post("/createHub", hubController.createHubs);
 router.post("/deleteHub", verifyToken, hubController.deleteHub);
+router.post("/updateHub", verifyToken, hubController.updateHub);
 router.get("/getAllHubs", verifyToken, hubController.getAllHubs);
 
 // MANAGE SPOKES

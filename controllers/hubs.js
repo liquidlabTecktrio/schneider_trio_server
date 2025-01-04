@@ -106,6 +106,27 @@ exports.deleteHub = async (req, res) => {
 
 }
 
+
+exports.updateHub = async (req, res) => {
+    // THIS FUNCTION WILL DELETE EXISTNG HUB
+    try {
+        let { hubID,logo_ZPL,isHubActive} = req.body;
+        if (!hubID) {
+            return utils.commonResponse(res, 400, "Missing hubID");
+        }
+        hubID = new mongoose.Types.ObjectId(hubID)
+        let hub = await Hubs.updateOne({ _id: hubID },{logo_ZPL, isHubActive});
+        if (hub) {
+            utils.commonResponse(res, 200, "Hub updated successfully");
+        } else {
+            utils.commonResponse(res, 404, "Hub not found or already updated");
+        }
+    } catch (err) {
+        utils.commonResponse(res, 500, "Unexpected server error", err.toString());
+    }
+
+}
+
 exports.getAllHubs = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
