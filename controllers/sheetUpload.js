@@ -243,7 +243,7 @@ exports.createCR = async (req, res) => {
     })
   }
 
-exports.deleteCR = async (req, res) => {
+exports.deleteCR= async (req, res) => {
   // THIS FUNCTION WILL DELETE CR FROM 
   let {referenceNumber} = req.body
   const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
