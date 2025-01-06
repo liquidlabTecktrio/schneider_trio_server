@@ -31,7 +31,7 @@ exports.LoginToSpoke = async (req, res) => {
         const { spokeUserName, spokePassword } = req.body;
         let spoke = await Spoke.findOne({spokeUserName, spokePassword})
         if(spoke){
-            const token = await generateToken(hub._id);
+            const token = await generateToken(spoke._id);
         utils.commonResponse(res, 200, "spoke login successfully",spoke, token);
 
         }
