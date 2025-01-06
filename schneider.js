@@ -40,6 +40,7 @@ app.all("/*", setupCORS);
 
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
+app.use("/spoke", spokeRoutes);
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
 app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
 // Catch-all handler for SPA routing (React Router support)

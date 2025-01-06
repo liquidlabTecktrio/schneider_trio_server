@@ -451,18 +451,9 @@ exports.getAllSpokeProjects = async (req, res) => {
   // THIS FUNCTION WILL GIVE THE PROJECTS THAT ARE ASSIGNED BY A SPECIFIC SPOKE
   try {
     const { spokeId } = req.body;
-
-    const query = spokeId ? { createdBy: spokeId } : {};
-
-    const projectIds = await Project.find(query, {
-      ProjectId: 1,
-      _id: 1,
-      ProjectName: 1,
-      status: 1,
-      ProjectDate: 1,
-      createdBy: 1,
-    });
-
+    let spokeID = mongoose.Types.ObjectId(spokeId)
+    const query = spokeId ? { createdBy: spokeID } : {};
+    const projectIds = await Project.find(query);
     utils.commonResponse(res, 200, "Projects fetched successfully", projectIds);
   } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());

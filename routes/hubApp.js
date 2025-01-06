@@ -41,7 +41,6 @@ if (!fs.existsSync('uploads')) {
 const upload = multer({ storage: storage });
 
 // AUTHENTICATION 
-router.post("/hubregister", hubs.createHubs);
 router.post("/hublogin", hubs.LoginToHubs);
 router.post("/createhubuser",verifyToken, hubs.createHubUser);
 router.post("/getallhubusers",verifyToken, hubs.getAllHubUser);
@@ -86,11 +85,6 @@ router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsIn
 // PARTS RELATED REQUESTS
 router.post("/componentScanResult",verifyToken, ProjectController.getComponentScanResult);
 router.post("/incrementFixedQuantity",verifyToken, ProjectController.getincrementFixedQuantity);
-
-// SPOKE RELATED REQUESTS
-router.post("/getAllSpokeProjects",verifyToken, ProjectController.getAllSpokeProjects);
-router.post("/getSpokeProjectsDetails",verifyToken, ProjectController.getSpokeProjectsDetails);
-
 
 
 module.exports = router;
