@@ -11,4 +11,6 @@ router.post("/spokelogin", SpokeController.LoginToSpoke);
 router.post("/getAllSpokeProjects", verifyToken, ProjectController.getAllSpokeProjects);
 router.post("/getSpokeProjectsDetails", verifyToken, ProjectController.getSpokeProjectsDetails);
 
+router.post("/getProjectDetailsWithParts",verifyToken, ProjectController.getProjectDetailsWithParts);
+
 module.exports = router;
