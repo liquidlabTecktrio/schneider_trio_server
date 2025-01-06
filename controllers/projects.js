@@ -451,7 +451,7 @@ exports.getAllSpokeProjects = async (req, res) => {
   // THIS FUNCTION WILL GIVE THE PROJECTS THAT ARE ASSIGNED BY A SPECIFIC SPOKE
   try {
     const { spokeId } = req.body;
-    let spokeID = mongoose.Types.ObjectId(spokeId)
+    let spokeID = new mongoose.Types.ObjectId(spokeId)
     const query = spokeId ? { createdBy: spokeID } : {};
     const projectIds = await Project.find(query);
     utils.commonResponse(res, 200, "Projects fetched successfully", projectIds);
