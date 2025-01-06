@@ -1,44 +1,20 @@
+// IMPORTING REQUERED PACKAGES
 const Admin = require("../Models/Admins");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// GENEREATE TOKEN FOR USER AUTHENTICATION
 const generateToken = async (admin_id) => {
   const token = await jwt.sign({ admin_id: admin_id }, process.env.JWT_SECRET, {
     expiresIn: "2h",
   });
-
   return token;
 };
 
-const validateUserInput = async (username, password) => {
-  if (
-    username == null ||
-    password == null ||
-    username == "" ||
-    password == "" ||
-    username == undefined ||
-    password == undefined
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
+// HANDLE ADMIN LOGIN REQUEST
 exports.adminLogin = async (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
-
-  // console.log(username)
-
-  const validation = await validateUserInput(username, password);
-  if (validation) {
-    return res.status(202).json({
-      status: 202,
-      message: "username and password should not be empty",
-    });
-  }
-
   const findAdmin = await Admin.findOne({ username: username });
   if (findAdmin) {
     const comparePassword = await bcrypt.compare(password, findAdmin.password);
@@ -48,9 +24,7 @@ exports.adminLogin = async (req, res, next) => {
         message: "username/password is incorrect!!!",
       });
     }
-
     const token = await generateToken(findAdmin._id);
-
     return res.status(200).json({
       status: 200,
       message: "login successfull",
@@ -69,15 +43,12 @@ exports.adminLogin = async (req, res, next) => {
   }
 };
 
+// HANDLE ADMIN CREATION
 exports.adminSignUp = async (req, res) => {
- 
-  try{
-    let username= req.body.username;
-    let password= req.body.password;
-
+  try {
+    let username = req.body.username;
+    let password = req.body.password;
     const admin = await Admin.findOne({ username: username });
-
-
     if (!admin) {
       await bcrypt.hash(password, 10);
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -86,7 +57,6 @@ exports.adminSignUp = async (req, res) => {
         password: hashedPassword,
       };
       console.log(newAdmin);
-
       const AdminDb = await Admin.create(newAdmin);
       res
         .status(201)
@@ -95,12 +65,11 @@ exports.adminSignUp = async (req, res) => {
       res.status(200).json({ msg: "this user name is allredy existed" });
     }
   }
-  catch(error){
+  catch (error) {
     console.log(error)
     res.status(200).json({ msg: "Error at server" });
-
   }
-   
+
 
 };
 
