@@ -49,16 +49,16 @@ router.post("/updateHub", verifyToken, hubController.updateHub);
 router.get("/getAllHubs", verifyToken, hubController.getAllHubs);
 
 // MANAGE SPOKES
-router.post("/createSpoke",verifyToken, spokeController.createSpoke);
-router.post("/deleteSpoke",verifyToken, spokeController.deleteSpoke);
-router.get("/getAllSpokes",verifyToken, spokeController.getAllSpokes);
+router.post("/createSpoke", verifyToken, spokeController.createSpoke);
+router.post("/deleteSpoke", verifyToken, spokeController.deleteSpoke);
+router.get("/getAllSpokes", verifyToken, spokeController.getAllSpokes);
 
 // router.get("/getAllComponents", componentController.getAllComponents);
-router.get("/getAllCommertialReferences",verifyToken, componentController.getAllCommertialReferences);
+router.get("/getAllCommertialReferences", verifyToken, componentController.getAllCommertialReferences);
 
 // MANAGE PARTS
-router.post("/createPart",verifyToken, sheetController.createPart);
-router.get("/getAllParts",verifyToken, componentController.getAllParts);
+router.post("/createPart", verifyToken, sheetController.createPart);
+router.get("/getAllParts", verifyToken, componentController.getAllParts);
 
 // SWITCHBOARD
 // router.post("/createPanel", panelController.createPanel);
@@ -71,18 +71,18 @@ router.get("/getAllParts",verifyToken, componentController.getAllParts);
 // router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
 
 // PRINTER CONTROLS
-router.get("/GETPrinter",verifyToken, printerController.GETPrinter);
-router.post("/updatePrinter",verifyToken, printerController.updatePrinter);
-router.post("/createPrinter",verifyToken, printerController.createPrinter);
+router.get("/GETPrinter", verifyToken, printerController.GETPrinter);
+router.post("/updatePrinter", verifyToken, printerController.updatePrinter);
+router.post("/createPrinter", verifyToken, printerController.createPrinter);
 
 // BOM CONTROLS
-router.post("/uploadCR", verifyToken,sheetController.uploadBomGoogleSheet);
-router.post("/uploadCRFromAdmin",verifyToken, upload.single("file"), sheetController.uploadCRFromAdmin);
+router.post("/uploadCR", verifyToken, sheetController.uploadBomGoogleSheet);
+router.post("/uploadCRFromAdmin", verifyToken, upload.single("file"), sheetController.uploadCRFromAdmin);
 
 // MANAGE CR
-router.post("/createCR", verifyToken,sheetController.createCR);
-router.post("/deleteCR", verifyToken,sheetController.deleteCR);
-router.post("/recoverCR",verifyToken, sheetController.recoverCR);
+router.post("/createCR", verifyToken, sheetController.createCR);
+router.post("/deleteCR", verifyToken, sheetController.deleteCR);
+router.post("/recoverCR", verifyToken, sheetController.recoverCR);
 
 // MANAGE PROJECTS
 router.post("/getAllProjects", ProjectController.getAllProjects);

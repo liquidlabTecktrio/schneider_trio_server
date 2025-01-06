@@ -3,9 +3,9 @@ const utils = require("../controllers/utils");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
 
-const generateToken = async (hub_ID) => {
-    const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET);
-
+const generateToken = async (spoke_ID) => {
+    console.log(spoke_ID)
+    const token = await jwt.sign({ spoke_ID: spoke_ID }, process.env.JWT_SECRET);
     return token;
 };
 
@@ -27,18 +27,20 @@ exports.createSpoke = async (req, res) => {
 
 
 exports.LoginToSpoke = async (req, res) => {
-    // THIS FUNCTION WILL CREATE NEW SPOKE IN THE SYSTEM
     try {
         const { spokeUserName, spokePassword } = req.body;
         let spoke = await Spoke.findOne({spokeUserName, spokePassword})
         if(spoke){
             const token = await generateToken(spoke._id);
-        utils.commonResponse(res, 200, "spoke login successfully",spoke, token);
-
+            console.log(generateToken)
+            let data = {
+                spoke,
+                token
+            }
+            utils.commonResponse(res, 200, "spoke login successfully",data);
         }
         else{
         utils.commonResponse(res, 200, "spoke not found");
-
         }
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error",error.toString());
