@@ -86,7 +86,7 @@ exports.generatePartSerialNo = async (req, res) => {
     let PiecePerPacket = []
     let grouped = false
     if (cpart.grouped) {
-      const requiredQuantity = cpart.quantity;
+      const requiredQuantity = qty;
       const maxPerPacket = cpart.PiecePerPacket;
       const packets = calculatePackets(requiredQuantity, maxPerPacket);
       PiecePerPacket = packets
