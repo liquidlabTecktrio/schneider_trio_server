@@ -8,11 +8,12 @@
 
 /* Jumbotron */
 .jumbotron {
-    background: url(https://tlauk.net/images/block/source/Home_Banner_-_New_Edited.jpg?t=1709130746);
+    background: url("https://www.rexel.co.uk/medias/sys_master/root/h7a/hac/8873706979358/Industry-Header.jpg");
     background-size: cover;
     height: 540px;
     position: relative;
     z-index: -1;
+    display: none;
 }
 
 .jumbotron::after {
@@ -147,6 +148,9 @@
 
 /* RESPONSIVE */
 @media (min-width: 992px) {
+    .jumbotron{
+        display: flex;
+    }
     .navbar {
         padding-top: 20px;
     }
