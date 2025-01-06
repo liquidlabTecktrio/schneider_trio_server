@@ -10,7 +10,7 @@ router.post("/spokelogin", SpokeController.LoginToSpoke);
 // SPOKE RELATED REQUESTS
 router.post("/getAllSpokeProjects", verifyToken, ProjectController.getAllSpokeProjects);
 router.post("/getSpokeProjectsDetails", verifyToken, ProjectController.getSpokeProjectsDetails);
-
+router.post("/getBoxDetails",verifyToken, BoxSerialNoController.getBoxDetails);
 router.post("/getProjectDetailsWithParts",verifyToken, ProjectController.getProjectDetailsWithParts);
 
 module.exports = router;
