@@ -1,5 +1,6 @@
 const Spoke = require("../Models/Spoke");
 const utils = require("../controllers/utils");
+const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
 
 const generateToken = async (hub_ID) => {
