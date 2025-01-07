@@ -74,11 +74,11 @@ exports.generatePartSerialNo = async (req, res) => {
   // THIS FUNCTION WILL GENERATE SERIAL NUMBER FOR PARTS
   try {
     const { hubID, partID, partNumber, qnty } = req.body;
-    if (!qnty || typeof qnty !== "number") {
+    if (!qnty || typeof qnty !== "number" || !hubID || partNumber) {
       return utils.commonResponse(
         res,
         400,
-        "Quantity (qnty) is required and must be a number"
+        "Required Quantity (qnty) , hubID, partNumber"
       );
     }
     let cpart = await parts.findOne({partNumber})
