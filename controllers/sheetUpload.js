@@ -213,10 +213,13 @@ exports.createCR = async (req, res) => {
   }
   let part_array = []
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
+
   if (ExistingCR) {
+    console.log('makeing the cr as false')
     ExistingCR.isActive = false;
     ExistingCR.save()
   }
+
   for (const partNumber of newCR.partNumbers) {
     const existingPart = await Parts.findOne({ partNumber });
     if (!existingPart) {
