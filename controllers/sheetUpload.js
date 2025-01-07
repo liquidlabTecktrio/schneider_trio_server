@@ -213,44 +213,47 @@ exports.createCR = async (req, res) => {
   }
   let part_array = []
   const ExistingCR = await CommercialReference.findOne({ 'referenceNumber': newCR.referenceNumber })
-  if (ExistingCR) ExistingCR.isActive = false;
-    for (const partNumber of newCR.partNumbers) {
-      const existingPart = await Parts.findOne({ partNumber });
-      if (!existingPart) {
-        return utils.commonResponse(res, 404, "Part does not exist, add part first");
-      }
-      part_array.push(existingPart)
-      const alreadyLinked = existingPart.parentIds.some(
-        (parent) => parent.crNumber === newCR.referenceNumber
-      );
-      if (!alreadyLinked) {
-        existingPart.parentIds.push({
-          productNumber: "",
-          crNumber: newCR.referenceNumber,
-        });
-        await existingPart.save();
-      } 
-    }
-    CommercialReference.create({
-      referenceNumber: newCR.referenceNumber,
-      description: newCR.description,
-      productId: newCR.productNumber,
-      parts: part_array,
-      quantity: 0
-    }
-    ).then((data) => {
-      return utils.commonResponse(res, 200, "success")
-    })
+  if (ExistingCR) {
+    ExistingCR.isActive = false;
+    ExistingCR.save()
   }
+  for (const partNumber of newCR.partNumbers) {
+    const existingPart = await Parts.findOne({ partNumber });
+    if (!existingPart) {
+      return utils.commonResponse(res, 404, "Part does not exist, add part first");
+    }
+    part_array.push(existingPart)
+    const alreadyLinked = existingPart.parentIds.some(
+      (parent) => parent.crNumber === newCR.referenceNumber
+    );
+    if (!alreadyLinked) {
+      existingPart.parentIds.push({
+        productNumber: "",
+        crNumber: newCR.referenceNumber,
+      });
+      await existingPart.save();
+    }
+  }
+  CommercialReference.create({
+    referenceNumber: newCR.referenceNumber,
+    description: newCR.description,
+    productId: newCR.productNumber,
+    parts: part_array,
+    quantity: 0
+  }
+  ).then((data) => {
+    return utils.commonResponse(res, 200, "success")
+  })
+}
 
-exports.deleteCR= async (req, res) => {
+exports.deleteCR = async (req, res) => {
   // THIS FUNCTION WILL DELETE CR FROM 
-  let {referenceNumber} = req.body
-  const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber})
+  let { referenceNumber } = req.body
+  const CR = await CommercialReference.findOne({ 'referenceNumber': referenceNumber })
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
   if (CR) {
-    await CommercialReference.updateMany({ 'referenceNumber': referenceNumber},{
-      isActive:false
+    await CommercialReference.updateMany({ 'referenceNumber': referenceNumber }, {
+      isActive: false
     }
     ).then((data) => {
       return utils.commonResponse(res, 200, "success")
@@ -260,12 +263,12 @@ exports.deleteCR= async (req, res) => {
 
 exports.recoverCR = async (req, res) => {
   // THIS FUCNTION WILL HELP TO CHANGE THE STATUS OF CR FROM ISACTIVE FALSE TO TRUE, 
-  let {_id} = req.body
-  const CR = await CommercialReference.findOne({_id:new mongoose.Types.ObjectId(_id)})
+  let { _id } = req.body
+  const CR = await CommercialReference.findOne({ _id: new mongoose.Types.ObjectId(_id) })
   if (!CR) return utils.commonResponse(res, 409, "ReferenceNumber do not exist")
   if (CR) {
-    await CommercialReference.updateOne({_id:new mongoose.Types.ObjectId(_id)},{
-      isActive:true
+    await CommercialReference.updateOne({ _id: new mongoose.Types.ObjectId(_id) }, {
+      isActive: true
     }
     ).then((data) => {
       return utils.commonResponse(res, 200, "success", {})
@@ -279,8 +282,8 @@ exports.createPart = (async (req, res) => {
     partNumber: req.body.partNumber,
     partDescription: req.body.partDescription,
     quantity: req.body.quantity,
-    grouped:req.body.grouped,
-    PiecePerPacket:req.body.PiecePerPacket
+    grouped: req.body.grouped,
+    PiecePerPacket: req.body.PiecePerPacket
   }
   const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
   if (ExistingPart) {
@@ -510,34 +513,32 @@ exports.uploadCRFromAdmin = async (req, res) => {
           parts: [],
         };
         const ExistingCRList = await CommercialReference.findOne({ referenceNumber: cr.referenceNumber });
-        if (!ExistingCRList) {
-          // Create a new CR and cache it in the map
-          newCR = await CommercialReference.create(cr);
-          NeedSkip = false
-          newCRs.push(newCR.referenceNumber);
-        }
-        else {
-          // NeedSkip = true
+        if (ExistingCRList) {
+
           ExistingCRList.isActive = false
           ExistingCRList.save()
         }
+        newCR = await CommercialReference.create(cr);
+        NeedSkip = false
+        newCRs.push(newCR.referenceNumber);
+
       } else if (Number(_rowData.Level) >= 1 && !NeedSkip) {
         const part = {
           partNumber: _rowData.Number,
           partDescription: _rowData.EnglishDescription,
           quantity: Number(_rowData.Quantity),
-          grouped:_rowData.grouped,
-          PiecePerPacket:_rowData.PiecePerPacket
+          grouped: _rowData.grouped,
+          PiecePerPacket: _rowData.PiecePerPacket
         };
         // creating part in parts and adding CR in the parent 
-        const existingPart = await Parts.findOne({ partNumber:_rowData.Number });
-        let currentpart 
+        const existingPart = await Parts.findOne({ partNumber: _rowData.Number });
+        let currentpart
         if (!existingPart) {
           // if do not exist create a new part
           let newpart = await Parts.create(part)
           currentpart = newpart
         }
-        else{
+        else {
           currentpart = existingPart
         }
         // Check if the CR number is already in the part's parentIds
@@ -550,7 +551,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
             crNumber: newCR.referenceNumber,
           });
           await currentpart.save();
-        } 
+        }
         newCR.parts.push(part);
         await newCR.save(); // Save after adding parts
       }
