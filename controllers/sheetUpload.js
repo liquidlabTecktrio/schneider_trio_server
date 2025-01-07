@@ -217,7 +217,7 @@ exports.createCR = async (req, res) => {
   if (ExistingCR) {
     console.log('makeing the cr as false')
     ExistingCR.isActive = false;
-    ExistingCR.save()
+    await ExistingCR.save()
   }
 
   for (const partNumber of newCR.partNumbers) {
