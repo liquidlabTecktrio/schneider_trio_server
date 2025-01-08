@@ -489,7 +489,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
     // Process rows
     await Bluebird.each(rows, async (_rowData) => {
       if (_rowData.Level === "0") {
-        console.log(_rowData)
+        // console.log(_rowData)
 
         const cr = {
           referenceNumber: _rowData.Number,
@@ -497,13 +497,15 @@ exports.uploadCRFromAdmin = async (req, res) => {
           quantity: 0,
           parts: [],
         };
-        console.log(cr)
-        const ExistingCRList = await CommercialReference.findOne({ referenceNumber: cr.referenceNumber });
-        if (ExistingCRList) {
+        
+        // console.log(cr)
+        const ExistingCRList = await CommercialReference.find({ referenceNumber: cr.referenceNumber });
 
-          ExistingCRList.isActive = false
-          ExistingCRList.save()
-        }
+        ExistingCRList.map((cr,key)=>{
+            cr.isActive = false
+            cr.save()
+        })
+        
         newCR = await CommercialReference.create(cr);
         console.log(newCR)
         NeedSkip = false
