@@ -36,19 +36,19 @@ function setupCORS(req, res, next) {
 }
 
 app.all("/*", setupCORS);
-// app api's
 
+// app api's
 app.use("/admin", adminRoutes);
 app.use("/hub", hubRoutes);
 app.use("/spoke", spokeRoutes);
+
+// Front End
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
 app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
-// Catch-all handler for SPA routing (React Router support)
 app.get('/hubpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'hubpage', 'index.html'));
-});// Serve static files from the 'dist' folder under the '/ad' route
+});
 app.use('/adminpage', express.static(path.join(__dirname, 'adminpage')));
-// Catch-all handler for SPA routing (React Router support)
 app.get('/adminpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'adminpage', 'index.html'));
 });

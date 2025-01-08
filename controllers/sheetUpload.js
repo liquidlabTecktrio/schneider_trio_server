@@ -457,24 +457,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
     if (alreadyCreatedParts.length > 0) {
       uniqueAlreadyParts = await getUniqueParts(alreadyCreatedParts);
       uniqueAlreadyParts = Array.from(uniqueAlreadyParts.values());
-
-      // uniqueAlreadyParts.forEach(async (parts) => {
-      //   //console.log("parts: ", parts);
-      //   // const updateDoc = {
-      //   //   $addToSet: {
-      //   //     parentIds: {
-      //   //       $each: parts.parentIds ?? [],
-      //   //     },
-      //   //   },
-      //   // };
-      //   // await Parts.findOneAndUpdate(
-      //   //   { partNumber: parts.parentNumber },
-      //   //   updateDoc,
-      //   //   { new: true }
-      //   // );
-      //   await updatePartsIDs(parts.parentIds ?? [], parts.parentNumber);
-      // });
-
       await Promise.all(
         uniqueAlreadyParts.map((parts) =>
           updatePartsIDs(parts.parentIds ?? [], parts.partNumber)
@@ -484,7 +466,6 @@ exports.uploadBomGoogleSheet = async (req, res) => {
 
     utils.commonResponse(res, 200, "success", {});
 
-    // await Parts.insertMany(parts);
   } catch (error) {
     //console.log(error);
     utils.commonResponse(res, 500, "server error", error.toString());
@@ -514,6 +495,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
           quantity: 0,
           parts: [],
         };
+        console.log(cr)
         const ExistingCRList = await CommercialReference.findOne({ referenceNumber: cr.referenceNumber });
         if (ExistingCRList) {
 
@@ -521,6 +503,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
           ExistingCRList.save()
         }
         newCR = await CommercialReference.create(cr);
+        console.log(newCR)
         NeedSkip = false
         newCRs.push(newCR.referenceNumber);
 
