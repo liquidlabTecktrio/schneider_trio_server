@@ -489,6 +489,8 @@ exports.uploadCRFromAdmin = async (req, res) => {
     // Process rows
     await Bluebird.each(rows, async (_rowData) => {
       if (_rowData.Level === "0") {
+        console.log(_rowData)
+
         const cr = {
           referenceNumber: _rowData.Number,
           description: _rowData.EnglishDescription,
