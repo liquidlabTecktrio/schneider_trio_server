@@ -13,10 +13,7 @@ https://schiendertrackingsystem.com
 
 | **API Endpoints**  | **Params**  | **Function**                                      |
 |--------------------|--------------------|---------------------------------------------------|
-| **adminLogin**     | {
-    "username":"",
-    
-} | Return Authentication key for all other requests  |
+| **adminLogin**     | **API Endpoints**  | Return Authentication key for all other requests  |
 | **spokeLogin**     | **API Endpoints**  | Return Authentication key for all other requests  |
 | **spokeRegister**  | **API Endpoints**  | Return Authentication key for all other requests  |
 | **hublogin**       | **API Endpoints**  | Return Authentication key for all other requests  |
