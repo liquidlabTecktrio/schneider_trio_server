@@ -188,8 +188,10 @@ exports.deletehubuser = async (req, res) => {
 exports.updatehubuser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
+        console.log("you hited here")
         const { user_id , password} = req.body
         let user = await HubUsers.findById({_id:user_id})
+        console.log(user._id, user.password)
         if(user){
             user.password = password
             user.save()
@@ -201,8 +203,6 @@ exports.updatehubuser = async (req, res) => {
             let hubusers = await HubUsers.find()
             utils.commonResponse(res, 200, "user_id do not exist", hubusers);
         }
-    
-      
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
