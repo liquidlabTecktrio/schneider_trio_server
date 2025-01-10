@@ -189,9 +189,20 @@ exports.updatehubuser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
         const { user_id , password} = req.body
-        await HubUsers.updateOne({ _id: user_id }, { password: password });
-        let hubusers = await HubUsers.find()
-        utils.commonResponse(res, 200, "User Deactivated successfully", hubusers);
+        let user = await HubUsers.findById({_id:user_id})
+        if(user){
+            user.password = password
+            user.save()
+            let hubusers = await HubUsers.find()
+            utils.commonResponse(res, 200, "User updated successfully", hubusers);
+        }
+        else{
+
+            let hubusers = await HubUsers.find()
+            utils.commonResponse(res, 200, "user_id do not exist", hubusers);
+        }
+    
+      
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
