@@ -25,6 +25,23 @@ exports.createSpoke = async (req, res) => {
 }
 
 
+exports.getSpokeDetails = async (req, res) => {
+    // THIS FUNCTION WILL CREATE NEW SPOKE IN THE SYSTEM
+    try {
+        const { spoke_id } = req.body;
+        let spoke =  await Spoke.findById({_id:spoke_id})
+        if(spoke){
+            utils.commonResponse(res, 200, "spoke fetched successfully",spoke);
+        }
+        else{
+            utils.commonResponse(res, 200, "spoke do not exist");
+        }
+      
+    } catch (error) {
+        utils.commonResponse(res, 500, "unexpected server error",error.toString());
+    }
+}
+
 
 exports.LoginToSpoke = async (req, res) => {
     try {

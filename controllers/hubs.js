@@ -75,14 +75,7 @@ exports.getAllHubUser = async (req, res) => {
             );
         }
         let hubUsers = await HubUsers.find({ hub_id, level: 2 })
-        // console.log(hub)
-        // hub.HubUsers.push({username, password, phonenumber})
-        // await hub.save().then(async (result) => {
-        // const allHubs = await Hubs.find();
         utils.commonResponse(res, 200, "hub users fetched successfully", hubUsers);
-        // }).catch((err) => {
-        //     utils.commonResponse(res, 401, "unexpected server error", err.toString());
-        // });
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
@@ -167,7 +160,6 @@ exports.deactivateHubUser = async (req, res) => {
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
-
     }
 }
 
@@ -181,7 +173,6 @@ exports.deletehubuser = async (req, res) => {
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
-
     }
 }
 
@@ -199,18 +190,13 @@ exports.updatehubuser = async (req, res) => {
             utils.commonResponse(res, 200, "User updated successfully", hubusers);
         }
         else{
-
             let hubusers = await HubUsers.find()
             utils.commonResponse(res, 200, "user_id do not exist", hubusers);
         }
-
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
-
     }
 }
-
-
 
 
 exports.LoginToHubs = async (req, res) => {
@@ -243,11 +229,8 @@ exports.LoginToHubs = async (req, res) => {
             }
         }
         else {
-
             utils.commonResponse(res, 401, "Invalid username or password");
-
         }
-
 
     } catch (error) {
         utils.commonResponse(res, 500, "Unexpected server error", error.toString());

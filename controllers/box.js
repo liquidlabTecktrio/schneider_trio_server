@@ -776,8 +776,6 @@ exports.removePartsFromBoxes = async (req, res) => {
     }
 
 
-
-
   } catch (error) {
     console.error("Error in addPartsToBox:", error);
     return utils.commonResponse(res, 500, "Unexpected server error", error.toString());

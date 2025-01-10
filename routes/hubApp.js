@@ -3,7 +3,7 @@ const router = express.Router();
 const serialNoController = require("../controllers/serial");
 const BoxSerialNoController = require("../controllers/box");
 const ProjectController = require("../controllers/projects");
-const ComponentController = require("../controllers/components");
+const PartsController = require("../controllers/parts");
 const sheetController = require("../controllers/sheetUpload");
 // const printLabel = require('../controllers/printLabel')
 const hubs = require("../controllers/hubs");
@@ -70,7 +70,7 @@ router.post("/addComponentsToBoxes",verifyToken, BoxSerialNoController.addCompon
 router.post("/getBoxDetails",verifyToken, BoxSerialNoController.getBoxDetails);
 router.post("/shipProject",verifyToken, ProjectController.shipProject);
 router.post("/updateBoxStatus",verifyToken, BoxSerialNoController.updateBoxStatus);
-router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", ComponentController.getBoxDetailsBasedOnComponentScan);
+router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", PartsController.getBoxDetailsBasedOnComponentScan);
 router.post("/addPartsToBoxes",verifyToken, BoxSerialNoController.addPartsToBox);
 router.post("/removePartsFromBoxes",verifyToken, BoxSerialNoController.removePartsFromBoxes);
 

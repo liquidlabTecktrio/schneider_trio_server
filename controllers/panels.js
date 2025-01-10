@@ -24,6 +24,7 @@ exports.createPanel = async (req, res) => {
     }
 }
 
+
 exports.getAllPanels = async (req, res) => {
     try {
         const allPanels = await Panels.find();
@@ -56,7 +57,6 @@ exports.addBOMToPanelTypes = async (req, res) => {
     try {
 
         const { panelTypeID, bomIDList } = req.body;
-
         panelType = await PanelType.findByIdAndUpdate({ _id: panelTypeID }, {
             $addToSet: { BOMList: { $each: bomIDList } }
         }, { returnNewDocument: true })
@@ -64,7 +64,6 @@ exports.addBOMToPanelTypes = async (req, res) => {
         utils.commonResponse(res, 200, "Panel BOM added", panelType)
 
     } catch (error) {
-        //console.log(error)
         utils.commonResponse(res, 500, "Unexpected server error", error.toString())
     }
 }

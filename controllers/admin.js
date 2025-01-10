@@ -43,6 +43,7 @@ exports.adminLogin = async (req, res, next) => {
   }
 };
 
+
 // HANDLE ADMIN CREATION
 exports.adminSignUp = async (req, res) => {
   try {
@@ -69,9 +70,8 @@ exports.adminSignUp = async (req, res) => {
     console.log(error)
     res.status(200).json({ msg: "Error at server" });
   }
-
-
 };
+
 
 exports.getAllAdmin = async (req, res) => {
   try {
@@ -84,6 +84,7 @@ exports.getAllAdmin = async (req, res) => {
   }
 };
 
+
 exports.deleteAdmin = async (req, res) => {
   try {
     const { _id } = req.body;
@@ -95,6 +96,7 @@ exports.deleteAdmin = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 exports.UpdateAdmin = async (req, res) => {
   try {

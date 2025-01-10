@@ -1,6 +1,6 @@
 const Components = require("../Models/Components");
 const componentSerialNo = require("../Models/componentSerialNo");
-const utils = require("../controllers/utils");
+const utils = require("./utils");
 const Box = require("../Models/box");
 const Parts = require("../Models/Parts");
 const mongoose = require("mongoose");
