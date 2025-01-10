@@ -40,6 +40,7 @@ exports.createHubUser = async (req, res) => {
                 "All fields are required: username, password, phonenumber, hub_id"
             );
         }
+        let existinguser = await HubUsers.find({ username })
         if (existinguser)utils.commonResponse(res, 201, "username already exist , try using another username");
         let newUser = {
             "username": username,
@@ -48,7 +49,7 @@ exports.createHubUser = async (req, res) => {
             "level": 2,
             "hub_id": hub_id
         }
-        let existinguser = await HubUsers.find({ username })
+        
         
         await HubUsers.create(newUser)
         const allHubs = await Hubs.find();
