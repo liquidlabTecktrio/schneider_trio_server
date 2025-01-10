@@ -86,5 +86,7 @@ router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsIn
 router.post("/componentScanResult",verifyToken, ProjectController.getComponentScanResult);
 router.post("/incrementFixedQuantity",verifyToken, ProjectController.getincrementFixedQuantity);
 
+// SPOKE RELATED REQUESTS
+router.post("/getSpokeDetails", verifyToken, SpokeController.getSpokeDetails);
 
 module.exports = router;
