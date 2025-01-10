@@ -14,10 +14,10 @@ https://schiendertrackingsystem.com
 | **API Endpoints**  | **Params**  | **Function**                                      |
 |--------------------|--------------------|---------------------------------------------------|
 | **adminLogin**     | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
-| **spokeLogin**     | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
-| **spokeRegister**  | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
-| **hublogin**       | {"username":"test","password":"test"}  | Return Authentication key for all other requests  |
-| **hubregister**    | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
+| **spokeLogin**     | {"spokeUserName":"test","Password":"test"} | Return Authentication key for all other requests  |
+| **spokeRegister**  | { "spokeName":"", "spokeShortName":"" , "spokeUserName":"", "spokePassword":"" } | Return Authentication key for all other requests  |
+| **hublogin**       | {"hubUsername":"test","hubPassword":"test"}  | Return Authentication key for all other requests  |
+| **hubregister**    | {"hubName":"", "hubShortName":"", "hubUsername":"", "hubPassword":"", "logo_ZPL":""} | Return Authentication key for all other requests  |
 
 
 ## Project Related APIs
