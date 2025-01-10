@@ -5,6 +5,8 @@ const BoxSerialNoController = require("../controllers/box");
 const ProjectController = require("../controllers/projects");
 const PartsController = require("../controllers/parts");
 const sheetController = require("../controllers/sheetUpload");
+const SpokeController = require("../controllers/spoke");
+
 // const printLabel = require('../controllers/printLabel')
 const hubs = require("../controllers/hubs");
 const fs = require("fs");
