@@ -13,11 +13,11 @@ https://schiendertrackingsystem.com
 
 | **API Endpoints**  | **Params**  | **Function**                                      |
 |--------------------|--------------------|---------------------------------------------------|
-| **adminLogin**     | **API Endpoints**  | Return Authentication key for all other requests  |
-| **spokeLogin**     | **API Endpoints**  | Return Authentication key for all other requests  |
-| **spokeRegister**  | **API Endpoints**  | Return Authentication key for all other requests  |
-| **hublogin**       | **API Endpoints**  | Return Authentication key for all other requests  |
-| **hubregister**    | **API Endpoints**  | Return Authentication key for all other requests  |
+| **adminLogin**     | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
+| **spokeLogin**     | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
+| **spokeRegister**  | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
+| **hublogin**       | {"username":"test","password":"test"}  | Return Authentication key for all other requests  |
+| **hubregister**    | {"username":"test","password":"test"} | Return Authentication key for all other requests  |
 
 
 ## Project Related APIs
