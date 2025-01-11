@@ -80,7 +80,7 @@ router.post("/uploadCR", verifyToken, sheetController.uploadBomGoogleSheet);
 router.post("/uploadCRFromAdmin", verifyToken, upload.single("file"), sheetController.uploadCRFromAdmin);
 
 // MANAGE CR
-router.post("/createCR", verifyToken, sheetController.createCR);
+router.post("/createCRc", verifyToken, sheetController.createCR);
 router.post("/deleteCR", verifyToken, sheetController.deleteCR);
 router.post("/recoverCR", verifyToken, sheetController.recoverCR);
 
