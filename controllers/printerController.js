@@ -8,7 +8,7 @@ exports.createPrinter = async (req, res) => {
     let printerName = data.printerName
     let printerData = {
       printerIP:printerIP,
-      printerName:printerName
+      PrinterName:printerName
     }
     await Printer.create(printerData)
     utils.commonResponse(res, 200, "success", {});
