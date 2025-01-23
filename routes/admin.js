@@ -60,16 +60,6 @@ router.get("/getAllCommertialReferences", verifyToken, componentController.getAl
 router.post("/createPart", verifyToken, sheetController.createPart);
 router.get("/getAllParts", verifyToken, componentController.getAllParts);
 
-// SWITCHBOARD
-// router.post("/createPanel", panelController.createPanel);
-// router.get("/getAllPanels", panelController.getAllPanels);
-// router.post("/createPanelType", panelController.createPanelType);
-// router.post("/addBOMToPanelTypes", panelController.addBOMToPanelTypes);
-// router.get("/getAllPanelTypes", panelController.getAllPanelTypes);
-
-// router.post("/uploadSheet", sheetController.createPOFromGoogleSheet);
-// router.post("/uploadSheetNew", sheetController.createPOFromGoogleSheetNew);
-
 // PRINTER CONTROLS
 router.get("/GETPrinter", verifyToken, printerController.GETPrinter);
 router.post("/updatePrinter", verifyToken, printerController.updatePrinter);

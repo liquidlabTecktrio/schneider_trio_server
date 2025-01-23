@@ -72,7 +72,8 @@ router.post("/addComponentsToBoxes",verifyToken, BoxSerialNoController.addCompon
 router.post("/getBoxDetails",verifyToken, BoxSerialNoController.getBoxDetails);
 router.post("/shipProject",verifyToken, ProjectController.shipProject);
 router.post("/updateBoxStatus",verifyToken, BoxSerialNoController.updateBoxStatus);
-router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); router.post("/getBoxDetailsBasedOnComponentScan", PartsController.getBoxDetailsBasedOnComponentScan);
+router.post("/getAllPartsInAllBoxes",verifyToken, BoxSerialNoController.getAllPartsInAllBoxes); 
+router.post("/getBoxDetailsBasedOnComponentScan", PartsController.getBoxDetailsBasedOnComponentScan);
 router.post("/addPartsToBoxes",verifyToken, BoxSerialNoController.addPartsToBox);
 router.post("/removePartsFromBoxes",verifyToken, BoxSerialNoController.removePartsFromBoxes);
 
