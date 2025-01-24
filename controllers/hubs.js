@@ -40,8 +40,8 @@ exports.createHubUser = async (req, res) => {
                 "All fields are required: username, password, phonenumber, hub_id"
             );
         }
-        let existinguser = await HubUsers.find({ username })
-        console.log(existinguser)
+        let existinguser = await HubUsers.findOne({ username })
+        // console.log(existinguser)
         if (existinguser){return utils.commonResponse(res, 201, "username already exist , try using another username")}
       
         else{
