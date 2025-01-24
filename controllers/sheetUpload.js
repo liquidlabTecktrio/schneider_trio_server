@@ -600,9 +600,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       EntireCommerialRef.filter(entireCR => entireCR.referenceNumber === currentRef)
     );
 
-    // for( let cr of CRsWithParts){
-    //   console.log(cr.parts)
-    // }
+    console.log(CRsWithParts)
 
     // Map switchboards to CRs with parts
     const SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map(switchboard => ({
