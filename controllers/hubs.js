@@ -41,7 +41,7 @@ exports.createHubUser = async (req, res) => {
             );
         }
         let existinguser = await HubUsers.find({ username })
-        if (existinguser)utils.commonResponse(res, 201, "username already exist , try using another username");
+        if (existinguser)return utils.commonResponse(res, 201, "username already exist , try using another username");
         let newUser = {
             "username": username,
             "password": password,
@@ -53,7 +53,7 @@ exports.createHubUser = async (req, res) => {
         
         await HubUsers.create(newUser)
         const allHubs = await Hubs.find();
-        utils.commonResponse(res, 200, "hub user created successfully", allHubs);
+        return utils.commonResponse(res, 200, "hub user created successfully", allHubs);
 
     }
     catch (error) {
