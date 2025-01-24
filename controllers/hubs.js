@@ -41,6 +41,7 @@ exports.createHubUser = async (req, res) => {
             );
         }
         let existinguser = await HubUsers.find({ username })
+        console.log(existinguser)
         if (existinguser){return utils.commonResponse(res, 201, "username already exist , try using another username")}
       
         else{
