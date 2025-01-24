@@ -41,20 +41,24 @@ exports.createHubUser = async (req, res) => {
             );
         }
         let existinguser = await HubUsers.find({ username })
-        if (existinguser)return utils.commonResponse(res, 201, "username already exist , try using another username");
-        let newUser = {
-            "username": username,
-            "password": password,
-            "phonenumber": phonenumber,
-            "level": 2,
-            "hub_id": hub_id
+        if (existinguser){return utils.commonResponse(res, 201, "username already exist , try using another username")};
+      
+        else{
+            let newUser = {
+                "username": username,
+                "password": password,
+                "phonenumber": phonenumber,
+                "level": 2,
+                "hub_id": hub_id
+            }
+            await HubUsers.create(newUser)
+            const allHubs = await Hubs.find();
+            return utils.commonResponse(res, 200, "hub user created successfully", allHubs);
+    
         }
         
         
-        await HubUsers.create(newUser)
-        const allHubs = await Hubs.find();
-        return utils.commonResponse(res, 200, "hub user created successfully", allHubs);
-
+       
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
