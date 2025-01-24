@@ -607,7 +607,8 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       ...switchboard,
       components: switchboard.components.map(cr => ({
         ...cr,
-        parts: CRsWithParts.find(innerCR => innerCR.referenceNumber === cr.Reference)?.parts || []
+        parts: CRsWithParts.find(innerCR => innerCR.referenceNumber === cr.Reference)?.parts || [],
+        description: CRsWithParts.find(innerCR => innerCR.referenceNumber === cr.Reference)?.description || ""
       }))
     }));
 
