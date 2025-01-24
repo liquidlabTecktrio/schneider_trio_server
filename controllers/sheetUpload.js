@@ -611,6 +611,9 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }))
     }));
 
+    console.log(SwitchBoardWithCRWithParts)
+
+
     // Generate a final list of parts with aggregated quantities
     const EntirePartList = CRsWithParts.flatMap(cr => cr.parts || []);
     const FinalPartList = EntirePartList.reduce((acc, part) => {
