@@ -622,7 +622,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       if (existingPart) {
         existingPart.quantity += part.quantity;
       } else {
-        acc.push({ partNumber: part.partNumber, quantity: part.quantity });
+        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description:part.description });
       }
       return acc;
     }, []);
