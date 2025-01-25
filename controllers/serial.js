@@ -7,6 +7,7 @@ const Panels = require("../Models/Panels");
 const utils = require("../controllers/utils");
 const shortid = require("shortid");
 const { default: mongoose } = require("mongoose");
+const Partserialinfo = require("../Models/Partserialinfo.js");
 
 function calculatePackets(requiredQuantity, maxPerPacket) {
   const packets = [];
@@ -109,6 +110,11 @@ exports.generatePartSerialNo = async (req, res) => {
       );
       console.log(hubIDasObject, partID, hubEntry)
       if (hubEntry) {
+        // loop to serial number and create partserialinfo
+        serialNumbers.map((serial,key)=>{
+          Partserialinfo.create({serial_no:serial, qty:PiecePerPacket[key]})
+        })
+        
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
