@@ -725,7 +725,10 @@ exports.addPartsToBox = async (req, res) => {
     // Save the box and respond
     if (currentpart.grouped) {
       let item = Partserialinfo.findOne({ serial_no: partSerialNumber })
-      box.quantity += item.qty
+      console.log(item)
+      if(item){
+        box.quantity += item.qty
+      }
     }
     else {
       box.quantity += 1
