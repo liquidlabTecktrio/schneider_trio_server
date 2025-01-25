@@ -672,6 +672,7 @@ exports.addPartsToBox = async (req, res) => {
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
     if (existingComponent) {
       existingComponent.componentSerialNo.push(partSerialNumber);
+      console.log(currentpart)
       if(currentpart.grouped){
         let item = Partserialinfo.findOne({serial_no:partSerialNumber})
         existingComponent.quantity += item.qty;
@@ -680,7 +681,8 @@ exports.addPartsToBox = async (req, res) => {
         existingComponent.quantity += 1;
       }
       
-    } else {
+    } 
+    else {
       if(currentpart.grouped){
         let item = Partserialinfo.findOne({serial_no:partSerialNumber})
 
