@@ -723,17 +723,18 @@ exports.addPartsToBox = async (req, res) => {
     }
 
     // Save the box and respond
-    if (currentpart.grouped) {
-      let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
-      console.log("item",item.qty)
-      if(item){
+    // if (currentpart.grouped) {
+    //   let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
+    //   console.log("item",item.qty)
+    //   if(item){
         // box.quantity += parseInt(item.qty)
         box.quantity += 50
-      }
-    }
-    else {
-      box.quantity += 1
-    }
+      // }
+    // }
+    // else {
+    //   box.quantity += 1
+    // }
+
     await box.save();
 
     return utils.commonResponse(res, 200, "Part added to box successfully", {
