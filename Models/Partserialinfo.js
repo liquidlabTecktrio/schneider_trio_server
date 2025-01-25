@@ -5,10 +5,10 @@ const Schema = mongoose.Schema;
 let Partsserialinfo = new Schema({
   
   serial_no: {
-    type: Number,
+    type: String,
   },
   qty: {
-    type: Boolean,
+    type: Number,
   },
 
 });

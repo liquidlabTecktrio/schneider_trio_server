@@ -115,7 +115,7 @@ exports.generatePartSerialNo = async (req, res) => {
         const serial = serialNumbers[i];
         const qty = PiecePerPacket[i];
         console.log(serial, qty)
-        // await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
+        await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
       }
 
       if (hubEntry) {
