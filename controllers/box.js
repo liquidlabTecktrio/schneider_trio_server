@@ -603,9 +603,9 @@ function calculatePackets(requiredQuantity, maxPerPacket) {
   const packets = [];
   let remainingQuantity = requiredQuantity;
   while (remainingQuantity > 0) {
-      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
-      packets.push(quantityInPacket);
-      remainingQuantity -= quantityInPacket;
+    const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
+    packets.push(quantityInPacket);
+    remainingQuantity -= quantityInPacket;
   }
   return packets;
 }
@@ -673,18 +673,18 @@ exports.addPartsToBox = async (req, res) => {
     if (existingComponent) {
       existingComponent.componentSerialNo.push(partSerialNumber);
       console.log(currentpart)
-      if(currentpart.grouped){
-        let item = await Partserialinfo.findOne({serial_no:partSerialNumber})
+      if (currentpart.grouped) {
+        let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
         existingComponent.quantity += item.qty;
       }
-      else{
+      else {
         existingComponent.quantity += 1;
       }
-      
-    } 
+
+    }
     else {
-      if(currentpart.grouped){
-        let item = await Partserialinfo.findOne({serial_no:partSerialNumber})
+      if (currentpart.grouped) {
+        let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
 
         box.components.push({
           componentID: partID,
@@ -693,7 +693,7 @@ exports.addPartsToBox = async (req, res) => {
           quantity: parseInt(item.qty),
         });
       }
-      else{
+      else {
         box.components.push({
           componentID: partID,
           componentName: part.partNumber,
@@ -701,7 +701,7 @@ exports.addPartsToBox = async (req, res) => {
           quantity: 1,
         });
       }
-     
+
     }
 
     // Check if the total quantity exceeds the allowed limit
@@ -723,12 +723,12 @@ exports.addPartsToBox = async (req, res) => {
     }
 
     // Save the box and respond
-    if(currentpart.grouped){
+    if (currentpart.grouped) {
       let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
-      console.log("item",item.qty)
+      console.log("item", item.qty)
       box.quantity += item.qty;
     }
-    else{
+    else {
       box.quantity += 1;
     }
     await box.save();
@@ -737,7 +737,7 @@ exports.addPartsToBox = async (req, res) => {
       boxid: box._id,
       totalParts: box.quantity,
     });
-    
+
   } catch (error) {
     console.error("Error in addPartsToBox:", error);
     return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
@@ -749,14 +749,6 @@ exports.removePartsFromBoxes = async (req, res) => {
 
     console.log('remove part', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
-
-
-    // let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
-    // console.log(currentpart?.partNumber, "current part")
-    // let currentpartNumber = currentpart.partNumber
-    // let hubIDasObject = new mongoose.Types.ObjectId(hubID)
-
-    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
@@ -772,20 +764,6 @@ exports.removePartsFromBoxes = async (req, res) => {
     if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
 
-    // const isSerialValid = await PartsSerialNo.exists({
-    //   partNumber: currentpartNumber,
-    //   hubSerialNo: {
-    //     $elemMatch: { hubId: hubIDasObject, serialNos: partSerialNumber },
-    //   },
-    // });
-    // if (!isSerialValid) {
-    //   return utils.commonResponse(
-    //     res,
-    //     404,
-    //     "Part Serial Number not found for the provided Part ID and Hub ID"
-    //   );
-    // }
-
     // Check if the part exists in the box
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID))
 
@@ -797,8 +775,17 @@ exports.removePartsFromBoxes = async (req, res) => {
         return data != partSerialNumber
       });
 
-      console.log(filteredList)
-      existingComponent.quantity -= 1; // Decrease the quantity
+      // console.log(filteredList)
+
+      // Save the box and respond
+      if (currentpart.grouped) {
+        let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
+        existingComponent.quantity -= item.qty; // Decrease the quantity
+      }
+      else {
+        existingComponent.quantity -= 1; // Decrease the quantity
+
+      }
       existingComponent.componentSerialNo = filteredList
       // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
       if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
@@ -814,7 +801,7 @@ exports.removePartsFromBoxes = async (req, res) => {
       });
     }
 
-    else{
+    else {
       return utils.commonResponse(res, 200, "Part do not exist Exist")
     }
 
