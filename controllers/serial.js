@@ -112,9 +112,9 @@ exports.generatePartSerialNo = async (req, res) => {
       if (hubEntry) {
         // loop to serial number and create partserialinfo
         serialNumbers.map((serial,key)=>{
-          Partserialinfo.create({serial_no:serial, qty:PiecePerPacket[key]})
+          await Partserialinfo.create({serial_no:serial, qty:PiecePerPacket[key]})
         })
-        
+
         await partSerialNo.updateOne(
           {
             ...searchCriteria,
