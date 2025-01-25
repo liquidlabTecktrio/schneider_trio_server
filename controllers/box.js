@@ -727,7 +727,8 @@ exports.addPartsToBox = async (req, res) => {
       let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
       console.log("item",item.qty)
       if(item){
-        box.quantity += parseInt(item.qty)
+        // box.quantity += parseInt(item.qty)
+        box.quantity += 50
       }
     }
     else {
