@@ -110,11 +110,14 @@ exports.generatePartSerialNo = async (req, res) => {
       );
       console.log(hubIDasObject, partID, hubEntry)
       // loop to serial number and create partserialinfo
+
       for (let i = 0; i < serialNumbers.length; i++) {
         const serial = serialNumbers[i];
         const qty = PiecePerPacket[i];
-        await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
+        console.log(serial, qty)
+        // await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
       }
+
       if (hubEntry) {
 
 
