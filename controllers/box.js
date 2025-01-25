@@ -778,7 +778,7 @@ exports.removePartsFromBoxes = async (req, res) => {
       // console.log(filteredList)
 
       // Save the box and respond
-      if (currentpart.grouped) {
+      if (part.grouped) {
         let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
         existingComponent.quantity -= item.qty; // Decrease the quantity
       }
@@ -793,7 +793,7 @@ exports.removePartsFromBoxes = async (req, res) => {
       }
 
 
-      if (currentpart.grouped) {
+      if (part.grouped) {
         let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
         box.quantity -= item.qty;
       }
