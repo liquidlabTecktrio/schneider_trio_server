@@ -792,7 +792,15 @@ exports.removePartsFromBoxes = async (req, res) => {
         box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
       }
 
-      box.quantity -= 1;
+
+      if (currentpart.grouped) {
+        let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
+        box.quantity -= item.qty;
+      }
+      else {
+        box.quantity -= 1;
+      }
+
       await box.save();
 
       return utils.commonResponse(res, 200, "Part removed from the box successfully", {
