@@ -111,7 +111,7 @@ exports.generatePartSerialNo = async (req, res) => {
       console.log(hubIDasObject, partID, hubEntry)
       if (hubEntry) {
         // loop to serial number and create partserialinfo
-        serialNumbers.map((serial,key)=>{
+        serialNumbers.map(async(serial,key)=>{
           await Partserialinfo.create({serial_no:serial, qty:PiecePerPacket[key]})
         })
 
