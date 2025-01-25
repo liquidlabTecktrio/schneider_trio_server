@@ -10,6 +10,7 @@ const Hub = require("../Models/Hubs.js");
 const ComponentSerialNo = require("../Models/componentSerialNo.js");
 const Parts = require("../Models/Parts.js");
 const PartsSerialNo = require("../Models/PartsSerialNo.js");
+const Partserialinfo = require("../Models/Partserialinfo.js");
 
 
 async function checkComponentQuntityExceeded(
@@ -672,7 +673,8 @@ exports.addPartsToBox = async (req, res) => {
     if (existingComponent) {
       existingComponent.componentSerialNo.push(partSerialNumber);
       if(currentpart.grouped){
-        existingComponent.quantity += qty;
+        let item = Partserialinfo.findOne({serial_no:partSerialNumber})
+        existingComponent.quantity += item.qty;
       }
       else{
         existingComponent.quantity += 1;
@@ -680,11 +682,13 @@ exports.addPartsToBox = async (req, res) => {
       
     } else {
       if(currentpart.grouped){
+        let item = Partserialinfo.findOne({serial_no:partSerialNumber})
+
         box.components.push({
           componentID: partID,
           componentName: part.partNumber,
           componentSerialNo: [partSerialNumber],
-          quantity: qty,
+          quantity: item.qty,
         });
       }
       else{
