@@ -623,7 +623,7 @@ exports.addPartsToBox = async (req, res) => {
 
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
-    console.log(currentpartNumber, hubIDasObject, partSerialNumber)
+    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
 
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
@@ -672,7 +672,7 @@ exports.addPartsToBox = async (req, res) => {
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
     if (existingComponent) {
       existingComponent.componentSerialNo.push(partSerialNumber);
-      console.log(currentpart)
+      // console.log(currentpart)
       if (currentpart.grouped) {
         let item = Partserialinfo.findOne({ serial_no: partSerialNumber })
         existingComponent.quantity += item.qty;
@@ -725,7 +725,7 @@ exports.addPartsToBox = async (req, res) => {
     // Save the box and respond
     if (currentpart.grouped) {
       let item = Partserialinfo.findOne({ serial_no: partSerialNumber })
-      console.log(item)
+      console.log("item",item)
       if(item){
         box.quantity += item.qty
       }
