@@ -598,16 +598,28 @@ exports.updateBoxStatus = async (req, res) => {
   }
 };
 
+function calculatePackets(requiredQuantity, maxPerPacket) {
+  const packets = [];
+  let remainingQuantity = requiredQuantity;
+  while (remainingQuantity > 0) {
+      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
+      packets.push(quantityInPacket);
+      remainingQuantity -= quantityInPacket;
+  }
+  return packets;
+}
+
 exports.addPartsToBox = async (req, res) => {
   try {
 
-    console.log('addpart', req.body)
-    const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
+    // console.log('addpart', req.body)
+    const { hubID, partID, boxSerialNo, projectID, partSerialNumber, qty } = req.body;
 
 
     let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
-    console.log(currentpart.partNumber, "current part")
+    // console.log(currentpart.partNumber, "current part")
     let currentpartNumber = currentpart.partNumber
+
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
 
     console.log(currentpartNumber, hubIDasObject, partSerialNumber)
@@ -659,14 +671,31 @@ exports.addPartsToBox = async (req, res) => {
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
     if (existingComponent) {
       existingComponent.componentSerialNo.push(partSerialNumber);
-      existingComponent.quantity += 1;
+      if(currentpart.grouped){
+        existingComponent.quantity += qty;
+      }
+      else{
+        existingComponent.quantity += 1;
+      }
+      
     } else {
-      box.components.push({
-        componentID: partID,
-        componentName: part.partNumber,
-        componentSerialNo: [partSerialNumber],
-        quantity: 1,
-      });
+      if(currentpart.grouped){
+        box.components.push({
+          componentID: partID,
+          componentName: part.partNumber,
+          componentSerialNo: [partSerialNumber],
+          quantity: qty,
+        });
+      }
+      else{
+        box.components.push({
+          componentID: partID,
+          componentName: part.partNumber,
+          componentSerialNo: [partSerialNumber],
+          quantity: 1,
+        });
+      }
+     
     }
 
     // Check if the total quantity exceeds the allowed limit
