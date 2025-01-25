@@ -13,9 +13,9 @@ function calculatePackets(requiredQuantity, maxPerPacket) {
   const packets = [];
   let remainingQuantity = requiredQuantity;
   while (remainingQuantity > 0) {
-      const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
-      packets.push(quantityInPacket);
-      remainingQuantity -= quantityInPacket;
+    const quantityInPacket = Math.min(remainingQuantity, maxPerPacket);
+    packets.push(quantityInPacket);
+    remainingQuantity -= quantityInPacket;
   }
   return packets;
 }
@@ -82,8 +82,8 @@ exports.generatePartSerialNo = async (req, res) => {
         "Required Quantity (qnty) , hubID, partNumber"
       );
     }
-    let cpart = await parts.findOne({partNumber})
-    let serialNumbers 
+    let cpart = await parts.findOne({ partNumber })
+    let serialNumbers
     let PiecePerPacket = []
     let grouped = false
     if (cpart.grouped) {
@@ -93,8 +93,8 @@ exports.generatePartSerialNo = async (req, res) => {
       PiecePerPacket = packets
       grouped = true
       serialNumbers = Array.from({ length: packets.length }, () =>
-      shortid.generate(6)
-    );
+        shortid.generate(6)
+      );
     }
     else {
       serialNumbers = Array.from({ length: qnty }, () =>
@@ -109,13 +109,14 @@ exports.generatePartSerialNo = async (req, res) => {
         (entry) => entry.hubId === hubIDasObject
       );
       console.log(hubIDasObject, partID, hubEntry)
+      // loop to serial number and create partserialinfo
+      for (let i = 0; i < serialNumbers.length; i++) {
+        const serial = serialNumbers[i];
+        const qty = PiecePerPacket[i];
+        await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
+      }
       if (hubEntry) {
-        // loop to serial number and create partserialinfo
-          for (let i = 0; i < serialNumbers.length; i++) {
-            const serial = serialNumbers[i];
-            const qty = PiecePerPacket[i];
-            await Partserialinfo.create({ serial_no: serial, qty }); // Await the creation
-        }
+
 
         await partSerialNo.updateOne(
           {
@@ -168,9 +169,9 @@ exports.generatePartSerialNo = async (req, res) => {
         ? `${part.partNumber} - ${part.partDescription}`
         : "",
       qnty: qnty,
-      grouped:grouped,
+      grouped: grouped,
       serialNos: serialNumbers,
-      PiecePerPacket:PiecePerPacket,
+      PiecePerPacket: PiecePerPacket,
     });
   } catch (error) {
     console.error("Error generating part serial number:", error);
