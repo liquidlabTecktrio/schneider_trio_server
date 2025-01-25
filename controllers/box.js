@@ -674,7 +674,7 @@ exports.addPartsToBox = async (req, res) => {
       existingComponent.componentSerialNo.push(partSerialNumber);
       console.log(currentpart)
       if(currentpart.grouped){
-        let item = Partserialinfo.findOne({serial_no:partSerialNumber})
+        let item = await Partserialinfo.findOne({serial_no:partSerialNumber})
         existingComponent.quantity += item.qty;
       }
       else{
@@ -684,13 +684,13 @@ exports.addPartsToBox = async (req, res) => {
     } 
     else {
       if(currentpart.grouped){
-        let item = Partserialinfo.findOne({serial_no:partSerialNumber})
+        let item = await Partserialinfo.findOne({serial_no:partSerialNumber})
 
         box.components.push({
           componentID: partID,
           componentName: part.partNumber,
           componentSerialNo: [partSerialNumber],
-          quantity: item.qty,
+          quantity: parseInt(item.qty),
         });
       }
       else{
@@ -723,7 +723,14 @@ exports.addPartsToBox = async (req, res) => {
     }
 
     // Save the box and respond
-    box.quantity += 1;
+    if(currentpart.grouped){
+      let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
+      console.log("item",item.qty)
+      box.quantity += item.qty;
+    }
+    else{
+      box.quantity += 1;
+    }
     await box.save();
 
     return utils.commonResponse(res, 200, "Part added to box successfully", {
