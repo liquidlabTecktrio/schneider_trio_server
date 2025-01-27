@@ -244,9 +244,9 @@ exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
   }
 };
 
-exports.partScanResult = async(req, res)=>{
+exports.partScanResult = async(req, res)=> {
   try{
-    let dataInQr = req.body.qr_data
+    let {qr_data} = req.body
     let part_details = {
       "project_name":"pottan akhil"
     }

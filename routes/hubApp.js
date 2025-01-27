@@ -87,8 +87,8 @@ router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsIn
 
 // PARTS RELATED REQUESTS
 router.post("/componentScanResult",verifyToken, ProjectController.getComponentScanResult);
-router.post("/partScanResult",verifyToken, PartsController.partScanResult);
 router.post("/incrementFixedQuantity",verifyToken, ProjectController.getincrementFixedQuantity);
+router.post("/partScanResult",verifyToken, PartsController.partScanResult);
 
 // SPOKE RELATED REQUESTS
 router.post("/getSpokeDetails", verifyToken, SpokeController.getSpokeDetails);
