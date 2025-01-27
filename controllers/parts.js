@@ -243,3 +243,17 @@ exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
     );
   }
 };
+
+exports.partScanResult = async(req, res)=>{
+  try{
+    let dataInQr = req.body.qr_data
+    let part_details = {
+      
+    }
+    utils.commonResponse(res, 200, "success", part_details);
+    
+  }
+  catch{
+    utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+  }
+}

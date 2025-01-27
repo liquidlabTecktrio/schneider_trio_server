@@ -6,6 +6,8 @@ const ComponentSerial = require("../Models/componentSerialNo");
 const Component = require("../Models/Components");
 const Projects = require("../Models/Projects");
 
+
+
 exports.getAllProjects = async (req, res) => {
   // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
   try {
@@ -155,7 +157,7 @@ exports.getProjectsDetails = async (req, res) => {
   }
 };
 
-exports.getComponentScanResult = async (req, res) => {
+exports.partScanResultgetComponentScanResult = async (req, res) => {
   try {
     const { componentID, serialNo } = req.body;
     const component = await Component.findById(componentID);
