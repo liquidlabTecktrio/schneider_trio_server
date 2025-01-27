@@ -244,16 +244,29 @@ exports.getBoxDetailsBasedOnComponentScan = async (req, res) => {
   }
 };
 
-exports.partScanResult = async(req, res)=> {
-  try{
-    let {qr_data} = req.body
-    let part_details = {
-      "project_name":"pottan akhil"
-    }
-    utils.commonResponse(res, 200, "success", part_details);
+// exports.partScanResult = async(req, res)=> {
+//   try{
+//     let {qr_data} = req.body
+//     let part_details = {
+//       "project_name":"pottan akhil"
+//     }
+//     utils.commonResponse(res, 200, "success", part_details);
     
-  }
-  catch{
+//   }
+//   catch{
+//     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
+//   }
+// }
+exports.partScanResult = async (req, res) => {
+  try {
+    const allComponents = await Parts.find().select('-parentIds -quantity');
+    utils.commonResponse(
+      res,
+      200,
+      "All components fetched successfully",
+      allComponents
+    );
+  } catch (error) {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
-}
+};
