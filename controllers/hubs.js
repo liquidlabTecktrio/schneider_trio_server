@@ -17,19 +17,19 @@ exports.createHubs = async (req, res) => {
     try {
         console.log(req.body)
         const { hubName, hubShortName, hubUsername, hubPassword, logo_ZPL } = req.body;
-        let existingHub = await Hubs.find({hubName})
+        let existingHub = await Hubs.find({ hubUsername })
         console.log(existingHub)
-        if(!existingHub == []){
+        if (existingHub != []) {
             let error = "Hub name Already exist, Enter another name"
             return utils.commonResponse(res, 500, "Hub name Already exist, Enter another name", error.toString());
         }
-        else{
+        else {
             let result = await Hubs.create({ hubName, hubShortName, logo_ZPL })
             await HubUsers.create({ username: hubUsername, password: hubPassword, level: 1, hub_id: result._id })
             const allHubs = await Hubs.find();
-            return utils.commonResponse(res, 200, "hub created successfully", allHubs);    
+            return utils.commonResponse(res, 200, "hub created successfully", allHubs);
         }
-          }
+    }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
     }
@@ -50,9 +50,9 @@ exports.createHubUser = async (req, res) => {
         }
         let existinguser = await HubUsers.findOne({ username })
         // console.log(existinguser)
-        if (existinguser){return utils.commonResponse(res, 201, "username already exist , try using another username")}
-      
-        else{
+        if (existinguser) { return utils.commonResponse(res, 201, "username already exist , try using another username") }
+
+        else {
             let newUser = {
                 "username": username,
                 "password": password,
@@ -63,11 +63,11 @@ exports.createHubUser = async (req, res) => {
             await HubUsers.create(newUser)
             const allHubs = await Hubs.find();
             return utils.commonResponse(res, 200, "hub user created successfully", allHubs);
-    
+
         }
-        
-        
-       
+
+
+
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
@@ -105,7 +105,7 @@ exports.deleteHub = async (req, res) => {
         hubID = new mongoose.Types.ObjectId(hubID)
         let result = await Hubs.deleteOne({ _id: hubID });
         if (result.deletedCount > 0) {
-            await HubUsers.deleteMany({hub_id:hubID})
+            await HubUsers.deleteMany({ hub_id: hubID })
             utils.commonResponse(res, 200, "Hub deleted successfully");
         } else {
             utils.commonResponse(res, 404, "Hub not found or already deleted");
@@ -193,16 +193,16 @@ exports.updatehubuser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
         console.log("you hited here")
-        const { user_id , password} = req.body
-        let user = await HubUsers.findById({_id:user_id})
+        const { user_id, password } = req.body
+        let user = await HubUsers.findById({ _id: user_id })
         console.log(user._id, user.password)
-        if(user){
+        if (user) {
             user.password = password
             user.save()
             let hubusers = await HubUsers.find()
             utils.commonResponse(res, 200, "User updated successfully", hubusers);
         }
-        else{
+        else {
             let hubusers = await HubUsers.find()
             utils.commonResponse(res, 200, "user_id do not exist", hubusers);
         }
