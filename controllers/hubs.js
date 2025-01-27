@@ -18,17 +18,18 @@ exports.createHubs = async (req, res) => {
         console.log(req.body)
         const { hubName, hubShortName, hubUsername, hubPassword, logo_ZPL } = req.body;
         let existingHub = await Hubs.find({ hubUsername })
+
         console.log(existingHub)
-        if (existingHub != []) {
+        if (existingHub.length > 0) {
             let error = "Hub name Already exist, Enter another name"
             return utils.commonResponse(res, 500, "Hub name Already exist, Enter another name", error.toString());
         }
-        else {
-            let result = await Hubs.create({ hubName, hubShortName, logo_ZPL })
-            await HubUsers.create({ username: hubUsername, password: hubPassword, level: 1, hub_id: result._id })
-            const allHubs = await Hubs.find();
-            return utils.commonResponse(res, 200, "hub created successfully", allHubs);
-        }
+     
+        let result = await Hubs.create({ hubName, hubShortName, logo_ZPL })
+        await HubUsers.create({ username: hubUsername, password: hubPassword, level: 1, hub_id: result._id })
+        const allHubs = await Hubs.find();
+        return utils.commonResponse(res, 200, "hub created successfully", allHubs);
+    
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
