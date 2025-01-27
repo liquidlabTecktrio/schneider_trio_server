@@ -17,7 +17,7 @@ exports.createHubs = async (req, res) => {
     try {
         console.log(req.body)
         const { hubName, hubShortName, hubUsername, hubPassword, logo_ZPL } = req.body;
-        let existingHubUser = await HubUsers.find({ hubUsername })
+        let existingHubUser = await HubUsers.find({ username: hubUsername })
         let existingHub = await Hubs.find({ hubName })
 
         console.log(existingHubUser, existingHub)
