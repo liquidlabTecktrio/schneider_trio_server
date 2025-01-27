@@ -248,7 +248,7 @@ exports.partScanResult = async(req, res)=>{
   try{
     let dataInQr = req.body.qr_data
     let part_details = {
-      
+      "project_name":"pottan akhil"
     }
     utils.commonResponse(res, 200, "success", part_details);
     
