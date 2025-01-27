@@ -17,6 +17,10 @@ exports.createHubs = async (req, res) => {
     try {
         console.log(req.body)
         const { hubName, hubShortName, hubUsername, hubPassword, logo_ZPL } = req.body;
+        existingHub = await Hubs.find({hubName})
+        if(existingHub){
+            return utils.commonResponse(res, 500, "Hub name Already exist, Enter another name", error.toString());
+        }
         let result = await Hubs.create({ hubName, hubShortName, logo_ZPL })
         await HubUsers.create({ username: hubUsername, password: hubPassword, level: 1, hub_id: result._id })
         const allHubs = await Hubs.find();
