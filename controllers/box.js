@@ -736,6 +736,7 @@ exports.addPartsToBox = async (req, res) => {
     return utils.commonResponse(res, 200, "Part added to box successfully", {
       boxid: box._id,
       totalParts: box.quantity,
+      part:part,
     });
 
   } catch (error) {
