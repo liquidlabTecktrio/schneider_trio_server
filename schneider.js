@@ -35,18 +35,18 @@ function setupCORS(req, res, next) {
 app.all("/*", setupCORS);
 
 // app api's
-app.use("/admin", adminRoutes);
-app.use("/hub", hubRoutes);
-app.use("/spoke", spokeRoutes);
+app.use("/schnieder/admin", adminRoutes);
+app.use("/schnieder/hub", hubRoutes);
+app.use("/schnieder/spoke", spokeRoutes);
 
 // Front End
 app.use("/", express.static(path.join(__dirname, 'landingpage')));
-app.use('/hubpage', express.static(path.join(__dirname, 'hubpage')));
-app.get('/hubpage/*', (req, res) => {
+app.use('/schnieder/hubpage', express.static(path.join(__dirname, 'hubpage')));
+app.get('/schnieder/hubpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'hubpage', 'index.html'));
 });
-app.use('/adminpage', express.static(path.join(__dirname, 'adminpage')));
-app.get('/adminpage/*', (req, res) => {
+app.use('/schnieder/adminpage', express.static(path.join(__dirname, 'adminpage')));
+app.get('/schnieder/adminpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'adminpage', 'index.html'));
 });
 
