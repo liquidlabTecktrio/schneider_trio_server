@@ -40,7 +40,7 @@ app.use("/schnieder/hub", hubRoutes);
 app.use("/schnieder/spoke", spokeRoutes);
 
 // Front End
-app.use("/", express.static(path.join(__dirname, 'landingpage')));
+app.use("/schnieder/", express.static(path.join(__dirname, 'landingpage')));
 app.use('/schnieder/hubpage', express.static(path.join(__dirname, 'hubpage')));
 app.get('/schnieder/hubpage/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'hubpage', 'index.html'));
