@@ -26,8 +26,8 @@ exports.getAllProjectsInHub = async (req, res) => {
   // THIS FUNCTION WILL RETURN ALL THE AVAILABLE PROJECTS IN TRACKING SYSTEM
   try {
 
-    let {hub_id} = req.body
-    let projects = await Projects.find({createdTo:new mongoose.Types.ObjectId(hub_id)})
+    let { hub_id } = req.body
+    let projects = await Projects.find({ createdTo: new mongoose.Types.ObjectId(hub_id) })
 
     utils.commonResponse(
       res,
@@ -48,9 +48,9 @@ exports.createNewOrderFromHub = async (req, res) => {
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
-    for (let s of switchBoards){
+    for (let s of switchBoards) {
       console.log(s.components)
-      for(let c of s.components){
+      for (let c of s.components) {
         console.log(c.parts)
       }
     }
@@ -61,7 +61,7 @@ exports.createNewOrderFromHub = async (req, res) => {
       status: "open",
       switchBoardData: switchBoards,
     }
-    
+
     await Projects.create(newProjectData);
     utils.commonResponse(res, 200, "success", {});
   } catch (error) {
@@ -74,7 +74,7 @@ exports.getOpenProjects = async (req, res) => {
   // THIS FUNCTION WILL RETURN THE OPEN PROJECTS IN THE SYSTEM
   try {
     const { hub_id } = req.body;
-    let projects = await Projects.find({createdTo:new mongoose.Types.ObjectId(hub_id)})
+    let projects = await Projects.find({ createdTo: new mongoose.Types.ObjectId(hub_id) })
 
     utils.commonResponse(
       res,
@@ -292,6 +292,30 @@ exports.getAllSpokeProjects = async (req, res) => {
   }
 };
 
+exports.getShippedDetails = async (req, res) => {
+  let { project_id } = req.body
+  // get the project
+  let project = await Projects.findById(new mongoose.Types.ObjectId(project_id))
+  // get the box id's
+  let box_serials = project.boxSerialNumbers
+  let shippedDetails = []
+  // // get all parts in each box
+  for (const serial of box_serials) {
+    let box = await Boxes.findOne({ serialNo: serial });
+    if (box) {
+      let parts = box.components;
+      console.log('parts', parts);
+      parts.forEach((part) => {
+        // console.log(part.componentName);
+        shippedDetails.push({"box":box.serialNo,"partNumber":part.componentName,"quantity":part.quantity});
+      });
+    }
+  }
+
+  utils.commonResponse(res, 200, "Projects fetched successfully", shippedDetails);
+
+}
+
 exports.getSpokeProjectsDetails = async (req, res) => {
   try {
     const { _id } = req.body;
@@ -365,24 +389,24 @@ exports.shipProject = async (req, res) => {
       {
         $match: {
           _id: new mongoose.Types.ObjectId(projectId)
-        } 
+        }
       },
       {
-        $unwind: "$switchBoardData" 
+        $unwind: "$switchBoardData"
       },
       {
-        $unwind: "$switchBoardData.components" 
+        $unwind: "$switchBoardData.components"
       },
       {
-        $unwind: "$switchBoardData.components.parts" 
+        $unwind: "$switchBoardData.components.parts"
       },
       {
         $project:
-          {
-            parts:
-              "$switchBoardData.components.parts",
-            _id: 0
-          }
+        {
+          parts:
+            "$switchBoardData.components.parts",
+          _id: 0
+        }
       },
     ])
 
@@ -394,7 +418,7 @@ exports.shipProject = async (req, res) => {
       const existingPart = projectComponentWithQuantityAdded.find(
         (inner_part) => inner_part.partNumber === part.parts.partNumber
       );
-    
+
       if (existingPart) {
         // If it exists, increment the total quantity
         existingPart.qnty += part.parts.quantity;
@@ -408,10 +432,10 @@ exports.shipProject = async (req, res) => {
         });
       }
     });
-    
+
     // List of parts
     // //console.log("projectComponents: ", projectComponentWithQuantityAdded);
-    
+
 
     // Step 2: Fetch Shipped Components from Boxes
     const boxComponents = await Boxes.aggregate([
@@ -434,37 +458,37 @@ exports.shipProject = async (req, res) => {
 
     // //console.log('boxComponents: ', boxComponents);
     // //console.log('projectComponents: ', projectComponents);
-    
+
     // Step 3: Compare Required and Shipped Quantities
     const missingComponents = [];
-    
+
     // Create a Map from boxComponents for fast lookups
     // const boxComponentsMap = new Map(
     //   boxComponents.map((comp) => [comp.partNumber, comp.totalShippedQuantity])
     // );
-    
+
     // Iterate over projectComponents to find missing parts
-      projectComponentWithQuantityAdded.forEach((part) => {
-        let InBox = false;
-        // Use a for-loop to break early if part is found
-        for (let partInBox of boxComponents) {
-          if (partInBox.partNumber === part.partNumber) {
-            InBox = true;
-            let pendingQuantity = Math.abs(partInBox.totalShippedQuantity - part.qnty);
-            if (pendingQuantity > 0) {
-              part.qnty = pendingQuantity;
-              InBox = false;  // Reset InBox if there's a discrepancy in quantity
-            }
-            break; // Exit the loop early when the part is found
+    projectComponentWithQuantityAdded.forEach((part) => {
+      let InBox = false;
+      // Use a for-loop to break early if part is found
+      for (let partInBox of boxComponents) {
+        if (partInBox.partNumber === part.partNumber) {
+          InBox = true;
+          let pendingQuantity = Math.abs(partInBox.totalShippedQuantity - part.qnty);
+          if (pendingQuantity > 0) {
+            part.qnty = pendingQuantity;
+            InBox = false;  // Reset InBox if there's a discrepancy in quantity
           }
+          break; // Exit the loop early when the part is found
         }
-        // If part is not found in box components, add it to missing components
-        if (!InBox) {
-          missingComponents.push(part);
-        }
-      });
-      
-    
+      }
+      // If part is not found in box components, add it to missing components
+      if (!InBox) {
+        missingComponents.push(part);
+      }
+    });
+
+
 
     // projectComponentWithQuantityAdded.forEach((projectComponent) => {
     //   const shippedQuantity = projectComponent.totalQuantity
@@ -477,10 +501,10 @@ exports.shipProject = async (req, res) => {
     //     });
     //   }
     // });
-    
+
     // Log the missing components
     // //console.log('Missing Components: ', missingComponents);
-    
+
 
     // Step 4: Respond Based on Missing Components
     if (missingComponents.length > 0) {
@@ -505,10 +529,10 @@ exports.shipProject = async (req, res) => {
   }
 };
 
-exports.getAllPartsInProject = async (req, res)=> {
+exports.getAllPartsInProject = async (req, res) => {
   // THIS FUNCTION WILL REGURN THE PARTS INSIDE A SPECIFIC PROJECT
-  let {projectId} = req.body
-  if (!projectId){
+  let { projectId } = req.body
+  if (!projectId) {
     return utils.commonResponse(
       res,
       404,
@@ -516,14 +540,14 @@ exports.getAllPartsInProject = async (req, res)=> {
     );
   }
 
-  if (!mongoose.Types.ObjectId.isValid(projectId)){
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
     return utils.commonResponse(
       res,
       404,
       "Project ID does not exist"
     );
   }
-  
+
   let project = await Projects.findById(projectId)
 
   if (project == undefined) {
@@ -539,29 +563,29 @@ exports.getAllPartsInProject = async (req, res)=> {
   let partList = []
   for (let switchBoard of switchBoards) {
     for (let component of switchBoard.components) {
-        for (let part of component.parts) {
-            partList.push(part);
-        }
+      for (let part of component.parts) {
+        partList.push(part);
+      }
     }
-}
+  }
 
   let finalPartList = [];
 
   for (let part of partList) {
-      let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
-  
-       
-      if (existingPart) {
-          // If part exists in finalPartList, increment its quantity
-          existingPart.quantity += part.quantity;
-          
-      } else {
-          // If part doesn't exist, add it to finalPartList
-          finalPartList.push(part); // Create a copy to avoid reference issues
-      }
+    let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
+
+
+    if (existingPart) {
+      // If part exists in finalPartList, increment its quantity
+      existingPart.quantity += part.quantity;
+
+    } else {
+      // If part doesn't exist, add it to finalPartList
+      finalPartList.push(part); // Create a copy to avoid reference issues
+    }
   }
-  
-  
+
+
 
 
   utils.commonResponse(

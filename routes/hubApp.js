@@ -83,6 +83,7 @@ router.post("/getAllProjectsInHub",verifyToken, ProjectController.getAllProjects
 router.post("/getOpenProjects",verifyToken, ProjectController.getOpenProjects);
 router.post("/getProjectDetailsWithParts",verifyToken, ProjectController.getProjectDetailsWithParts);
 router.post("/getProjectsDetails",verifyToken, ProjectController.getProjectsDetails);
+router.post("/getShippedDetails",verifyToken, ProjectController.getShippedDetails);
 router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsInProject);
 
 // PARTS RELATED REQUESTS
