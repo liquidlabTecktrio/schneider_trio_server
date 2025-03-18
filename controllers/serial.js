@@ -84,7 +84,7 @@ exports.generatePartSerialNo = async (req, res) => {
       );
     }
     // check the project details
-    console.log(partNumber)
+    console.log(req.body)
     let cpart
 
     if(projectID){
