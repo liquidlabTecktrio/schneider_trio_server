@@ -627,11 +627,14 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       const existingPart = acc.find(item => item.partNumber === part.partNumber);
       if (existingPart) {
         existingPart.quantity += part.quantity;
+        // console.log('part details- ---------',part)
       } else {
-        console.log(part)
-        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description: part.partDescription });
+        // console.log('part details- ---------',part)
+        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description: part.partDescription , grouped:part.grouped?true:false,PiecePerPacket:part.PiecePerPacket?part.PiecePerPacket:0});
       }
+      // console.log('part details- ---------',acc)
       return acc;
+
     }, []);
     // Project details (static for now, can be dynamic)
     const ProjectDetails = {

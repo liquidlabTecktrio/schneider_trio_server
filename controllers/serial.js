@@ -8,6 +8,7 @@ const utils = require("../controllers/utils");
 const shortid = require("shortid");
 const { default: mongoose } = require("mongoose");
 const Partserialinfo = require("../Models/Partserialinfo.js");
+const Projects = require("../Models/Projects.js");
 
 function calculatePackets(requiredQuantity, maxPerPacket) {
   const packets = [];
@@ -74,7 +75,7 @@ exports.generateComponentSerialNo = async (req, res) => {
 exports.generatePartSerialNo = async (req, res) => {
   // THIS FUNCTION WILL GENERATE SERIAL NUMBER FOR PARTS
   try {
-    const { hubID, partID, partNumber, qnty } = req.body;
+    const { hubID, partID, partNumber, qnty, projectID } = req.body;
     if (!qnty || typeof qnty !== "number" || !hubID || !partNumber) {
       return utils.commonResponse(
         res,
@@ -82,7 +83,25 @@ exports.generatePartSerialNo = async (req, res) => {
         "Required Quantity (qnty) , hubID, partNumber"
       );
     }
-    let cpart = await parts.findOne({ partNumber })
+    // check the project details
+    console.log(partNumber)
+    let cpart
+
+    if(projectID){
+      let project = await Projects.findOne({_id:projectID})
+      let partList = project.partList
+      partList.forEach((part, key)=>{
+        if(part.partNumber == partNumber){
+          cpart = part
+        }
+      })
+    }
+    else{
+      cpart = await parts.findOne({ partNumber })
+    }
+
+    console.log(cpart)
+
     let serialNumbers
     let PiecePerPacket = []
     let grouped = false
@@ -181,6 +200,7 @@ exports.generatePartSerialNo = async (req, res) => {
     return utils.commonResponse(res, 500, "Internal Server Error", error);
   }
 };
+
 
 exports.generatePanelSerialNo = async (req, res) => {
   try {

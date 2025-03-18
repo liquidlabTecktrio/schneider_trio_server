@@ -45,16 +45,19 @@ exports.createNewOrderFromHub = async (req, res) => {
   try {
     let data = req.body
     let switchBoards = data.switchBoards
+    let partList = data.part_list
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
-    
-    for (let s of switchBoards) {
-      console.log(s.components)
-      for (let c of s.components) {
-        console.log(c.parts)
-      }
-    }
+
+    // for (let s of switchBoards) {
+    //   console.log(s.components)
+    //   for (let c of s.components) {
+    //     console.log(c.parts)
+    //   }
+    // }
+
+    console.log('----------',partList)
 
     let newProjectData = {
       ProjectName: project_name,
@@ -62,6 +65,7 @@ exports.createNewOrderFromHub = async (req, res) => {
       createdTo: hub_id,
       status: "open",
       switchBoardData: switchBoards,
+      partList:partList,
     }
 
     await Projects.create(newProjectData);
@@ -631,32 +635,32 @@ exports.getAllPartsInProject = async (req, res) => {
     );
   }
 
-  let switchBoards = project.switchBoardData
+  // let switchBoards = project.partList
 
-  let partList = []
-  for (let switchBoard of switchBoards) {
-    for (let component of switchBoard.components) {
-      for (let part of component.parts) {
-        partList.push(part);
-      }
-    }
-  }
+  // let partList = []
+  // for (let switchBoard of switchBoards) {
+  //   for (let component of switchBoard.components) {
+  //     for (let part of component.parts) {
+  //       partList.push(part);
+  //     }
+  //   }
+  // }
 
-  let finalPartList = [];
+  // let finalPartList = [];
 
-  for (let part of partList) {
-    let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
+  // for (let part of partList) {
+  //   let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
 
 
-    if (existingPart) {
-      // If part exists in finalPartList, increment its quantity
-      existingPart.quantity += part.quantity;
+  //   if (existingPart) {
+  //     // If part exists in finalPartList, increment its quantity
+  //     existingPart.quantity += part.quantity;
 
-    } else {
-      // If part doesn't exist, add it to finalPartList
-      finalPartList.push(part); // Create a copy to avoid reference issues
-    }
-  }
+  //   } else {
+  //     // If part doesn't exist, add it to finalPartList
+  //     finalPartList.push(part); // Create a copy to avoid reference issues
+  //   }
+  // }
 
 
 
@@ -665,7 +669,7 @@ exports.getAllPartsInProject = async (req, res) => {
     res,
     200,
     "Project details fetched successfully",
-    finalPartList
+    project.partList
   );
 
 }

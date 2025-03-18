@@ -71,6 +71,23 @@ const switchBoardSchema = new Schema({
   },
 });
 
+const partList = new Schema({
+  partNumber:{
+    type:String,
+  },
+  quantity:{
+    type:Number,
+  },
+  description:{
+    type:String,
+  },
+  grouped:{
+    type:Boolean,
+  },
+  PiecePerPacket:{
+    type:Number,
+  },
+})
 
 // SCHEMA FOR PROJECTS
 const Projects = new Schema(
@@ -96,6 +113,9 @@ const Projects = new Schema(
     },
     switchBoardData: {
       type: [switchBoardSchema],
+    },
+    partList:{
+      type:[partList]
     },
     ProjectDate: {
       type: Date,
