@@ -75,7 +75,7 @@ exports.generateComponentSerialNo = async (req, res) => {
 exports.generatePartSerialNo = async (req, res) => {
   // THIS FUNCTION WILL GENERATE SERIAL NUMBER FOR PARTS
   try {
-    const { hubID, partID, partNumber, qnty, projectID } = req.body;
+    const { hubID, partID, partNumber, qnty, projectId } = req.body;
     if (!qnty || typeof qnty !== "number" || !hubID || !partNumber) {
       return utils.commonResponse(
         res,
@@ -87,9 +87,9 @@ exports.generatePartSerialNo = async (req, res) => {
     console.log(req.body)
     let cpart
 
-    if(projectID){
+    if(projectId){
       console.log("searching for part in project")
-      let project_id = new mongoose.Types.ObjectId(projectID)
+      let project_id = new mongoose.Types.ObjectId(projectId)
       let project = await Projects.findOne({_id:project_id})
       let partList = project.partList
       partList.forEach((part, key)=>{
