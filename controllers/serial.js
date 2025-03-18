@@ -88,7 +88,9 @@ exports.generatePartSerialNo = async (req, res) => {
     let cpart
 
     if(projectID){
-      let project = await Projects.findOne({_id:projectID})
+      console.log("searching for part in project")
+      let project_id = new mongoose.Types.ObjectId(projectID)
+      let project = await Projects.findOne({_id:project_id})
       let partList = project.partList
       partList.forEach((part, key)=>{
         if(part.partNumber == partNumber){
