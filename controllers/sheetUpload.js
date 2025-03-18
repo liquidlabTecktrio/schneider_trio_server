@@ -279,13 +279,17 @@ exports.recoverCR = async (req, res) => {
 }
 
 exports.createPart = (async (req, res) => {
+
+  const data = { partNumber, partDescription, quantity, isGrouped, PiecePerPacket } = req.body
+
+
   // THIS FUNCTION WILL CREATE NEW PART IN THE SYSTEM
   let newPart = {
-    partNumber: req.body.partNumber,
-    partDescription: req.body.partDescription,
-    quantity: req.body.quantity,
-    grouped: req.body.grouped,
-    PiecePerPacket: req.body.PiecePerPacket
+    partNumber: data.partNumber,
+    partDescription: data.partDescription,
+    quantity: data.quantity,
+    grouped: data.isGrouped,
+    PiecePerPacket: data.PiecePerPacket
   }
   const ExistingPart = await Parts.findOne({ partNumber: newPart.partNumber });
   if (ExistingPart) {
@@ -293,6 +297,8 @@ exports.createPart = (async (req, res) => {
   }
   else {
     Parts.create(newPart).then((data) => {
+      console.log(newPart,":newPart");
+      
       return utils.commonResponse(res, 200, "success", {})
     })
   }
@@ -497,15 +503,15 @@ exports.uploadCRFromAdmin = async (req, res) => {
           quantity: 0,
           parts: [],
         };
-        
+
         // console.log(cr)
         const ExistingCRList = await CommercialReference.find({ referenceNumber: cr.referenceNumber });
 
-        ExistingCRList.map((cr,key)=>{
-            cr.isActive = false
-            cr.save()
+        ExistingCRList.map((cr, key) => {
+          cr.isActive = false
+          cr.save()
         })
-        
+
         newCR = await CommercialReference.create(cr);
         console.log(newCR)
         NeedSkip = false
@@ -623,7 +629,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         existingPart.quantity += part.quantity;
       } else {
         console.log(part)
-        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description:part.partDescription });
+        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description: part.partDescription });
       }
       return acc;
     }, []);

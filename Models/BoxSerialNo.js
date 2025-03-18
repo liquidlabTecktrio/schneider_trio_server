@@ -1,6 +1,8 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// DATABASE SCHEMA FOR BOX SERIAL NO
 const BoxSerialNo = new Schema(
   {
     hubID: {
@@ -8,13 +10,15 @@ const BoxSerialNo = new Schema(
       required: true,
     },
     serialNos: {
-      type: [String], // Array of serial numbers (strings)
+      type: [String],
       required: true,
     },
   },
   {
-    timestamps: true, // To track creation and update times
+    timestamps: true,
   }
 );
 
+
+// EXPORTING BOXSERIALNO
 module.exports = mongoose.model("BoxSerialNo", BoxSerialNo);

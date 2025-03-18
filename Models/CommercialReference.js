@@ -1,6 +1,9 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// DATABASE PART SCHEMA
 const partSchema = new Schema({
   partNumber: {
     type: String,
@@ -28,6 +31,8 @@ const partSchema = new Schema({
   },
 });
 
+
+// DATABASE COMMERCIAL REFERENCE SCHEMA
 const CommercialReference = new Schema(
   {
     referenceNumber: {
@@ -63,4 +68,6 @@ const CommercialReference = new Schema(
   }
 );
 
+
+// EXPORT COMMERTIAL REFERENCE
 module.exports = mongoose.model("CommercialReference", CommercialReference);

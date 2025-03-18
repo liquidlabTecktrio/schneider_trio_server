@@ -1,6 +1,9 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// SCHEMA FOR PRODUCTS
 const Products = new Schema({
   productNumber: {
     type: String,
@@ -18,4 +21,6 @@ const Products = new Schema({
     type: Number,
   },
 });
+
+// EXPORTING PRODUCTS
 module.exports = mongoose.model("Products", Products);

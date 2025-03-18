@@ -1,7 +1,8 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-
+// SCHEMA FOR HUBSERIAL NO
 const HubSerialNo = new Schema({
     hubID: {
         type: mongoose.Types.ObjectId
@@ -12,13 +13,10 @@ const HubSerialNo = new Schema({
     },
     serialNos: {
         type: [String],
-
     }
-
 })
 
-
-
+// SCHENMA FOR PANELSERIAL NO
 const PanelSerialNo = new Schema(
     {
         hubSerialNo: {
@@ -29,12 +27,12 @@ const PanelSerialNo = new Schema(
             type: mongoose.Types.ObjectId,
             required: true,
         },
-
-
     },
     {
         timestamps: true,
     }
 );
 
+
+// EXPORT PANELSERIAL NO
 module.exports = mongoose.model("PanelSerialNo", PanelSerialNo);

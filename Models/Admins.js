@@ -1,6 +1,9 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// ADMIN DATABASE SCHEMA
 const Admin = new Schema(
   {
     username: {
@@ -17,4 +20,5 @@ const Admin = new Schema(
   }
 );
 
+// EXPORTIG ADMIN
 module.exports = mongoose.model("Admin", Admin);

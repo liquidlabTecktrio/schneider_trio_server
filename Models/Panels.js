@@ -1,31 +1,34 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+// // IMPORTING MODULES
+// const mongoose = require("mongoose");
+// const Schema = mongoose.Schema;
 
 
-
-const Panel = new Schema(
-  {
-    panelName: {
-      type: String,
-      required: true,
-    },
-    panelShortName: {
-      type: String,
-      required: true,
-    },
-    panelPartNo: {
-      type: String,
-      required: true,
-    },
-    panelSize: {
-      type: String,
-      required: true,
-    },
+// // SCHEMNA FOR PANEL
+// const Panel = new Schema(
+//   {
+//     panelName: {
+//       type: String,
+//       required: true,
+//     },
+//     panelShortName: {
+//       type: String,
+//       required: true,
+//     },
+//     panelPartNo: {
+//       type: String,
+//       required: true,
+//     },
+//     panelSize: {
+//       type: String,
+//       required: true,
+//     },
    
-  },
-  {
-    timestamps: true,
-  }
-);
+//   },
+//   {
+//     timestamps: true,
+//   }
+// );
 
-module.exports = mongoose.model("Panels", Panel);
+
+// // EXPORT PANELS
+// module.exports = mongoose.model("Panels", Panel);

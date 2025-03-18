@@ -1,6 +1,8 @@
+// IMPORTI MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// SCHEMA FOR HUBBSERIALNO
 const HubSerialNo = new Schema({
   hubId: {
     type: mongoose.Types.ObjectId,
@@ -14,6 +16,8 @@ const HubSerialNo = new Schema({
   },
 });
 
+
+// SCHEMA FOR PARTSERIAL NO
 const PartsSerialNo = new Schema(
   {
     hubSerialNo: {
@@ -33,4 +37,6 @@ const PartsSerialNo = new Schema(
   }
 );
 
+
+// EXPORTING PARTSERIAL NO
 module.exports = mongoose.model("PartsSerialNo", PartsSerialNo);

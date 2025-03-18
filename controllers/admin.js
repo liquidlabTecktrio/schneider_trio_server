@@ -3,6 +3,7 @@ const Admin = require("../Models/Admins");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
 // GENEREATE TOKEN FOR USER AUTHENTICATION
 const generateToken = async (admin_id) => {
   const token = await jwt.sign({ admin_id: admin_id }, process.env.JWT_SECRET, {
@@ -10,6 +11,7 @@ const generateToken = async (admin_id) => {
   });
   return token;
 };
+
 
 // HANDLE ADMIN LOGIN REQUEST
 exports.adminLogin = async (req, res, next) => {
@@ -73,6 +75,7 @@ exports.adminSignUp = async (req, res) => {
 };
 
 
+// HANDLE GETALLADMIN
 exports.getAllAdmin = async (req, res) => {
   try {
     const allAdmin = await Admin.find({});
@@ -85,6 +88,7 @@ exports.getAllAdmin = async (req, res) => {
 };
 
 
+// HANDLE DELTEADMIN
 exports.deleteAdmin = async (req, res) => {
   try {
     const { _id } = req.body;
@@ -98,6 +102,7 @@ exports.deleteAdmin = async (req, res) => {
 };
 
 
+// HANDLE UPDATEADMIN
 exports.UpdateAdmin = async (req, res) => {
   try {
     const { _id, username, password, level } = req.body;
@@ -118,4 +123,7 @@ exports.UpdateAdmin = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+// END
 

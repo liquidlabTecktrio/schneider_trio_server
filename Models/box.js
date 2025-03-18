@@ -1,5 +1,7 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 
+// DATABASE SCHEMA OF COMPONENT
 const ComponentSchema = new mongoose.Schema({
   componentName: {
     type: String,
@@ -18,6 +20,8 @@ const ComponentSchema = new mongoose.Schema({
   },
 });
 
+
+// DATABASE SCEMA OF BOX
 const BoxesSchema = new mongoose.Schema(
   {
     projectId: {
@@ -45,4 +49,6 @@ const BoxesSchema = new mongoose.Schema(
   }
 );
 
+
+// EXPORTING BOEX
 module.exports = mongoose.model("Boxes", BoxesSchema);

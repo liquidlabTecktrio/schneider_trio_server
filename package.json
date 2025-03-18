@@ -38,6 +38,6 @@
     "zebra-browser-print-wrapper": "^0.1.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.9"
   }
 }

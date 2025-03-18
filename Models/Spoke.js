@@ -1,6 +1,9 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// SCHEMA FOR SPOKE
 const Spoke = new Schema(
   {
     spokeName: {
@@ -11,18 +14,14 @@ const Spoke = new Schema(
       type: String,
       required: true,
     },
-    
     spokeUserName: {
       type: String,
       required: true,
     },
-    
     spokePassword: {
       type: String,
       required: true,
     },
-    
-    
     isSpokeActive: {
       type: Boolean,
       required: true,
@@ -34,4 +33,6 @@ const Spoke = new Schema(
   }
 );
 
+
+// EXPORTING SPOKE 
 module.exports = mongoose.model("Spokes", Spoke);

@@ -1,6 +1,9 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// SCHEMA OF HUBUSER
 const HubUsers = new Schema(
   {
     username: {
@@ -30,4 +33,6 @@ const HubUsers = new Schema(
   }
 );
 
+
+// EXPORGTING HUBUSER
 module.exports = mongoose.model("HubUsers", HubUsers);

@@ -1,3 +1,4 @@
+// IMPORING MODULES
 const { default: mongoose } = require("mongoose");
 const Hubs = require("../Models/Hubs");
 const utils = require("../controllers/utils");
@@ -5,13 +6,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const HubUsers = require("../Models/HubUsers");
 
+// GENERATE TOKEN FOR LOGIN
 const generateToken = async (hub_ID) => {
     const token = await jwt.sign({ hub_ID: hub_ID }, process.env.JWT_SECRET);
-
     return token;
 };
 
-
+// HELPS IN CREATING HUBS
 exports.createHubs = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
@@ -19,35 +20,29 @@ exports.createHubs = async (req, res) => {
         const { hubName, hubShortName, hubUsername, hubPassword, logo_ZPL } = req.body;
         let existingHubUser = await HubUsers.find({ username: hubUsername })
         let existingHub = await Hubs.find({ hubName })
-
-        console.log(existingHubUser, existingHub)
-
         if (existingHubUser.length > 0) {
             let error = "Hub User name Already exist, Enter another user name"
             return utils.commonResponse(res, 500, "user name Already exist, Enter another user name", error.toString());
         }
-
         if (existingHub.length > 0) {
             let error = "Hub name Already exist, Enter another hub name"
             return utils.commonResponse(res, 500, "Hub name Already exist, Enter another hub name", error.toString());
         }
-     
         let result = await Hubs.create({ hubName, hubShortName, logo_ZPL })
-
         await HubUsers.create({ username: hubUsername, password: hubPassword, level: 1, hub_id: result._id })
         const allHubs = await Hubs.find();
         return utils.commonResponse(res, 200, "hub created successfully", allHubs);
-    
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
     }
 }
 
+
+// HELPS IN CRATEING HUB USER
 exports.createHubUser = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
-
         const { username, password, phonenumber, hub_id } = req.body;
         // Validate required fields
         if (!username || !password || !phonenumber || !hub_id) {
@@ -60,7 +55,6 @@ exports.createHubUser = async (req, res) => {
         let existinguser = await HubUsers.findOne({ username })
         // console.log(existinguser)
         if (existinguser) { return utils.commonResponse(res, 201, "username already exist , try using another username") }
-
         else {
             let newUser = {
                 "username": username,
@@ -71,22 +65,19 @@ exports.createHubUser = async (req, res) => {
             }
             await HubUsers.create(newUser)
             const allHubs = await Hubs.find();
-            return utils.commonResponse(res, 200, "hub user created successfully", allHubs);
-
+            return utils.commonResponse(res, 200, "hub user created successfully", allHubs); 
         }
-
-
-
     }
     catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
     }
 }
 
+
+// HELPS IN GETTING ALL HUB USERS
 exports.getAllHubUser = async (req, res) => {
     // THIS FUNCTION WILL CREATE NEW HUB
     try {
-
         const { hub_id } = req.body;
         // Validate required fields
         if (!hub_id) {
@@ -104,6 +95,8 @@ exports.getAllHubUser = async (req, res) => {
     }
 }
 
+
+// HELPS IN DELETING HUBS
 exports.deleteHub = async (req, res) => {
     // THIS FUNCTION WILL DELETE EXISTNG HUB
     try {
@@ -122,10 +115,11 @@ exports.deleteHub = async (req, res) => {
     } catch (err) {
         utils.commonResponse(res, 500, "Unexpected server error", err.toString());
     }
-
 }
 
 
+
+// HELPS IN UPDATING HUBS
 exports.updateHub = async (req, res) => {
     // THIS FUNCTION WILL DELETE EXISTNG HUB
     try {
@@ -143,9 +137,10 @@ exports.updateHub = async (req, res) => {
     } catch (err) {
         utils.commonResponse(res, 500, "Unexpected server error", err.toString());
     }
-
 }
 
+
+// HELPS IN GETTING ALL HUBS
 exports.getAllHubs = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
@@ -154,10 +149,11 @@ exports.getAllHubs = async (req, res) => {
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
-
     }
 }
 
+
+// HELPS IN ACTIVATEING THE HUB USER
 exports.activateHubUser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
@@ -168,10 +164,11 @@ exports.activateHubUser = async (req, res) => {
 
     } catch (error) {
         utils.commonResponse(res, 500, "unexpected server error", error.toString());
-
     }
 }
 
+
+// HELPS IN DEACTIVATING THE HUB USER
 exports.deactivateHubUser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
@@ -185,6 +182,8 @@ exports.deactivateHubUser = async (req, res) => {
     }
 }
 
+
+// HELPS IN DELETING HUB USER
 exports.deletehubuser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
@@ -198,6 +197,8 @@ exports.deletehubuser = async (req, res) => {
     }
 }
 
+
+// HELPS IN UPDATING HUB USER
 exports.updatehubuser = async (req, res) => {
     // THIS FUNCTION WILL RESPPOND WITH ALL THE AVAILABLE HUBS
     try {
@@ -221,6 +222,8 @@ exports.updatehubuser = async (req, res) => {
 }
 
 
+
+// HELPS IN LOGIN TO HUBS
 exports.LoginToHubs = async (req, res) => {
     // THIS FUNCTION WILL HELP THE HUB TO GET THE AUTHENTICATION KEY FOR ENTERING THE PLATFORM
     try {
@@ -233,7 +236,6 @@ exports.LoginToHubs = async (req, res) => {
             const hub = await Hubs.findById(user.hub_id)
             if (hub) {
                 const token = await generateToken(hub._id);
-
                 let resdata = {
                     "hubName": hub.hubName,
                     "hubShortName": hub.hubShortName,
@@ -244,7 +246,6 @@ exports.LoginToHubs = async (req, res) => {
                     "level": user.level,
                     "_id": hub._id,
                 }
-
                 utils.commonResponse(res, 200, "Login successfully", resdata);
             } else {
                 utils.commonResponse(res, 401, "Something is Not Right");
@@ -253,10 +254,10 @@ exports.LoginToHubs = async (req, res) => {
         else {
             utils.commonResponse(res, 401, "Invalid username or password");
         }
-
     } catch (error) {
         utils.commonResponse(res, 500, "Unexpected server error", error.toString());
     }
 };
 
 
+// END

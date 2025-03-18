@@ -1,3 +1,4 @@
+// IMPORT MODULES
 const mongoose = require("mongoose");
 const boxSerialNo = require("../Models/BoxSerialNo");
 const utils = require("../controllers/utils");
@@ -13,9 +14,10 @@ const PartsSerialNo = require("../Models/PartsSerialNo.js");
 const Partserialinfo = require("../Models/Partserialinfo.js");
 
 
+
+// HANDLES CHECK COMPONENTS QUANTITY
 async function checkComponentQuntityExceeded(
   totalQuantity,
-
   reference,
   projectId
 ) {
@@ -61,6 +63,9 @@ async function checkComponentQuntityExceeded(
   }
 }
 
+
+
+// HANDLES CHECKCOMPONENT EXIST
 async function checkComponentExitInTheProject(res, componentID, projectID) {
   try {
     const findComponentExist = await Component.aggregate([
@@ -121,33 +126,31 @@ async function checkComponentExitInTheProject(res, componentID, projectID) {
   }
 }
 
-exports.generateBoxSerialNo = async (req, res) => {
 
+
+
+// EXPORT GENERATE BOX SERIAL NUMBER
+exports.generateBoxSerialNo = async (req, res) => {
   // THIS FUNCTION WILL GENERATE SERIAL NUMBERS FOR BOXES 
   // REQUEST WITH
   // HUBID AND QUANTITY AS ( hubID, qnty )
   // RESPONSE
   // LIST OF BOX SERIAL NUMBERS
-
   try {
     const { hubID, qnty } = req.body;
-
     if (!hubID || !qnty || typeof qnty !== "number" || qnty <= 0) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-
     const existingBoxSerial = await boxSerialNo.findOne({ hubID });
     let serialCounter = existingBoxSerial
       ? existingBoxSerial.serialNos.length + 1
       : 1;
-
     const boxSerialNos = Array.from({ length: qnty }, () => {
       const serialNo = shortid.generate();
       const sixDigitNo = serialCounter.toString().padStart(6, "0");
       serialCounter += 1;
       return `${serialNo}${sixDigitNo}`;
     });
-
     if (existingBoxSerial) {
       await boxSerialNo.updateOne(
         { hubID },
@@ -163,7 +166,6 @@ exports.generateBoxSerialNo = async (req, res) => {
         serialNoCount: qnty,
       });
     }
-
     utils.commonResponse(res, 200, "Box serial numbers generated", {
       hubID,
       boxSerialNos,
@@ -173,14 +175,15 @@ exports.generateBoxSerialNo = async (req, res) => {
   }
 };
 
-exports.addBoxToProject = async (req, res) => {
 
+
+// HANDLES ADD BOX TO PROJECT
+exports.addBoxToProject = async (req, res) => {
   // THIS FUNCTION WILL ADD A BOX TO A PROJECT
   // REQUEST MUST CONTAIN
   // projectID and serialNo
   // RESPONSE
   // OBJECT WITH BOX DATA
-
   try {
     const { projectID, serialNo } = req.body;
     if (!projectID || !serialNo) {
@@ -231,14 +234,15 @@ exports.addBoxToProject = async (req, res) => {
   }
 };
 
-exports.removeBoxFromProject = async (req, res) => {
 
+
+// HANDLES REMOVE BOX FROM PROJECT
+exports.removeBoxFromProject = async (req, res) => {
   // THE FUNCTION CAN BE USED TO REMOVE BOX FROM A PROJECT
   // REQUEST MUST CONTAIN 
   // projectId, serialNo\
   // RESPONSE 
   // MESSAGE SAYING "BOX DELETED FROM PROJECT SUCCESSFULLY"
-
   try {
     const { projectID, serialNo } = req.body;
     if (!projectID || !serialNo) {
@@ -265,6 +269,8 @@ exports.removeBoxFromProject = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+
 
 // NO IN USE
 exports.addComponentsToBox = async (req, res) => {
@@ -428,6 +434,8 @@ exports.addComponentsToBox = async (req, res) => {
   }
 };
 
+
+// HELPS IN GETING BOX DETAILS
 exports.getBoxDetails = async (req, res) => {
   // THE FUNCTION IS TO RESPOND WITH THE BOX DETAILS CONTAINING THE PARTS INSIDE IT , PROJECT DETAILS AND SO ON
   try {
@@ -565,14 +573,14 @@ exports.getBoxDetails = async (req, res) => {
   }
 };
 
+
+// HELPS TO UPDATE THE BOX STATUS
 exports.updateBoxStatus = async (req, res) => {
   try {
     const { _id, status } = req.body;
-
     if (!_id || !status) {
       utils.commonResponse(res, 400, "Both _id and status are required.");
     }
-
     const validStatuses = ["open", "shipped"];
     if (!validStatuses.includes(status)) {
       utils.commonResponse(
@@ -581,17 +589,14 @@ exports.updateBoxStatus = async (req, res) => {
         "Invalid status. Must be 'open' or 'shipped'."
       );
     }
-
     const updatedBoxes = await Boxes.findOneAndUpdate(
       { _id },
       { status },
       { new: true }
     );
-
     if (!updatedBoxes) {
       utils.commonResponse(res, 404, "Boxes not found.");
     }
-
     utils.commonResponse(res, 200, "Boxes closed successfully");
   } catch (error) {
     console.error("Error closing the boxes:", error);
@@ -599,6 +604,8 @@ exports.updateBoxStatus = async (req, res) => {
   }
 };
 
+
+// NOT USING
 function calculatePackets(requiredQuantity, maxPerPacket) {
   const packets = [];
   let remainingQuantity = requiredQuantity;
@@ -610,35 +617,28 @@ function calculatePackets(requiredQuantity, maxPerPacket) {
   return packets;
 }
 
+
+// HELPS IN ADDING PART TO BOX
 exports.addPartsToBox = async (req, res) => {
   try {
-
     // console.log('addpart', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber, qty } = req.body;
-
-
     let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
     // console.log(currentpart.partNumber, "current part")
     let currentpartNumber = currentpart.partNumber
-
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
-
     console.log(currentpartNumber, hubIDasObject, partSerialNumber)
-
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-
     const [part, box, hub] = await Promise.all([
       Parts.findById(partID),
       Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
       Hub.findById(hubID),
     ]);
-
     if (!part) return utils.commonResponse(res, 404, "Part ID not found");
     if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
-
     const isSerialValid = await PartsSerialNo.exists({
       partNumber: currentpartNumber,
       hubSerialNo: {
@@ -652,14 +652,11 @@ exports.addPartsToBox = async (req, res) => {
         "Part Serial Number not found for the provided Part ID and Hub ID"
       );
     }
-
     const projectBoxes = await Boxes.find({ projectId: projectID });
-
     // Check if the part exists in any project box
     const existingPart = projectBoxes.flatMap(box => box.components).find(
       comp => comp.componentID?.equals(partID) && comp.componentSerialNo.includes(partSerialNumber)
     );
-
     if (existingPart) {
       return utils.commonResponse(
         res,
@@ -667,7 +664,6 @@ exports.addPartsToBox = async (req, res) => {
         "Serial number already exists for this Part in the box"
       );
     }
-
     // Add the part to the box or update its quantity and serial numbers
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID));
     if (existingComponent) {
@@ -680,12 +676,10 @@ exports.addPartsToBox = async (req, res) => {
       else {
         existingComponent.quantity += 1;
       }
-
     }
     else {
       if (currentpart.grouped) {
         let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
-
         box.components.push({
           componentID: partID,
           componentName: part.partNumber,
@@ -701,9 +695,7 @@ exports.addPartsToBox = async (req, res) => {
           quantity: 1,
         });
       }
-
     }
-
     // Check if the total quantity exceeds the allowed limit
     const totalComponentsQuantity = await Boxes.aggregate([
       { $match: { projectId: new mongoose.Types.ObjectId(projectID) } },
@@ -711,7 +703,6 @@ exports.addPartsToBox = async (req, res) => {
       { $match: { "components.componentID": new mongoose.Types.ObjectId(partID) } },
       { $group: { _id: "$components.componentID", totalQuantity: { $sum: "$components.quantity" } } },
     ]);
-
     const totalQuantity = totalComponentsQuantity.length > 0 ? totalComponentsQuantity[0].totalQuantity : 0;
     const isExceed = await checkComponentQuntityExceeded(totalQuantity, part.partNumber, projectID);
     if (isExceed) {
@@ -721,7 +712,6 @@ exports.addPartsToBox = async (req, res) => {
         "The ordered quantity of this item has been added to the box."
       );
     }
-
     // Save the box and respond
     if (currentpart.grouped) {
       let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
@@ -732,7 +722,6 @@ exports.addPartsToBox = async (req, res) => {
       box.quantity += 1;
     }
     await box.save();
-
     return utils.commonResponse(res, 200, "Part added to box successfully", {
       boxid: box._id,
       totalParts: box.quantity,
@@ -745,39 +734,32 @@ exports.addPartsToBox = async (req, res) => {
   }
 };
 
+
+// HELPS TO REMOVE PARTS FROM BOXES
 exports.removePartsFromBoxes = async (req, res) => {
   try {
-
     console.log('remove part', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber } = req.body;
-
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
-
     const [part, box, hub] = await Promise.all([
       Parts.findById(partID),
       Boxes.findOne({ serialNo: boxSerialNo, projectId: projectID }),
       Hub.findById(hubID),
     ]);
-
     if (!part) return utils.commonResponse(res, 404, "Part ID not found");
     if (!box) return utils.commonResponse(res, 404, "Box serial number not found");
     if (!hub) return utils.commonResponse(res, 404, "Hub ID not found");
-
     // Check if the part exists in the box
     const existingComponent = box.components.find(comp => comp.componentID?.equals(partID))
-
-    console.log(existingComponent)
-
+    // console.log(existingComponent)
     if (existingComponent) {
       //   // Remove the serial number from the componentSerialNo array
       const filteredList = existingComponent.componentSerialNo.filter((data) => {
         return data != partSerialNumber
       });
-
       // console.log(filteredList)
-
       // Save the box and respond
       if (part.grouped) {
         let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
@@ -785,15 +767,12 @@ exports.removePartsFromBoxes = async (req, res) => {
       }
       else {
         existingComponent.quantity -= 1; // Decrease the quantity
-
       }
       existingComponent.componentSerialNo = filteredList
       // If the quantity becomes 0 or no serial numbers are left, remove the component from the box
       if (existingComponent.quantity <= 0 || existingComponent.componentSerialNo.length === 0) {
         box.components = box.components.filter(comp => !comp.componentID?.equals(partID));
       }
-
-
       if (part.grouped) {
         let item = await Partserialinfo.findOne({ serial_no: partSerialNumber })
         box.quantity -= item.qty;
@@ -801,20 +780,15 @@ exports.removePartsFromBoxes = async (req, res) => {
       else {
         box.quantity -= 1;
       }
-
       await box.save();
-
       return utils.commonResponse(res, 200, "Part removed from the box successfully", {
         boxid: box._id,
         totalParts: box.quantity,
       });
     }
-
     else {
       return utils.commonResponse(res, 200, "Part do not exist Exist")
     }
-
-
   } catch (error) {
     console.error("Error in addPartsToBox:", error);
     return utils.commonResponse(res, 500, "Unexpected server error", error.toString());
@@ -822,7 +796,7 @@ exports.removePartsFromBoxes = async (req, res) => {
 };
 
 
-
+// HELPS TO GET ALL PARTS IN THE BOXES
 exports.getAllPartsInAllBoxes = async (req, res) => {
   try {
     const projectId = req.body.projectId;

@@ -48,12 +48,14 @@ exports.createNewOrderFromHub = async (req, res) => {
     let hub_id = data.hub_id
     let spoke_id = data.spoke_id
     let project_name = data.project_name
+    
     for (let s of switchBoards) {
       console.log(s.components)
       for (let c of s.components) {
         console.log(c.parts)
       }
     }
+
     let newProjectData = {
       ProjectName: project_name,
       createdBy: spoke_id,
@@ -304,10 +306,10 @@ exports.getShippedDetails = async (req, res) => {
     let box = await Boxes.findOne({ serialNo: serial });
     if (box) {
       let parts = box.components;
-      console.log('parts', parts);
+      // console.log('parts', parts);
       parts.forEach((part) => {
         // console.log(part.componentName);
-        shippedDetails.push({"box":box.serialNo,"partNumber":part.componentName,"quantity":part.quantity});
+        shippedDetails.push({ "box": box.serialNo, "partNumber": part.componentName, "quantity": part.quantity });
       });
     }
   }
@@ -380,6 +382,77 @@ exports.getSpokeProjectsDetails = async (req, res) => {
     utils.commonResponse(res, 500, "Unexpected server error", error.toString());
   }
 };
+
+exports.getPendingPartsDetails = async (req, res) => {
+  let { project_id } = req.body
+  if (project == undefined) {
+    return utils.commonResponse(
+      res,
+      404,
+      "Project ID does not exist"
+    );
+  }
+
+  // get the project
+  let project = await Projects.findById(new mongoose.Types.ObjectId(project_id))
+  // get the box id's
+  let box_serials = project.boxSerialNumbers
+  let shippedparts = []
+  // // get all parts in each box
+  for (const serial of box_serials) {
+    let box = await Boxes.findOne({ serialNo: serial });
+    if (box) {
+      let parts = box.components;
+      // console.log('parts', parts);
+      parts.forEach((part) => {
+        // console.log(part.componentName);
+        shippedparts.push(part.partNumber);
+      });
+    }
+  }
+
+
+  let switchBoards = project.switchBoardData
+
+  let partList = []
+  for (let switchBoard of switchBoards) {
+    for (let component of switchBoard.components) {
+      for (let part of component.parts) {
+        partList.push(part);
+      }
+    }
+  }
+
+  let finalPartList = [];
+
+  for (let part of partList) {
+    let existingPart = finalPartList.find(p => p.partNumber === part.partNumber);
+
+
+    if (existingPart) {
+      // If part exists in finalPartList, increment its quantity
+      existingPart.quantity += part.quantity;
+
+    } else {
+      // If part doesn't exist, add it to finalPartList
+      finalPartList.push(part); // Create a copy to avoid reference issues
+    }
+  }
+
+  let pendingPartList =  []
+
+  shippedDetails.map((part,key)=>{
+    finalPartList.map((innerpart, key)=>{
+      if(innerpart.partNumber == part.partNumber){
+        pendingPartList.push(partNumber)
+      }
+    })
+  })
+
+
+  utils.commonResponse(res, 200, "Projects fetched successfully", shippedDetails, pendingPartList);
+
+}
 
 exports.shipProject = async (req, res) => {
   // THIS FUNCTION WILL CHANGE THE STATUS FOR THE PROJECT AS SHIPPED

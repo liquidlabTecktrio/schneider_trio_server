@@ -1,3 +1,4 @@
+// IMPORT MODULES
 const Components = require("../Models/Components");
 const componentSerialNo = require("../Models/componentSerialNo");
 const utils = require("./utils");
@@ -7,12 +8,12 @@ const mongoose = require("mongoose");
 const CommercialReference = require("../Models/CommercialReference");
 
 
+// HANDLES CREATE COMPONENT 
 exports.createComponent = async (req, res) => {
   try {
     const { componentName, compShortName, compPartNo, compDescription } =
       req.body;
     itemCheck = await Components.findOne({ compPartNo: compPartNo });
-
     if (itemCheck) {
       utils.commonResponse(
         res,
@@ -21,7 +22,6 @@ exports.createComponent = async (req, res) => {
         itemCheck
       );
     }
-
     Components.create({
       componentName,
       compShortName,
@@ -53,6 +53,8 @@ exports.createComponent = async (req, res) => {
   }
 };
 
+
+// HELPS IN GETTING ALL 
 exports.getAllComponents = async (req, res) => {
   try {
     const allComponents = await Components.find();

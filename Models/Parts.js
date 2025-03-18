@@ -1,6 +1,8 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// SCHEMA FOR PARENTIDSOBJ
 const parentIdsObj = new Schema({
   productId: {
     type: mongoose.Types.ObjectId, //currently not using
@@ -16,6 +18,8 @@ const parentIdsObj = new Schema({
   },
 });
 
+
+// SCHEMA FOR PARTS
 const Parts = new Schema({
   partNumber: {
     type: String,
@@ -37,11 +41,12 @@ const Parts = new Schema({
   },
   isCritical: {
     type: Boolean,
-
   },
   parentIds: [parentIdsObj],
 });
 
+
+// EXPORT MODULES
 module.exports = mongoose.model("Parts", Parts);
 // TODO: NOTE
 // 1. partName is part reference

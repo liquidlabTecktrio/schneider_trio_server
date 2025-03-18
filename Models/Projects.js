@@ -1,11 +1,13 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+// SCHEMA FOR PARTS
 const PartsSchema = new Schema({
   partNumber: {
     type: String,
   },
-
   partDescription: {
     type: String,
   },
@@ -13,6 +15,7 @@ const PartsSchema = new Schema({
     type: Number,
   },
   grouped: {
+    default:false,
     type: Boolean,
   },
   PiecePerPacket: {
@@ -22,10 +25,10 @@ const PartsSchema = new Schema({
   isCritical: {
     type: Boolean,
   },
-
-
 })
 
+
+// SCHEMA FOR COMPONENTS
 const componentSchema = new Schema({
   Enclosure: {
     type: String,
@@ -57,6 +60,8 @@ const componentSchema = new Schema({
   }
 });
 
+
+// SCHEMA FOR SWITCHBOARD
 const switchBoardSchema = new Schema({
   switchBoard: {
     type: String,
@@ -66,6 +71,8 @@ const switchBoardSchema = new Schema({
   },
 });
 
+
+// SCHEMA FOR PROJECTS
 const Projects = new Schema(
   {
     ProjectName: {
@@ -102,4 +109,6 @@ const Projects = new Schema(
   }
 );
 
+
+// EXPORTING PROJECTS
 module.exports = mongoose.model("Project", Projects);

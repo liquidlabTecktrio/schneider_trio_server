@@ -1,6 +1,8 @@
+// IMPORTING MODULES
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// SCHEMA FOR HUB
 const Hub = new Schema(
   {
     hubName: {
@@ -25,4 +27,5 @@ const Hub = new Schema(
   }
 );
 
+// EXPORTING HUB 
 module.exports = mongoose.model("Hubs", Hub);
