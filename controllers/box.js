@@ -623,7 +623,7 @@ exports.addPartsToBox = async (req, res) => {
   try {
     // console.log('addpart', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber, qty } = req.body;
-    // console.log(projectID)
+    console.log(partID)
     let projectWithID = new mongoose.Types.ObjectId(projectID)
     let project  = await Project.findOne({_id:projectWithID})
     // console.log(project)
