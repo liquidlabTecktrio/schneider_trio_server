@@ -86,6 +86,7 @@ router.post("/getProjectsDetails",verifyToken, ProjectController.getProjectsDeta
 router.post("/getShippedDetails",verifyToken, ProjectController.getShippedDetails);
 router.post("/getPendingPartsDetails",verifyToken, ProjectController.getPendingPartsDetails);
 router.post("/getAllPartsInProject",verifyToken, ProjectController.getAllPartsInProject);
+router.post("/updateProjectPartList",verifyToken, ProjectController.updateProjectPartList);
 
 // PARTS RELATED REQUESTS
 router.post("/componentScanResult",verifyToken, ProjectController.getComponentScanResult);

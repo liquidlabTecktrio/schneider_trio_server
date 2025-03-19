@@ -752,6 +752,9 @@ exports.getProjectDetailsWithParts = async (req, res) => {
           components: {
             $push: "$switchBoardData.components",
           },
+          partList : {
+            $first :"$partList"
+          }
         },
       },
       {
@@ -781,6 +784,9 @@ exports.getProjectDetailsWithParts = async (req, res) => {
           boxes: {
             $first: "$boxes",
           },
+          partList:{
+            $first:"$partList"
+          }
         },
       },
     ]);
@@ -798,3 +804,28 @@ exports.getProjectDetailsWithParts = async (req, res) => {
     return utils.commonResponse(res, 500, error.toString());
   }
 };
+
+
+
+exports.updateProjectPartList = async(req, res)=>{
+  // console.log(req.body)
+  let project_id  = req.body?.projectId
+  let part_list  = req.body?.partList
+
+  let pid = new mongoose.Types.ObjectId(project_id)
+  // console.log(pid)
+  let project = await Projects.findOneAndUpdate(
+    { _id: pid },
+    { partList: part_list },
+    { new: true } // Returns the updated document
+  );
+
+  return utils.commonResponse(
+    res,
+    200,
+    "project partlist updated successfully",
+    project
+  );
+  // project.partList = 
+
+}
