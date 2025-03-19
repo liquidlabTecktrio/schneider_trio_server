@@ -706,8 +706,8 @@ exports.getProjectDetailsWithParts = async (req, res) => {
             {
               $project: {
                 boxSerialNo: "$serialNo",
-                status: 1,
-                quantity: 1,
+                status: "$status",
+                quantity: "$quantity",
               },
             },
           ],
