@@ -633,7 +633,7 @@ exports.addPartsToBox = async (req, res) => {
     let pid = ""
     partList.map((part, key)=>{
       pid = new mongoose.Types.ObjectId(partID) 
-      if(part._id == pid){
+      if(part.partID == pid){
         currentpart = part
       }
     })
