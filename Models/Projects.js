@@ -87,6 +87,9 @@ const partList = new Schema({
   PiecePerPacket:{
     type:Number,
   },
+  partID:{
+    type:String
+  }
 })
 
 // SCHEMA FOR PROJECTS
