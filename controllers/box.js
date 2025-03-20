@@ -623,7 +623,7 @@ exports.addPartsToBox = async (req, res) => {
   try {
     // console.log('addpart', req.body)
     const { hubID, partID, boxSerialNo, projectID, partSerialNumber, qty } = req.body;
-    console.log(partID)
+    // console.log(partID)
     let projectWithID = new mongoose.Types.ObjectId(projectID)
     let project  = await Project.findOne({_id:projectWithID})
     // console.log(project)
@@ -633,18 +633,18 @@ exports.addPartsToBox = async (req, res) => {
     let pid = ""
     partList.map((part, key)=>{
       pid = new mongoose.Types.ObjectId(partID) 
-      console.log(part.partID, pid)
+      console.log("-------ppppp---------",part.partID, pid)
       if(part.partID == pid){
         currentpart = part
       }
     })
 
-    console.log('part---------',currentpart)
+    // console.log('part---------',currentpart)
     // let currentpart = await Parts.findOne({ _id: new mongoose.Types.ObjectId(partID) })
     // console.log(currentpart.partNumber, "current part")
     let currentpartNumber = currentpart.partNumber
     let hubIDasObject = new mongoose.Types.ObjectId(hubID)
-    console.log(currentpartNumber, hubIDasObject, partSerialNumber)
+    // console.log(currentpartNumber, hubIDasObject, partSerialNumber)
     if (!hubID || !partID || !boxSerialNo || !projectID || !partSerialNumber) {
       return utils.commonResponse(res, 400, "Invalid input parameters");
     }
