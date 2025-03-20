@@ -634,9 +634,13 @@ exports.addPartsToBox = async (req, res) => {
     partList.map((part, key)=>{
       // pid = new mongoose.Types.ObjectId(partID)
       // pidpart =  new mongoose.Types.ObjectId(part.partID)
-      console.log("-------ppppp---------",part.partID, partID)
       if(partID === part.partID){
+        console.log("-------match---------",part.partID, partID)
+
         currentpart = part
+      }
+      else{
+        console.log('else-----',part.partID, partID)
       }
     })
 
