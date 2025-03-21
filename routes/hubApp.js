@@ -6,39 +6,30 @@ const ProjectController = require("../controllers/projects");
 const PartsController = require("../controllers/parts");
 const sheetController = require("../controllers/sheetUpload");
 const SpokeController = require("../controllers/spoke");
-
-// const printLabel = require('../controllers/printLabel')
 const hubs = require("../controllers/hubs");
-const fs = require("fs");
-const path = require("path");
-// router.post("/printlabel", printLabel.printLabelUsingIP);
-
 const multer = require('multer');
 const verifyToken = require("../Middleware");
+const fs = require('fs')
 
-// Set up the file storage configuration using multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Where to store the file
-    cb(null, 'uploads/');  // Specify the folder where you want to store the uploaded files
-  },
-  filename: (req, file, cb) => {
-    // Specify a unique filename for the uploaded file
-    cb(null, Date.now() + file.originalname);  // Use timestamp to create a unique filename
-  }
-});
-
-if (fs.existsSync('uploads')) {
-  const files = fs.readdirSync("uploads");
-  files.forEach((file) => {
-    const currentPath = path.join("uploads", file);
-    fs.unlinkSync(currentPath);  // Use unlinkSync to remove the file
+let storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + file.originalname);
+    }
   });
-}
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync("uploads")
-}
-
+  
+  if (fs.existsSync('uploads')) {
+    const files = fs.readdirSync("uploads");
+    files.forEach((file) => {
+      const currentPath = path.join("uploads", file);
+      fs.unlinkSync(currentPath);
+    });
+  }
+  if (!fs.existsSync('uploads')) {
+    fs.mkdirSync("uploads")
+  }
 // Create a multer instance with storage configuration
 const upload = multer({ storage: storage });
 

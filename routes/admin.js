@@ -5,34 +5,33 @@ const componentController = require("../controllers/parts");
 const hubController = require("../controllers/hubs");
 const spokeController = require("../controllers/spoke");
 const ProjectController = require("../controllers/projects");
-const panelController = require("../controllers/panels");
 const sheetController = require("../controllers/sheetUpload");
 const printerController = require("../controllers/printerController");
 const multer = require('multer');
-const fs = require("fs");
-const path = require("path");
 const verifyToken = require("../Middleware");
+const fs = require('fs')
+const path = require('path')
 
-// Set up the file storage configuration using multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + file.originalname);
-  }
-});
-
-if (fs.existsSync('uploads')) {
-  const files = fs.readdirSync("uploads");
-  files.forEach((file) => {
-    const currentPath = path.join("uploads", file);
-    fs.unlinkSync(currentPath);
+let storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + file.originalname);
+    }
   });
-}
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync("uploads")
-}
+  
+  if (fs.existsSync('uploads')) {
+    const files = fs.readdirSync("uploads");
+    files.forEach((file) => {
+      const currentPath = path.join("uploads", file);
+      fs.unlinkSync(currentPath);
+    });
+  }
+  if (!fs.existsSync('uploads')) {
+    fs.mkdirSync("uploads")
+  }
+
 
 // Create a multer instance with storage configuration
 const upload = multer({ storage: storage });
@@ -66,8 +65,9 @@ router.post("/updatePrinter", verifyToken, printerController.updatePrinter);
 router.post("/createPrinter", verifyToken, printerController.createPrinter);
 
 // BOM CONTROLS
-router.post("/uploadCR", verifyToken, sheetController.uploadBomGoogleSheet);
+// router.post("/uploadCR", verifyToken, sheetController.uploadBomGoogleSheet);
 router.post("/uploadCRFromAdmin", verifyToken, upload.single("file"), sheetController.uploadCRFromAdmin);
+router.post("/uploadCRFromAdminPreview", verifyToken, upload.single("file"), sheetController.uploadCRFromAdminPreview);
 
 // MANAGE CR
 router.post("/createCR", verifyToken, sheetController.createCR);

@@ -478,17 +478,70 @@ exports.uploadBomGoogleSheet = async (req, res) => {
   }
 };
 
+
+exports.uploadCRFromAdminPreview = async(req, res)=>{
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  else{
+    console.log('Server Got the Uploaded BOM, Validating...')
+  }
+
+
+  const filePath = req.file.path;
+  const workbook = XLSX.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(worksheet);
+
+  const firstRow = rows[0];
+  // Required columns
+  const requiredColumns = [];
+  
+  // Check if all required columns exist (case-insensitive)
+  const missingColumns = requiredColumns.filter(reqCol => {
+    // Check in direct properties and __EMPTY_X properties
+    const exists = Object.entries(firstRow).some(([key, value]) => {
+      // Convert both to lowercase for case-insensitive comparison
+      return value && value.toString().toLowerCase() === reqCol.toLowerCase();
+    });
+    return !exists;
+  });
+
+  if (missingColumns.length > 0) {
+    return utils.commonResponse(res, 400, "Invalid file format", {
+      error: `Missing required columns: ${missingColumns.join(", ")}`,
+      requiredColumns: requiredColumns,
+      foundColumns: Object.values(firstRow)
+    });
+  }
+
+  return utils.commonResponse(res, 200, "Preview Ready", {
+    "preview": rows,
+  });
+
+}
+
+
 exports.uploadCRFromAdmin = async (req, res) => {
   // THIS FUNCTION WILL HELP TO CREATE NEW BOM RECORDS FROM THE BOM FILE THAT IS UPLOADING FROM THE ADMIN SIDE
   try {
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
+    else{
+      console.log('Server Got the Uploaded BOM, Validating...')
+    }
+    
     const filePath = req.file.path;
     const workbook = XLSX.readFile(filePath);
+
+    // console.log("workbook -- ",workbook)
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(worksheet);
+
+    // console.log("rowss -- ",rows)
     let newCRs = [];
     let newCR
     let NeedSkip
@@ -513,7 +566,7 @@ exports.uploadCRFromAdmin = async (req, res) => {
         })
 
         newCR = await CommercialReference.create(cr);
-        console.log(newCR)
+        // console.log(newCR)
         NeedSkip = false
         newCRs.push(newCR.referenceNumber);
 
@@ -571,7 +624,27 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     const workbook = XLSX.readFile(filePath);
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(worksheet);
+    // console.log("upload order bom", rows)
     // Initializing variables
+    let columns = rows[0]
+    // console.log(columns)
+    if (!Object.hasOwn(columns, 'SwitchBoard')) {
+      return res.status(206).send({message:"Required the Column with name SwithBoard"});
+    }
+    else if (!Object.hasOwn(columns, 'Reference')) {
+      return res.status(206).send({message:"Required the Column with name Reference"});
+    }
+    else if (!Object.hasOwn(columns, 'Enclosure')) {
+      return res.status(206).send({message:"Required the Column with name Enclosure"});
+    }
+    else if (!Object.hasOwn(columns, 'Description')) {
+      return res.status(206).send({message:"Required the Column with name Description"});
+    }
+    else if (!Object.hasOwn(columns, 'Quantity')) {
+      return res.status(206).send({message:"Required the Column with name Quantity"});
+    }
+
+
     const CrsListFromExcel = rows
       .filter(row => row.Reference) // Filter rows with a valid reference
       .map(row => ({
@@ -586,11 +659,15 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         Quantity: row.Quantity,
         isCritical: row["Core / Non core"] !== "Non-Core"
       }));
+
+
+    // console.log(CrsListFromExcel)
     // Extract unique switchboards with "Common Total" enclosures
     const switchBoards = [...new Set(CrsListFromExcel
-      .filter(cr => cr.Enclosure === "Common Total")
+      .filter(cr => cr.Enclosure.toString().toLowerCase() === "common total")
       .map(cr => cr.SwitchBoard))];
 
+    // console.log(switchBoards)
     // Group CRs by switchboard
     const SwitchboardListWithCrs = switchBoards.map(switchBoard => ({
       switchBoard,
@@ -601,12 +678,30 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     const EntireCommerialRef = await CommercialReference.find();
     const CRsinCurrentOrder = CrsListFromExcel.map(cr => cr.Reference);
 
+    const existingCRs = EntireCommerialRef.map(cr => cr.referenceNumber);
+ 
+ 
+    const missingCRs = CRsinCurrentOrder.filter(cr => 
+      !existingCRs.includes(cr)
+    );
+ 
+
+
+    if (missingCRs.length > 0) {
+      return utils.commonResponse(res, 400, "Missing Commercial References", {
+        error: "Some Commercial References do not exist in the database",
+        missingCRs: missingCRs,
+        totalCRsInFile: CRsinCurrentOrder.length,
+        missingCount: missingCRs.length
+      });
+    }
+
     // Map order CRs to their parts
     const CRsWithParts = CRsinCurrentOrder.flatMap(currentRef =>
       EntireCommerialRef.filter(entireCR => entireCR.referenceNumber === currentRef)
     );
 
-    console.log(CRsWithParts)
+    // console.log(CRsWithParts)
 
     // Map switchboards to CRs with parts
     const SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map(switchboard => ({
@@ -618,7 +713,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }))
     }));
 
-    console.log(SwitchBoardWithCRWithParts)
+    // console.log(SwitchBoardWithCRWithParts)
 
 
     // Generate a final list of parts with aggregated quantities
@@ -629,7 +724,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
         existingPart.quantity += part.quantity;
         // console.log('part details- ---------',part)
       } else {
-        console.log('part details- ---------',part)
+        // console.log('part details- ---------',part)
         acc.push({ partNumber: part.partNumber, quantity: part.quantity, description: part.partDescription , grouped:part.grouped?true:false,PiecePerPacket:part.PiecePerPacket?part.PiecePerPacket:0, partID:part._id});
       }
       // console.log('part details- ---------',acc)
@@ -637,15 +732,15 @@ exports.uploadCRExcelFromHub = async (req, res) => {
 
     }, []);
     // Project details (static for now, can be dynamic)
-    const ProjectDetails = {
-      project_name: "Project 1",
-      project_description: "This is a test data"
-    };
+    // const ProjectDetails = {
+    //   project_name: "Project 1",
+    //   project_description: "This is a test data"
+    // };
     // Sending the response
     utils.commonResponse(res, 200, "success", {
       Switchboards: SwitchBoardWithCRWithParts,
       PartList: FinalPartList,
-      ProjectDetails
+      // ProjectDetails
     });
   } catch (error) {
     console.error(error);
