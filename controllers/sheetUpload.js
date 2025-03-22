@@ -16,6 +16,7 @@ const Products = require("../Models/Products");
 const Parts = require("../Models/Parts");
 const mongoose = require("mongoose");
 const promise = require("bluebird/js/release/promise");
+const { transformBOMData } = require("../utils/BOMTransform");
 
 
 async function getUniqueParts(partsList) {
@@ -478,7 +479,7 @@ exports.uploadBomGoogleSheet = async (req, res) => {
   }
 };
 
-
+// preview the uploaded bom file updated it and validated- New
 exports.uploadCRFromAdminPreview = async(req, res)=>{
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
@@ -487,40 +488,172 @@ exports.uploadCRFromAdminPreview = async(req, res)=>{
     console.log('Server Got the Uploaded BOM, Validating...')
   }
 
-
   const filePath = req.file.path;
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(worksheet);
 
-  const firstRow = rows[0];
-  // Required columns
-  const requiredColumns = [];
-  
-  // Check if all required columns exist (case-insensitive)
-  const missingColumns = requiredColumns.filter(reqCol => {
-    // Check in direct properties and __EMPTY_X properties
-    const exists = Object.entries(firstRow).some(([key, value]) => {
-      // Convert both to lowercase for case-insensitive comparison
-      return value && value.toString().toLowerCase() === reqCol.toLowerCase();
-    });
-    return !exists;
+  // Get first 5 rows
+  const headerRows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
+    raw: true,
+    blankrows: false,
+    range: 0,
+    sheetRows: 5
   });
 
-  if (missingColumns.length > 0) {
+  // Required columns
+  const requiredColumns = [
+    "Level",
+    "Object Type",
+    "Number",
+    "EnglishDescription",
+    "Quantity",
+    "grouped",
+    "PiecePerPacket",
+  ]; 
+
+  // Find header row within first 5 rows
+  let headerRowIndex = -1;
+  let foundHeaders = [];
+
+  headerRows.forEach((row, index) => {
+    const currentRowHeaders = row.map(cell => cell && cell.toString().trim());
+    const matchedHeaders = requiredColumns.filter(reqCol =>
+      currentRowHeaders.some(header => 
+        header && header.toLowerCase() === reqCol.toLowerCase()
+      )
+    );
+
+    if (matchedHeaders.length > foundHeaders.length) {
+      headerRowIndex = index;
+      foundHeaders = matchedHeaders;
+    }
+  });
+
+  // If headers not found or missing some required columns
+  if (headerRowIndex === -1 || foundHeaders.length < requiredColumns.length) {
+    const missingHeaders = requiredColumns.filter(reqCol =>
+      !foundHeaders.some(found => 
+        found.toLowerCase() === reqCol.toLowerCase()
+      )
+    );
+
     return utils.commonResponse(res, 400, "Invalid file format", {
-      error: `Missing required columns: ${missingColumns.join(", ")}`,
-      requiredColumns: requiredColumns,
-      foundColumns: Object.values(firstRow)
+      error: "Missing required headers",
+      missingHeaders,
+      foundHeaders,
+      message: "Please ensure all required columns are present in the first 5 rows"
     });
   }
 
-  return utils.commonResponse(res, 200, "Preview Ready", {
-    "preview": rows,
+  // Read data starting from the header row
+  const rows = XLSX.utils.sheet_to_json(worksheet, {
+    raw: true,
+    defval: null,
+    range: headerRowIndex === 0 ? 0 : headerRowIndex+1
   });
 
+  const headers = headerRows[headerRowIndex];
+  
+  // Clean up headers
+  const cleanHeaders = headers.map(header => {
+    if (header && header.toString().startsWith('__EMPTY_')) {
+      return rows[0][header] || header;
+    }
+    return header;
+  }).filter(Boolean);
+
+  return utils.commonResponse(res, 200, "Preview Ready", {
+    preview: rows,
+    headers: cleanHeaders,
+    headerRowIndex,
+    totalRows: rows.length
+  });
 }
+
+exports.BulkUploadCRFromAdmin = async (req, res) => {
+  try {
+    const { BOM_JSON } = req.body;
+
+    if (!BOM_JSON || BOM_JSON.length === 0) {
+      return utils.commonResponse(res, 400, "BOM Rows are empty", {});
+    }
+
+    const BOM_JSON_ARRAY_TRANSFORMED = transformBOMData(BOM_JSON);
+
+    let ExistingCRList = [];
+    let newCRsList = [];
+
+    await Bluebird.each(BOM_JSON_ARRAY_TRANSFORMED, async (_rowData) => {
+      const existingCR = await CommercialReference.findOne({ referenceNumber: _rowData.CR.Number }).lean();
+      console.log(_rowData.CR.Number)
+      if (existingCR) {
+        ExistingCRList.push(_rowData);
+        return; // Skip if CR already exists
+      }
+
+      for (let i = 0; i < _rowData.parts.length; i++) {
+        const partnumber = _rowData.parts[i].Number;
+        const existingPart = await Parts.findOne({ partNumber: partnumber });
+
+        if (existingPart) {
+          existingPart.parentIds.push({
+            productNumber: "",
+            crNumber: _rowData.Number,
+          });
+          await existingPart.save(); // Ensure saving is awaited
+        } else {
+          await Parts.create({
+            partNumber: _rowData.parts[i].partNumber,
+            partDescription: _rowData.parts[i].EnglishDescription,
+            quantity: Number(_rowData.parts[i].Quantity),
+            grouped: _rowData.parts[i].grouped,
+            PiecePerPacket: _rowData.parts[i].PiecePerPacket,
+            parentIds: [
+              {
+                productNumber: "",
+                crNumber: _rowData.Number,
+              },
+            ],
+          });
+        }
+      }
+
+      const _parts = await _rowData.parts.map((part) => ({
+        partNumber: part.partNumber,
+        partDescription: part.EnglishDescription,
+        quantity: Number(part.Quantity),
+        PiecePerPacket: part.PiecePerPacket,
+      }));
+
+      await CommercialReference.create({
+        referenceNumber: _rowData.Number,
+        description: _rowData.EnglishDescription,
+        parts: _parts,
+        quantity: 0,
+        isActive: true,
+      });
+
+      newCRsList.push(_rowData);
+    });
+
+    if(newCRsList.length > 0){
+      await CommercialReference.create(newCRsList)
+    }
+
+    return utils.commonResponse(res, 200, "Upload successful", {
+      createdCRs: newCRsList,
+      createdCount: newCRsList.length,
+      skippedCRs: ExistingCRList,
+      skippedCount: ExistingCRList.length
+    });
+    
+  } catch (error) {
+    console.error("Error in uploadCRFromAdmin:", error);
+    return utils.commonResponse(res, 500, "Server error", error.toString());
+  }
+}; 
 
 
 exports.uploadCRFromAdmin = async (req, res) => {
@@ -675,7 +808,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     }));
 
     // Fetch all commercial references from the database
-    const EntireCommerialRef = await CommercialReference.find();
+    const EntireCommerialRef = await CommercialReference.find().lean();
     const CRsinCurrentOrder = CrsListFromExcel.map(cr => cr.Reference);
 
     const existingCRs = EntireCommerialRef.map(cr => cr.referenceNumber);
@@ -684,7 +817,6 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     const missingCRs = CRsinCurrentOrder.filter(cr => 
       !existingCRs.includes(cr)
     );
- 
 
 
     if (missingCRs.length > 0) {
@@ -697,14 +829,13 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     }
 
     // Map order CRs to their parts
-    const CRsWithParts = CRsinCurrentOrder.flatMap(currentRef =>
+    const CRsWithParts = await CRsinCurrentOrder.flatMap(currentRef =>
       EntireCommerialRef.filter(entireCR => entireCR.referenceNumber === currentRef)
     );
 
-    // console.log(CRsWithParts)
 
     // Map switchboards to CRs with parts
-    const SwitchBoardWithCRWithParts = SwitchboardListWithCrs.map(switchboard => ({
+    const SwitchBoardWithCRWithParts = await SwitchboardListWithCrs.map(switchboard => ({
       ...switchboard,
       components: switchboard.components.map(cr => ({
         ...cr,
@@ -713,19 +844,31 @@ exports.uploadCRExcelFromHub = async (req, res) => {
       }))
     }));
 
-    // console.log(SwitchBoardWithCRWithParts)
 
+    const finalCRsWithUpdatedPartsQty = SwitchBoardWithCRWithParts.map(switchboard => ({
+      ...switchboard,
+      components: switchboard.components.map(cr => ({
+        ...cr,
+        parts: cr.parts.map(part => ({ ...part, quantity: part.quantity * cr.Quantity }))
+      }))
+    }));
+ 
+    const EntirePartList = await finalCRsWithUpdatedPartsQty.flatMap(cr => cr.components.flatMap(component => component.parts || []));
 
-    // Generate a final list of parts with aggregated quantities
-    const EntirePartList = CRsWithParts.flatMap(cr => cr.parts || []);
     const FinalPartList = EntirePartList.reduce((acc, part) => {
       const existingPart = acc.find(item => item.partNumber === part.partNumber);
+
       if (existingPart) {
         existingPart.quantity += part.quantity;
         // console.log('part details- ---------',part)
       } else {
         // console.log('part details- ---------',part)
-        acc.push({ partNumber: part.partNumber, quantity: part.quantity, description: part.partDescription , grouped:part.grouped?true:false,PiecePerPacket:part.PiecePerPacket?part.PiecePerPacket:0, partID:part._id});
+        acc.push({ partNumber: part.partNumber, 
+          quantity: part.quantity, 
+          description: part.partDescription , 
+          grouped:part.grouped?true:false,
+          PiecePerPacket:part.PiecePerPacket?part.PiecePerPacket:0, 
+          partID:part._id});
       }
       // console.log('part details- ---------',acc)
       return acc;
@@ -738,7 +881,7 @@ exports.uploadCRExcelFromHub = async (req, res) => {
     // };
     // Sending the response
     utils.commonResponse(res, 200, "success", {
-      Switchboards: SwitchBoardWithCRWithParts,
+      Switchboards: finalCRsWithUpdatedPartsQty,
       PartList: FinalPartList,
       // ProjectDetails
     });
